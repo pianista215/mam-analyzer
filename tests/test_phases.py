@@ -17,18 +17,46 @@ def test_detect_engine_start_phase_synthetic():
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:00:00.1234567")
-    assert end == parse_timestamp("2025-06-14T17:03:00.1267")
+    assert end == parse_timestamp("2025-06-14T17:02:00.3234679")
 
-@pytest.mark.parametrize("filename", [
-    "LEPA-LEPP-737.json",
-    "LEPP-LEMG-737.json",
-    "LPMA-Circuits-737.json",
-    "UHMA-PAOM-B350.json",
-    "UHPT-UHMA-B350.json",
-    "UHPT-UHMA-SF34.json",
-    "UHSH-UHMM-B350.json",
+@pytest.mark.parametrize("filename, expected_start, expected_end", [
+    (
+    	"LEPA-LEPP-737.json",
+    	"2025-06-14T17:03:35.5975269",
+    	"2025-06-14T17:07:39.4791104"
+   	),
+    (
+    	"LEPP-LEMG-737.json",
+    	"2025-06-14T23:26:04.9623655",
+    	"2025-06-14T23:46:28.9605062"
+    ),
+    (
+    	"LPMA-Circuits-737.json",
+    	"2025-06-02T21:17:25.7327066",
+    	"2025-06-02T21:39:57.7415421"
+    ),
+    (
+    	"UHMA-PAOM-B350.json",
+    	"2025-06-15T21:57:38.5719388",
+    	"2025-06-15T22:16:58.5783802"
+    ),
+    (
+    	"UHPT-UHMA-B350.json",
+    	"2025-06-15T17:58:20.8040915",
+    	"2025-06-15T18:12:32.8254948"
+    ),
+    (
+    	"UHPT-UHMA-SF34.json",
+    	"2025-06-05T12:59:29.2149344",
+    	"2025-06-05T13:03:33.2361648"
+    ),
+    (
+    	"UHSH-UHMM-B350.json",
+    	"2025-05-17T17:35:51.2435736",
+    	"2025-05-17T17:52:11.2488295"
+    ),
 ])    
-def test_detect_engine_start_phase_from_real_files(filename):
+def test_detect_engine_start_phase_from_real_files(filename, expected_start, expected_end):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -36,8 +64,11 @@ def test_detect_engine_start_phase_from_real_files(filename):
     events = data["Events"]
     result = detect_engine_start_phase(events)
 
-    assert result is not None, f"Puesta en marcha no detectada en {filename}"
+    assert result is not None, f"Startup not detected in {filename}"
     start, end = result
-    assert isinstance(start, datetime)
-    assert isinstance(end, datetime)
-    assert start <= end
+
+    expected_start_dt = parse_timestamp(expected_start)
+    expected_end_dt = parse_timestamp(expected_end)
+
+    assert start == expected_start_dt, f"Incorrect start for startup in {filename}"
+    assert end == expected_end_dt, f"Incorrect end for startup in {filename}"

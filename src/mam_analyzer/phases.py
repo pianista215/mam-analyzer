@@ -14,6 +14,7 @@ def detect_engine_start_phase(events: List[dict]) -> Optional[Tuple[datetime, da
     start_time = None
     prev_lat = None
     prev_lon = None
+    last_timestamp = None
 
     for event in events:
         ts = parse_timestamp(event["Timestamp"])
@@ -30,9 +31,11 @@ def detect_engine_start_phase(events: List[dict]) -> Optional[Tuple[datetime, da
             lon = parse_coordinate(lon_raw)
 
             if prev_lat is not None and (lat != prev_lat or lon != prev_lon):
-                return (start_time, ts)
+                return (start_time, last_timestamp)
 
             prev_lat = lat
             prev_lon = lon
+            
+        last_timestamp = ts
 
-    return None  # No movimiento detectado
+    return None # No movement detected
