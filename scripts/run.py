@@ -1,9 +1,12 @@
-from src.mam_analyzer.parser import load_flight_data
-from src.mam_analyzer.phases import detect_phases
+from mam_analyzer.evaluator import FlightEvaluator
+from mam_analyzer.phases.takeoff import TakeoffPhaseDetector
+from mam_analyzer.parser import parse_json_file
 
-data = load_flight_data("data/UHSH-UHMM-B350.json")
-phases = detect_phases(data)
+evaluator = FlightEvaluator()
+evaluator.add_detector(TakeoffPhaseDetector())
 
-print("Fases detectadas:")
-for p in phases:
-    print(f"- {p}")
+events = load_flight_data("data/UHSH-UHMM-B350.json")
+evaluator.evaluate(events)
+
+for phase_name, start, end in evaluator.get_results():
+    print(f"{phase_name}: {start} → {end}")
