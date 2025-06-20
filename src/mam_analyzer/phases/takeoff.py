@@ -22,6 +22,8 @@ class TakeoffDetector(Detector):
         takeoff_end = None
         flaps_at_takeoff = None
 
+        # TODO: UNAI MEJOR COGER LOS EVENTOS EN LUGAR DEL TIMESTAMP COMO RESULTADO???
+
         # Step 1: First event on air (onGround=False)
         for idx, event in enumerate(events):
             if event.on_ground is not None and event.on_ground is False:
@@ -53,24 +55,25 @@ class TakeoffDetector(Detector):
             # If we don't find nothing use airbone event as first
             takeoff_start = events[airborne_idx].timestamp
 
-        # Paso 3: Look for the end of the takeoff phase from airbone_idx
+        # Step 3: Look for the end of the takeoff phase from airbone_idx
         deadline = events[airborne_idx].timestamp + timedelta(minutes=1)
 
         for event in events[airborne_idx + 1:]:
             ts = event.timestamp
 
+            if ts <= deadline:
+                takeoff_end = ts
+            else:
+                break
+
+
             if flaps_at_takeoff and event.flaps is not None:
                 if event.flaps == 0:
-                    takeoff_end = ts
                     break
 
             if flaps_at_takeoff == 0 and event.gear == "up":
-                takeoff_end = ts
                 break
 
-            if ts > deadline:
-                takeoff_end = ts
-                break
 
         if takeoff_end is None:
             takeoff_end = deadline
