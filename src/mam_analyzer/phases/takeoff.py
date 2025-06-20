@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import datetime,timedelta
 from typing import List, Optional, Tuple, Dict, Any
+
+from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
 from mam_analyzer.utils.parsing import parse_coordinate, parse_timestamp
-from mam_analyzer.context import FlightDetectorContext
+from mam_analyzer.utils.units import heading_within_range
 
 class TakeoffDetector(Detector):
     def detect(
@@ -22,60 +24,47 @@ class TakeoffDetector(Detector):
 
         # Step 1: First event on air (onGround=False)
         for idx, event in enumerate(events):
-            changes = event.get("Changes", {})
-            if changes.get("onGround", "").lower() == "false":
+            if event.on_ground is not None and event.on_ground is False:
                 airborne_idx = idx
-                airborne_heading = float(changes.get("Heading", "0"))
-                flaps_raw = changes.get("Flaps")
-                try:
-                    flaps_at_takeoff = int(flaps_raw) if flaps_raw is not None else 0
-                except ValueError:
-                    flaps_at_takeoff = 0
-                break
+                airborne_heading = event.heading
+                flaps_raw = event.flaps
 
         if airborne_idx is None:
             return None  # Takeoff not detected
 
         # Step 2: Look back until the last event with heading on range
         for i in range(airborne_idx - 1, -1, -1):
-            changes = events[i].get("Changes", {})
-            heading_raw = changes.get("Heading")
-            on_ground = changes.get("onGround", "").lower()
-            if heading_raw is None:
-                continue
-            try:
-                heading = float(heading_raw)
-            except ValueError:
+            back_event = events[i]
+            heading = back_event.heading
+            on_ground = back_event.on_ground
+
+            if heading is None:
                 continue
 
-            if on_ground != "true":
+            if on_ground != True:
                 break  # Not in ground
 
             if not heading_within_range(heading, airborne_heading):
                 break  # Heading drastically changes
 
-            takeoff_start = parser.parse(events[i]["Timestamp"])
+            takeoff_start = back_event.timestamp
 
         if takeoff_start is None:
             # If we don't find nothing use airbone event as first
-            takeoff_start = parser.parse(events[airborne_idx]["Timestamp"])
+            takeoff_start = events[airborne_idx].timestamp
 
         # Paso 3: Look for the end of the takeoff phase from airbone_idx
-        deadline = parser.parse(events[airborne_idx]["Timestamp"]) + timedelta(minutes=1)
+        deadline = events[airborne_idx].timestamp + timedelta(minutes=1)
 
         for event in events[airborne_idx + 1:]:
-            ts = parser.parse(event["Timestamp"])
-            changes = event.get("Changes", {})
+            ts = event.timestamp
 
-            if flaps_at_takeoff and "Flaps" in changes:
-                try:
-                    if int(changes["Flaps"]) == 0:
-                        takeoff_end = ts
-                        break
-                except ValueError:
-                    pass
+            if flaps_at_takeoff and event.flaps is not None:
+                if event.flaps == 0:
+                    takeoff_end = ts
+                    break
 
-            if flaps_at_takeoff == 0 and changes.get("Gear", "").lower() == "up":
+            if flaps_at_takeoff == 0 and event.gear == "up":
                 takeoff_end = ts
                 break
 
@@ -87,18 +76,3 @@ class TakeoffDetector(Detector):
             takeoff_end = deadline
 
         return takeoff_start, takeoff_end
-
-    def _find_first_airbone_event(
-        events: List[Dict[str, Any]],
-        from_time: Optional[datetime],
-        to_time: Optional[datetime],
-        ) -> Optional[Dic[str, Any]]:
-        """Detect the takeoff event (onGround=false). It should have all the important info itself"""
-        for event in events:
-            ts = parse_timestamp(event["Timestamp"])
-            if from_time and ts < from_time:
-                continue
-            if to_time and ts > to_time:
-                break   
-
-                ## CONTINUA UNAI
