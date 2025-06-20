@@ -4,6 +4,7 @@ from datetime import datetime
 import pytest
 
 from mam_analyzer.context import FlightDetectorContext
+from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.startup import StartupDetector
 from mam_analyzer.utils.parsing import parse_timestamp
 
@@ -16,12 +17,14 @@ def context():
     return FlightDetectorContext()
 
 def test_detect_engine_start_phase_synthetic(startup_detector, context):
-    events = [
+    raw_events = [
         {"Timestamp": "2025-06-14T17:00:00.1234567", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}},
         {"Timestamp": "2025-06-14T17:01:00.23478", "Changes": {"Squawk": "1234"}},
         {"Timestamp": "2025-06-14T17:02:00.3234679", "Changes": {"Flaps": "49"}},
         {"Timestamp": "2025-06-14T17:03:00.1267", "Changes": {"Latitude": "39,001", "Longitude": "2,000"}},
     ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
 
     result = startup_detector.detect(events, None, None, context)
     assert result is not None
@@ -43,7 +46,8 @@ def test_detect_engine_start_phase_from_real_files(filename, expected_start, exp
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
-    events = data["Events"]
+    raw_events = data["Events"]
+    events = [FlightEvent.from_json(e) for e in raw_events]
     result = startup_detector.detect(events, None, None, context)
 
     assert result is not None, f"Startup not detected in {filename}"

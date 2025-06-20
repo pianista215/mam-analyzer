@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.context import FlightDetectorContext
+from mam_analyzer.models.flight_events import FlightEvent
 
 class Detector(ABC):
     phase_name: str 
@@ -9,7 +10,7 @@ class Detector(ABC):
     @abstractmethod
     def detect(
         self,
-        events: List[Dict[str, Any]],
+        events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime,
         context: FlightDetectorContext

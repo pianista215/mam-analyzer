@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
+from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
 from mam_analyzer.utils.parsing import parse_coordinate, parse_timestamp
 from mam_analyzer.context import FlightDetectorContext
@@ -7,7 +8,7 @@ from mam_analyzer.context import FlightDetectorContext
 class StartupDetector(Detector):
     def detect(
         self,
-        events: List[Dict[str, Any]],
+        events: List[FlightEvent],
         from_time: Optional[datetime],
         to_time: Optional[datetime],
         context: FlightDetectorContext,
@@ -19,23 +20,18 @@ class StartupDetector(Detector):
         last_timestamp = None
 
         for event in events:
-            ts = parse_timestamp(event["Timestamp"])
+            ts = event.timestamp
             if from_time and ts < from_time:
                 continue
             if to_time and ts > to_time:
                 break
 
-            changes = event.get("Changes", {})
-
             if start_time is None:
                 start_time = ts
 
-            lat_raw = changes.get("Latitude")
-            lon_raw = changes.get("Longitude")
-
-            if lat_raw and lon_raw:
-                lat = parse_coordinate(lat_raw)
-                lon = parse_coordinate(lon_raw)
+            if event.latitude is not None and event.longitude is not None:
+                lat = event.latitude
+                lon = event.longitude
 
                 if prev_lat is not None and (lat != prev_lat or lon != prev_lon):
                     return (start_time, last_timestamp)
