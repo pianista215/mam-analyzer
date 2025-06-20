@@ -29,7 +29,8 @@ class TakeoffDetector(Detector):
             if event.on_ground is not None and event.on_ground is False:
                 airborne_idx = idx
                 airborne_heading = event.heading
-                flaps_raw = event.flaps
+                flaps_at_takeoff = event.flaps
+                break
 
         if airborne_idx is None:
             return None  # Takeoff not detected
@@ -43,7 +44,7 @@ class TakeoffDetector(Detector):
             if heading is None:
                 continue
 
-            if on_ground != True:
+            if on_ground is False:
                 break  # Not in ground
 
             if not heading_within_range(heading, airborne_heading):
@@ -54,7 +55,7 @@ class TakeoffDetector(Detector):
         if takeoff_start is None:
             # If we don't find nothing use airbone event as first
             takeoff_start = events[airborne_idx].timestamp
-
+            
         # Step 3: Look for the end of the takeoff phase from airbone_idx
         deadline = events[airborne_idx].timestamp + timedelta(minutes=1)
 
