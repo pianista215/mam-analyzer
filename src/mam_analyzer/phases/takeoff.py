@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
-from mam_analyzer.utils.parsing import parse_coordinate, parse_timestamp
 from mam_analyzer.utils.units import heading_within_range
 
 class TakeoffDetector(Detector):
