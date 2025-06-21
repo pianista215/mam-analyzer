@@ -80,7 +80,7 @@ def test_takeoff_no_onGround_false_returns_none(detector, context):
     ("LPMA-Circuits-737.json", "2025-06-02T21:48:07.7370288", "2025-06-02T21:49:49.7389212"),
     ("UHMA-PAOM-B350.json", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508"),
     ("UHPT-UHMA-B350.json", "2025-06-15T18:17:38.8254324", "2025-06-15T18:18:16.828107"),
-    ("UHPT-UHMA-SF34.json", "2025-06-05T13:08:25.2219923", "2025-06-05T13:09:09.2296981"), #TODO: Bajar tolerancia heading caja negra
+    ("UHPT-UHMA-SF34.json", "2025-06-05T13:08:25.2219923", "2025-06-05T13:09:09.2296981"),
     ("UHSH-UHMM-B350.json", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
 ])    
 def test_detect_takeoff_phase_from_real_files(filename, expected_start, expected_end, detector, context):
