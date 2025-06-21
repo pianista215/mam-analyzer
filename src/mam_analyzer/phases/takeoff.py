@@ -23,6 +23,7 @@ class TakeoffDetector(Detector):
         flaps_at_takeoff = None
 
         # TODO: UNAI MEJOR COGER LOS EVENTOS EN LUGAR DEL TIMESTAMP COMO RESULTADO???
+        # TODO: DETECTAR LA ACELERACION EN LUGAR DEL HEADING???
 
         # Step 1: First event on air (onGround=False)
         for idx, event in enumerate(events):
