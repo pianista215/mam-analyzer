@@ -18,6 +18,8 @@ class ShutdownDetector(Detector):
         last_lon = None
         last_timestamp = None
 
+        # TODO: CONSIDER ENGINE OFF FOR SHUTDOWN INSTEAD OF POSITION???
+
         for event in reversed(events):
             ts = event.timestamp
             

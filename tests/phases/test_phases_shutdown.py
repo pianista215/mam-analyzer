@@ -55,13 +55,13 @@ def test_detect_shutdown_phase_synthetic_multiple_events_same_place(shutdown_det
     assert end == parse_timestamp("2025-06-14T17:15:00.000000")    
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
-    ("LEPA-LEPP-737.json", "", ""),
-    ("LEPP-LEMG-737.json", "", ""),
-    ("LPMA-Circuits-737.json", "", ""),
-    ("UHMA-PAOM-B350.json", "", ""),
-    ("UHPT-UHMA-B350.json", "", ""),
-    ("UHPT-UHMA-SF34.json", "", ""),
-    ("UHSH-UHMM-B350.json", "", ""),
+    ("LEPA-LEPP-737.json", "2025-06-14T18:26:59.8779366", "2025-06-14T18:29:23.9003458"),
+    ("LEPP-LEMG-737.json", "2025-06-15T01:11:26.9540678", "2025-06-15T01:15:06.9660548"),
+    ("LPMA-Circuits-737.json", "None", "None"),
+    ("UHMA-PAOM-B350.json", "2025-06-16T00:12:10.5865817", "2025-06-16T00:21:44.5809936"),
+    ("UHPT-UHMA-B350.json", "2025-06-15T20:09:06.8168029", "2025-06-15T20:09:08.8279072"),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T15:10:25.2342953", "2025-06-05T15:11:27.2262993"),
+    ("UHSH-UHMM-B350.json", "2025-05-17T19:44:49.2465901", "2025-05-17T19:46:07.2591295"),
 ])
 def test_detect_shutdown_phase_from_real_files(filename, expected_start, expected_end, shutdown_detector, context):
     path = os.path.join("data", filename)
