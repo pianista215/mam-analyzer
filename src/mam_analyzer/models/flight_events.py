@@ -17,7 +17,7 @@ class FlightEvent:
     started_engines: Optional[bool] = None
 
     # Other changes not so important to trace
-    changes_raw: Dict[str, str] = None
+    other_changes: Dict[str, str] = None
 
     @staticmethod
     def from_json(event: Dict[str, Any]) -> "FlightEvent":
@@ -51,5 +51,5 @@ class FlightEvent:
             flaps=parse_int(changes.get("Flaps")),
             gear=changes.get("Gear"),
             started_engines = _started_engines,
-            changes_raw=changes
+            other_changes=changes
         )

@@ -23,7 +23,7 @@ class FinalLandingDetector(Detector):
         # Step 1: First event with LandingVSFpm
         for idx in range(len(events) - 1, -1, -1):
             event = events[idx]
-            if event.changes.get("LandingVSFpm") is not None:
+            if event.other_changes.get("LandingVSFpm") is not None:
                 touch_idx = idx
                 touch_heading = event.heading
                 landing_start = event.timestamp
