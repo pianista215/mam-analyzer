@@ -40,6 +40,7 @@ def test_detect_engine_start_phase_synthetic(startup_detector, context):
     ("UHPT-UHMA-B350.json", "2025-06-15T17:58:20.8040915", "2025-06-15T18:12:32.8254948"),
     ("UHPT-UHMA-SF34.json", "2025-06-05T12:59:29.2149344", "2025-06-05T13:03:33.2361648"),
     ("UHSH-UHMM-B350.json", "2025-05-17T17:35:51.2435736", "2025-05-17T17:52:11.2488295"),
+    ("PAOM-PANC-B350-fromtaxi.json", "None", "None"),
 ])    
 def test_detect_engine_start_phase_from_real_files(filename, expected_start, expected_end, startup_detector, context):
     path = os.path.join("data", filename)
@@ -50,11 +51,15 @@ def test_detect_engine_start_phase_from_real_files(filename, expected_start, exp
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = startup_detector.detect(events, None, None, context)
 
-    assert result is not None, f"Startup not detected in {filename}"
-    start, end = result
+    if expected_start != 'None' and expected_end != 'None':
+        assert result is not None, f"Startup not detected in {filename}"
+        start, end = result
 
-    expected_start_dt = parse_timestamp(expected_start)
-    expected_end_dt = parse_timestamp(expected_end)
+        expected_start_dt = parse_timestamp(expected_start)
+        expected_end_dt = parse_timestamp(expected_end)
 
-    assert start == expected_start_dt, f"Incorrect start for startup in {filename}"
-    assert end == expected_end_dt, f"Incorrect end for startup in {filename}"
+        assert start == expected_start_dt, f"Incorrect start for startup in {filename}"
+        assert end == expected_end_dt, f"Incorrect end for startup in {filename}"
+
+    else:
+        assert result is None, f"Startup shouldn't been detected in {filename}"

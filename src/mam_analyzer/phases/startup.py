@@ -12,7 +12,7 @@ class StartupDetector(Detector):
         to_time: Optional[datetime],
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
-        """Detect startup phase: from first event until location changes (plane moves)."""
+        """Detect startup phase: from first event (if engines are off) until location changes (plane moves)."""
         start_time = None
         prev_lat = None
         prev_lon = None
@@ -26,7 +26,10 @@ class StartupDetector(Detector):
                 break
 
             if start_time is None:
-                start_time = ts
+                if event.started_engines is not None and event.started_engines:
+                    return None
+                else:
+                    start_time = ts
 
             if event.latitude is not None and event.longitude is not None:
                 lat = event.latitude

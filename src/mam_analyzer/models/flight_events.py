@@ -14,6 +14,7 @@ class FlightEvent:
     gear: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    started_engines: Optional[bool] = None
 
     # Other changes not so important to trace
     changes_raw: Dict[str, str] = None
@@ -36,6 +37,11 @@ class FlightEvent:
             except ValueError:
                 return None
 
+        _started_engines = any(
+            key.startswith("Engine ") and key[7:].isdigit() and 1 <= int(key[7:]) <= 4 and value == "On"
+            for key, value in changes.items()
+        )                
+
         return FlightEvent(
             timestamp=ts,
             latitude=parse_coordinate(changes.get("Latitude")) if "Latitude" in changes else None,
@@ -44,5 +50,6 @@ class FlightEvent:
             heading=parse_int(changes.get("Heading")),
             flaps=parse_int(changes.get("Flaps")),
             gear=changes.get("Gear"),
+            started_engines = _started_engines,
             changes_raw=changes
         )
