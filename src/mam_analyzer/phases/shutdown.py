@@ -12,13 +12,11 @@ class ShutdownDetector(Detector):
         to_time: Optional[datetime],
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
-        """Detect shutdown phase: until last event starting from the last position change."""
+        """Detect shutdown phase: Period that the plane stays stopped and the engines has shutdown"""
         start_time = None
         last_lat = None
         last_lon = None
         last_timestamp = None
-
-        # TODO: CONSIDER ENGINE OFF FOR SHUTDOWN INSTEAD OF POSITION???
 
         for event in reversed(events):
             ts = event.timestamp
