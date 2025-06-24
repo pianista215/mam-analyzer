@@ -60,6 +60,8 @@ def test_landing_not_detected_without_vs(detector, context):
     result = detector.detect(events, None, None, context)
     assert result is None
 
+    # TODO: Think about legacy files (maybe set VS as Landing for test purposes) ?
+
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
     ("LEPA-LEPP-737.json", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
     ("LEPP-LEMG-737.json", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
