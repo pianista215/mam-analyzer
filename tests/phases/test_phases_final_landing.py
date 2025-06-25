@@ -61,15 +61,16 @@ def test_landing_not_detected_without_vs(detector, context):
     assert result is None
 
     # TODO: Think about legacy files (maybe set VS as Landing for test purposes) ?
+    # TODO: Check last landing remains on ground
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
     ("LEPA-LEPP-737.json", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
     ("LEPP-LEMG-737.json", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
-    ("LPMA-Circuits-737.json", "None", "None"), # legacy
+    ("LPMA-Circuits-737.json", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146"), #TODO: DETECT DOUBLE BOUNCE
     ("UHMA-PAOM-B350.json", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254"),
     ("UHPT-UHMA-B350.json", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667"),
-    ("UHPT-UHMA-SF34.json", "None", "None"), #legacy
-    ("UHSH-UHMM-B350.json", "None", "None"), #legacy
+    ("UHPT-UHMA-SF34.json", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
+    ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
 ])
 def test_landing_detects_from_real_files(filename, expected_start, expected_end, detector, context):

@@ -4036,6 +4036,7 @@
     {
       "Timestamp": "2025-05-17T19:41:01.243375",
       "Changes": {
+        "LandingVSFpm": "-121",
         "Latitude": "59,91146",
         "Longitude": "150,7013",
         "onGround": "True",

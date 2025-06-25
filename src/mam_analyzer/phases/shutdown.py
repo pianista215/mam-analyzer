@@ -13,6 +13,7 @@ class ShutdownDetector(Detector):
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period that the plane stays stopped and the engines has shutdown"""
+        #TODO: Check we are on ground with the engines stopped
         start_time = None
         last_lat = None
         last_lon = None
