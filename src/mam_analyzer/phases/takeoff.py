@@ -44,16 +44,16 @@ class TakeoffDetector(Detector):
             flaps_at_takeoff = airborne_event.flaps      
         
 
-        # Step 2: Look back until the last event with heading out of range
+        # Step 2: Look backward for first event with heading out of range
         def headingIsOutOfRange(e: FlightEvent)->bool:
+            print(f"{e.heading} vs {airborne_heading}")
             return (
                 e.heading is not None
-                and e.on_ground is True
                 and not heading_within_range(e.heading, airborne_heading)
             )
 
 
-        found_takeoff_start = find_first_index_backward_starting_from_idx(
+        found_diff_heading = find_first_index_backward_starting_from_idx(
             events,
             airborne_idx - 1,
             headingIsOutOfRange,
@@ -61,33 +61,12 @@ class TakeoffDetector(Detector):
             to_time
         )
 
-        if found_takeoff_start is None:
-            # If we don't find nothing use airbone event as first
-            takeoff_start = events[airborne_idx].timestamp
+        if found_diff_heading is None:
+            # If all previous events are in correct heading use first event
+            takeoff_start = events[0].timestamp
         else:
-            _, event_takeoff_start = found_takeoff_start
-            takeoff_start = event_takeoff_start.timestamp
-
-
-        for i in range(airborne_idx - 1, -1, -1):
-            back_event = events[i]
-            heading = back_event.heading
-            on_ground = back_event.on_ground
-
-            if heading is None:
-                continue
-
-            if on_ground is False:
-                break  # Not in ground
-
-            if not heading_within_range(heading, airborne_heading):
-                break  # Heading drastically changes
-
-            takeoff_start = back_event.timestamp
-
-        if takeoff_start is None:
-            # If we don't find nothing use airbone event as first
-            takeoff_start = events[airborne_idx].timestamp
+            diff_heading_idx, _ = found_diff_heading
+            takeoff_start = events[diff_heading_idx + 1].timestamp
             
         # Step 3: Look for the end of the takeoff phase from airbone_idx
         deadline = events[airborne_idx].timestamp + timedelta(minutes=1)
