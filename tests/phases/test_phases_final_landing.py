@@ -60,8 +60,36 @@ def test_landing_not_detected_without_vs(detector, context):
     result = detector.detect(events, None, None, context)
     assert result is None
 
-    # TODO: Think about legacy files (maybe set VS as Landing for test purposes) ?
+def test_landing_bounces(detector, context):
+    base = datetime(2025, 6, 23, 12, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), Heading=85),
+        make_event(base + timedelta(seconds=10), Heading=86, LandingVSFpm=-250), # bounce -> final_landing
+        make_event(base + timedelta(seconds=12), Heading=86),
+        make_event(base + timedelta(seconds=15), Heading=86, LandingVSFpm=-5), #final touch
+        make_event(base + timedelta(seconds=30), Heading=84),
+        make_event(base + timedelta(seconds=40), Heading=86),
+    ]
+    start, end = detector.detect(events, None, None, context)
+    assert start == base + timedelta(seconds=10)
+    assert end == base + timedelta(seconds=40)
+
+def test_only_last_landing(detector, context):
+    base = datetime(2025, 6, 23, 12, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), Heading=85),
+        make_event(base + timedelta(seconds=10), Heading=86, LandingVSFpm=-250),
+        make_event(base + timedelta(seconds=50), Heading=86),
+        make_event(base + timedelta(seconds=70), Heading=86, LandingVSFpm=-5), #final landing
+        make_event(base + timedelta(seconds=80), Heading=84),
+        make_event(base + timedelta(seconds=90), Heading=102),
+    ]
+    start, end = detector.detect(events, None, None, context)
+    assert start == base + timedelta(seconds=70)
+    assert end == base + timedelta(seconds=80)
+
     # TODO: Check last landing remains on ground
+
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
     ("LEPA-LEPP-737.json", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),

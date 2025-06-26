@@ -1,10 +1,10 @@
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from typing import List, Optional, Tuple, Dict, Any
 
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
-from mam_analyzer.utils.search import find_first_index_forward,find_first_index_forward_starting_from_idx
+from mam_analyzer.utils.search import find_first_index_backward,find_first_index_forward_starting_from_idx,find_first_index_backward_starting_from_idx
 from mam_analyzer.utils.units import heading_within_range
 
 class FinalLandingDetector(Detector):
@@ -21,11 +21,11 @@ class FinalLandingDetector(Detector):
         landing_start = None
         landing_end = None
 
-        # Step 1: First event with LandingVSFpm
+        # Step 1: First event with LandingVSFpm from backward
         def withLandingVSFpm(e: FlightEvent) -> bool:
             return e.other_changes.get("LandingVSFpm") is not None
 
-        found_landing = find_first_index_forward(
+        found_landing = find_first_index_backward(
             events,
             withLandingVSFpm,
             from_time,
@@ -39,7 +39,25 @@ class FinalLandingDetector(Detector):
             touch_heading = landing_event.heading
             landing_start = landing_event.timestamp
 
-        # Step 2: Look for the end of the landing until heading variate from touch_idx
+        # Step 2: Detect possible double bounces look in previous 10 seconds was another touch
+        delta = landing_start + timedelta(seconds=-10)
+
+        found_bounce = find_first_index_backward_starting_from_idx(
+            events,
+            touch_idx - 1,
+            withLandingVSFpm,
+            delta,
+            to_time
+        )
+
+        if found_bounce is not None:
+            print("Found bounce! Updating touch")
+            touch_idx, landing_event = found_bounce
+            touch_heading = landing_event.heading
+            landing_start = landing_event.timestamp
+
+
+        # Step 3: Look for the end of the landing until heading variate from touch_idx
         # TODO: Needed limit of time or check speed?
 
         def headingOutOfRange(e: FlightEvent) -> bool:
