@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
+from mam_analyzer.utils.search import find_first_index_forward
 from mam_analyzer.utils.units import heading_within_range
 
 class TakeoffDetector(Detector):
@@ -25,15 +26,18 @@ class TakeoffDetector(Detector):
         # TODO: USE ACCELERATION INSTEAD OF HEADING?
 
         # Step 1: First event on air (onGround=False)
-        for idx, event in enumerate(events):
-            if event.on_ground is not None and event.on_ground is False:
-                airborne_idx = idx
-                airborne_heading = event.heading
-                flaps_at_takeoff = event.flaps
-                break
+        def onAirCondition(e: FlightEvent)->bool:
+            return e.on_ground is False
 
-        if airborne_idx is None:
-            return None  # Takeoff not detected
+        found_airborne = find_first_index_forward(events, onAirCondition, from_time, to_time)
+
+        if found_airborne is None:
+            return None  # Takeoff not detected 
+        else:
+            airborne_idx, airborne_event = found_airborne
+            airborne_heading = airborne_event.heading
+            flaps_at_takeoff = airborne_event.flaps      
+        
 
         # Step 2: Look back until the last event with heading on range
         for i in range(airborne_idx - 1, -1, -1):
