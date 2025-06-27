@@ -50,7 +50,7 @@ def test_no_engines_keys():
 
 def test_ignores_non_numeric_engine_suffix():
     event = make_event({
-        "Engine A": "On",  # no es válido
+        "Engine A": "On",  # Not valid
         "Engine B": "On",
     })
     assert event.has_started_engines is None
@@ -59,7 +59,7 @@ def test_ignores_non_numeric_engine_suffix():
 
 def test_ignores_out_of_range_engine_numbers():
     event = make_event({
-        "Engine 5": "On",  # fuera de 1-4
+        "Engine 5": "On",  # Out of 1-4
         "Engine 6": "On",
     })
     assert event.has_started_engines is None
