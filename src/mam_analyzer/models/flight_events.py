@@ -18,8 +18,8 @@ class FlightEvent:
     # Other changes not so important to trace
     other_changes: Dict[str, str] = None
 
-    def is_full_event() -> bool:
-        return len(other_changes) > 10
+    def is_full_event(self) -> bool:
+        return len(self.other_changes) > 10
 
     @staticmethod
     def from_json(event: Dict[str, Any]) -> "FlightEvent":
