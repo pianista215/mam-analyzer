@@ -14,14 +14,14 @@ class ShutdownDetector(Detector):
         to_time: Optional[datetime],
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
-        """Detect shutdown phase: Period that the plane stays stopped and the engines has shutdown"""
+        """Detect shutdown phase: Period with the plane in the position where the shutdown of the engines happens"""
 
         # Step 1 check if engines are stopped in the last 3 minutes events
         last_event_timestamp = events[len(events) - 1].timestamp 
         delta = last_event_timestamp + timedelta(minutes=-3)
 
         def enginesOff(e: FlightEvent) -> bool:
-            return e.has_started_engines == True
+            return e.has_started_engines == False
 
         found_stopped = find_first_index_backward(
             events,
@@ -32,8 +32,8 @@ class ShutdownDetector(Detector):
 
         if found_stopped is None:
             return None # No shutdown detected
-        
-        # Step 2 get
+        else:
+            stopped_idx, stopped_event = found_stopped
 
 
 
