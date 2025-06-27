@@ -14,7 +14,8 @@ class FlightEvent:
     gear: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    started_engines: Optional[bool] = None
+    has_started_engines: Optional[bool] = None
+    all_engines_started: Optional[bool] = None
 
     # Other changes not so important to trace
     other_changes: Dict[str, str] = None
@@ -37,10 +38,18 @@ class FlightEvent:
             except ValueError:
                 return None
 
-        _started_engines = any(
-            key.startswith("Engine ") and key[7:].isdigit() and 1 <= int(key[7:]) <= 4 and value == "On"
+        engine_states = [
+            value
             for key, value in changes.items()
-        )                
+            if key.startswith("Engine ") and key[7:].isdigit() and 1 <= int(key[7:]) <= 4
+        ]
+
+        _all_engines_started = None
+        _has_started_engines = None
+
+        if engine_states:
+            _has_started_engines = any(state == "On" for state in engine_states)
+            _all_engines_started = all(state == "On" for state in engine_states)           
 
         return FlightEvent(
             timestamp=ts,
@@ -50,6 +59,7 @@ class FlightEvent:
             heading=parse_int(changes.get("Heading")),
             flaps=parse_int(changes.get("Flaps")),
             gear=changes.get("Gear"),
-            started_engines = _started_engines,
+            has_started_engines = _has_started_engines,
+            all_engines_started = _all_engines_started,
             other_changes=changes
         )

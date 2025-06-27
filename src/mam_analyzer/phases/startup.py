@@ -26,7 +26,7 @@ class StartupDetector(Detector):
                 break
 
             if start_time is None:
-                if event.started_engines is not None and event.started_engines:
+                if event.has_started_engines is not None and event.has_started_engines:
                     return None
                 else:
                     start_time = ts

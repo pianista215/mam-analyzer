@@ -1,8 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Tuple, Dict, Any
-from mam_analyzer.models.flight_events import FlightEvent
+
 from mam_analyzer.detector import Detector
 from mam_analyzer.context import FlightDetectorContext
+from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.utils.search import find_first_index_backward
 
 class ShutdownDetector(Detector):
     def detect(
@@ -13,7 +15,29 @@ class ShutdownDetector(Detector):
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period that the plane stays stopped and the engines has shutdown"""
-        #TODO: Check we are on ground with the engines stopped
+
+        # Step 1 check if engines are stopped in the last 3 minutes events
+        last_event_timestamp = events[len(events) - 1].timestamp 
+        delta = last_event_timestamp + timedelta(minutes=-3)
+
+        def enginesOff(e: FlightEvent) -> bool:
+            return e.has_started_engines == True
+
+        found_stopped = find_first_index_backward(
+            events,
+            enginesOff,
+            delta,
+            to_time
+        )
+
+        if found_stopped is None:
+            return None # No shutdown detected
+        
+        # Step 2 get
+
+
+
+
         start_time = None
         last_lat = None
         last_lon = None
