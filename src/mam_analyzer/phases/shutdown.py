@@ -17,6 +17,7 @@ class ShutdownDetector(Detector):
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period with the plane in the position where the shutdown of the engines happens"""
+        # In this detector we are not using from_time or to_time
 
         # Step 1 check if engines are stopped at the end
         # Look for the last full event to check status
@@ -45,16 +46,12 @@ class ShutdownDetector(Detector):
                     engine_num = int(k[7:])
                     engine_status[engine_num - 1] = v
 
-        print(f"Engine status {engine_status}")
         if not all_engines_are_off_from_status(engine_status):
             return None # The engines aren't off so no shutdown detected
 
         # Step 2: get the first event backward with different location
         shutdown_lat = last_full_event.latitude
         shutdown_lon = last_full_event.longitude
-
-        print(f"Lat {shutdown_lat} lon {shutdown_lon}")
-        print(last_full_idx)
 
         def eventDiffLocation(e: FlightEvent) -> bool:
             return (
@@ -73,8 +70,6 @@ class ShutdownDetector(Detector):
             from_time,
             to_time
         )
-
-        print(last_diff_loc_event)
 
         if last_diff_loc_event is None:
             # Start is first event from from_time

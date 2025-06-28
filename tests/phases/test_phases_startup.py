@@ -16,12 +16,62 @@ def startup_detector():
 def context():
     return FlightDetectorContext()
 
-def test_detect_engine_start_phase_synthetic(startup_detector, context):
+def test_detect_engine_start_phase_synthetic_single(startup_detector, context):
     raw_events = [
-        {"Timestamp": "2025-06-14T17:00:00.1234567", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}},
+        {
+            "Timestamp": "2025-06-14T17:00:00.1234567", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "Off",
+            },
+        },
         {"Timestamp": "2025-06-14T17:01:00.23478", "Changes": {"Squawk": "1234"}},
         {"Timestamp": "2025-06-14T17:02:00.3234679", "Changes": {"Flaps": "49"}},
-        {"Timestamp": "2025-06-14T17:03:00.1267", "Changes": {"Latitude": "39,001", "Longitude": "2,000"}},
+        {"Timestamp": "2025-06-14T17:03:00.3234679", "Changes": {"Engine 1": "On"}},
+        {
+            "Timestamp": "2025-06-14T17:04:00.3234679", 
+            "Changes": {
+                "Latitude": "39,072", 
+                "Longitude": "2,081",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On"
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:05:00.3234679", 
+            "Changes": {
+                "Latitude": "39,079",
+                "Longitude": "2,081",
+            }
+        },
     ]
 
     events = [FlightEvent.from_json(e) for e in raw_events]
@@ -30,12 +80,12 @@ def test_detect_engine_start_phase_synthetic(startup_detector, context):
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:00:00.1234567")
-    assert end == parse_timestamp("2025-06-14T17:02:00.3234679")
+    assert end == parse_timestamp("2025-06-14T17:04:00.3234679")
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
-    ("LEPA-LEPP-737.json", "2025-06-14T17:03:35.5975269", "2025-06-14T17:07:39.4791104"),
+    ("LEPA-LEPP-737.json", "2025-06-14T17:03:35.5975269", "2025-06-14T17:10:41.9052048"),
     ("LEPP-LEMG-737.json", "2025-06-14T23:26:04.9623655", "2025-06-14T23:46:28.9605062"),
-    ("LPMA-Circuits-737.json", "2025-06-02T21:17:25.7327066", "2025-06-02T21:39:57.7415421"),
+    ("LPMA-Circuits-737.json", "2025-06-02T21:17:25.7327066", "2025-06-02T21:43:03.7395263"),
     ("UHMA-PAOM-B350.json", "2025-06-15T21:57:38.5719388", "2025-06-15T22:16:58.5783802"),
     ("UHPT-UHMA-B350.json", "2025-06-15T17:58:20.8040915", "2025-06-15T18:12:32.8254948"),
     ("UHPT-UHMA-SF34.json", "2025-06-05T12:59:29.2149344", "2025-06-05T13:03:33.2361648"),
