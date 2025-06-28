@@ -73,11 +73,15 @@ def test_detect_shutdown_phase_from_real_files(filename, expected_start, expecte
 
     result = shutdown_detector.detect(events, None, None, context)
 
-    assert result is not None, f"Shutdown not detected in {filename}"
-    start, end = result
+    if expected_start != 'None' and expected_end != 'None':
+        assert result is not None, f"Shutdown not detected in {filename}"
+        start, end = result
 
-    expected_start_dt = parse_timestamp(expected_start)
-    expected_end_dt = parse_timestamp(expected_end)
+        expected_start_dt = parse_timestamp(expected_start)
+        expected_end_dt = parse_timestamp(expected_end)
 
-    assert start == expected_start_dt, f"Incorrect start for shutdown in {filename}"
-    assert end == expected_end_dt, f"Incorrect end for shutdown in {filename}"
+        assert start == expected_start_dt, f"Incorrect start for shutdown in {filename}"
+        assert end == expected_end_dt, f"Incorrect end for shutdown in {filename}"
+
+    else:
+        assert result is None, f"Shutdown shouldn't been detected in {filename}"

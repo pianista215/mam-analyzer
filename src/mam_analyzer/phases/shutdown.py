@@ -4,7 +4,9 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.detector import Detector
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.utils.search import find_first_index_backward
+from mam_analyzer.utils.engines import all_engines_are_off,get_engine_status
+from mam_analyzer.utils.search import find_first_index_backward,find_first_index_backward_starting_from_idx
+from mam_analyzer.utils.units import coords_differ
 
 class ShutdownDetector(Detector):
     def detect(
@@ -16,49 +18,69 @@ class ShutdownDetector(Detector):
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period with the plane in the position where the shutdown of the engines happens"""
 
-        # Step 1 check if engines are stopped in the last 3 minutes events
-        last_event_timestamp = events[len(events) - 1].timestamp 
-        delta = last_event_timestamp + timedelta(minutes=-3)
+        # Step 1 check if engines are stopped at the end
+        # Look for the last full event to check status
+        # Iterate over the rest index to see if the status is changed
+        def fullEvent(e: FlightEvent) -> bool:
+            return e.is_full_event()
 
-        def enginesOff(e: FlightEvent) -> bool:
-            return e.has_started_engines == False
-
-        found_stopped = find_first_index_backward(
+        last_full_event_found = find_first_index_backward(
             events,
-            enginesOff,
-            delta,
+            fullEvent,
+            from_time,
             to_time
         )
 
-        if found_stopped is None:
+        if last_full_event_found is None:
             return None # No shutdown detected
         else:
-            stopped_idx, stopped_event = found_stopped
+            last_full_idx, last_full_event = last_full_event_found
+        
+        engine_status = get_engine_status(last_full_event)
 
+        for idx in range(last_full_idx, len(events)):
+            event = events[idx]
+            for k,v in event.other_changes.items():
+                if k.startsWith("Engine "):
+                    engine_num = int(k[7:])
+                    engine_status[engine_num] = v
 
+        if not all_engines_are_off(last_full_event):
+                return None # The engines aren't off so no shutdown detected
 
+        # Step 2: get the first event backward with different location
+        shutdown_lat = last_full_event.latitude
+        shutdown_lon = last_full_event.longitude
 
-        start_time = None
-        last_lat = None
-        last_lon = None
-        last_timestamp = None
+        print(f"Lat {shutdown_lat} lon {shutdown_lon}")
+        print(last_full_idx)
 
-        for event in reversed(events):
-            ts = event.timestamp
-            
-            if last_timestamp is None:
-                last_timestamp = ts
+        def eventDiffLocation(e: FlightEvent) -> bool:
+            return (
+                e.latitude is not None and 
+                e.longitude is not None and 
+                (
+                    coords_differ(e.latitude, shutdown_lat) or
+                    coords_differ(e.longitude, shutdown_lon)
+                )
+            )
 
-            if last_lat is None and last_lon is None:
-                if event.latitude is not None and event.longitude is not None:
-                    last_lat = event.latitude
-                    last_lon = event.longitude
-                    start_time = ts
-            else:
-                if event.latitude is not None and event.longitude is not None:
-                    if last_lat != event.latitude or last_lon != event.longitude:
-                        return (start_time, last_timestamp)
-                    else:
-                        start_time = ts
+        last_diff_loc_event = find_first_index_backward_starting_from_idx(
+            events,
+            last_full_idx - 1,
+            eventDiffLocation,
+            from_time,
+            to_time
+        )
 
-        return None
+        print(last_diff_loc_event)
+
+        if last_diff_loc_event is None:
+            # Start is first event from from_time
+            # TODO: Check how to make that, is strange if we found this situation
+            None
+        else:
+            start_diff_idx,_ = last_diff_loc_event
+            start_shutdown = events[start_diff_idx + 1].timestamp
+            end_shutdown = events[len(events) - 1].timestamp
+            return start_shutdown,end_shutdown

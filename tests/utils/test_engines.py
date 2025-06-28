@@ -3,54 +3,60 @@ import pytest
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.engines import get_engine_status,all_engines_are_on,all_engines_are_off,some_engine_is_on,some_engine_is_off
 
+BASE_CHANGES_FULL_EVENT = {
+    "Latitude": "32,69286",
+    "Longitude": "-16,7776",
+    "onGround": "True",
+    "Altitude": "190",
+    "AGLAltitude": "0",
+    "Altimeter": "-74",
+    "VSFpm": "0",
+    "Heading": "140",
+    "GSKnots": "0",
+    "IASKnots": "0",
+    "QNHSet": "1013",
+    "Flaps": "0",
+    "Gear": "Down",
+    "FuelKg": "9535,299668470565",
+    "Squawk": "2000",
+    "AP": "Off",
+}
+
+def make_full_event(extra_changes: dict[str, str]) -> FlightEvent:
+    changes = BASE_CHANGES_FULL_EVENT.copy()
+    changes.update(extra_changes)
+    return FlightEvent.from_json({
+        "Timestamp": "2025-01-01T12:00:00Z",
+        "Changes": changes,
+    })
 
 @pytest.fixture
 def empty_event() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z"
-    })
+    return make_full_event({})    
 
 @pytest.fixture
 def single_motor_on() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "On"},
-    })
+    return make_full_event({"Engine 1": "On"})
 
 @pytest.fixture
 def single_motor_off() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "Off"},
-    })
+    return make_full_event({"Engine 1": "Off"})
 
 @pytest.fixture
 def multi_motor_all_on() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "On", "Engine 2": "On",},
-    }) 
+    return make_full_event({"Engine 1": "On", "Engine 2": "On"})
 
 @pytest.fixture
 def multi_motor_all_off() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "Off", "Engine 2": "Off",},
-    }) 
+    return make_full_event({"Engine 1": "Off", "Engine 2": "Off"})
 
 @pytest.fixture
 def multi_motor_mix_order1() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "Off", "Engine 2": "On",},
-    })
+    return make_full_event({"Engine 1": "Off", "Engine 2": "On"})
 
 @pytest.fixture
 def multi_motor_mix_order2() -> FlightEvent:
-    return FlightEvent.from_json({
-        "Timestamp": "2025-01-01T12:00:00Z",
-        "Changes": {"Engine 1": "On", "Engine 2": "Off",},
-    })         
+    return make_full_event({"Engine 1": "On", "Engine 2": "Off"})
 
 def tests_functions_on_empty_event(empty_event):
     assert get_engine_status(empty_event) == []
