@@ -16,13 +16,68 @@ def shutdown_detector():
 def context():
     return FlightDetectorContext()
 
-def test_detect_shutdown_phase_synthetic(shutdown_detector, context):
+def test_no_detect_shutdown_phase_synthetic(shutdown_detector, context):
     raw_events = [
         {"Timestamp": "2025-06-14T17:10:00.000000", "Changes": {"Latitude": "39,020", "Longitude": "2,000"}},
         {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Flaps": "0"}},
         {"Timestamp": "2025-06-14T17:13:00.000000", "Changes": {"Latitude": "39,005", "Longitude": "2,000"}},
         {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
-        {"Timestamp": "2025-06-14T17:15:00.000000", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}}, # start & end
+        {"Timestamp": "2025-06-14T17:15:00.000000", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}},
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = shutdown_detector.detect(events, None, None, context)
+    assert result is None
+
+def test_detect_shutdown_full_event_single_engine(shutdown_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Latitude": "39,020", 
+                "Longitude": "2,000",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Flaps": "0"}},
+        {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
     ]
 
     events = [FlightEvent.from_json(e) for e in raw_events]
@@ -30,20 +85,123 @@ def test_detect_shutdown_phase_synthetic(shutdown_detector, context):
     result = shutdown_detector.detect(events, None, None, context)
     assert result is not None
     start, end = result
-    assert start == parse_timestamp("2025-06-14T17:15:00.000000")
-    assert end == parse_timestamp("2025-06-14T17:15:00.000000")
+    assert start == parse_timestamp("2025-06-14T17:11:00.000000")
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
 
-
-def test_detect_shutdown_phase_synthetic_multiple_events_same_place(shutdown_detector, context):
+def test_detect_shutdown_full_event_multi_engine(shutdown_detector, context):
     raw_events = [
-        {"Timestamp": "2025-06-14T17:09:00.000000", "Changes": {"Latitude": "38,000", "Longitude": "2,000"}},
-        {"Timestamp": "2025-06-14T17:10:00.000000", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}}, # start
-        {"Timestamp": "2025-06-14T17:11:00.000000", "Changes": {"Flaps": "0"}},
-        {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Engine 1": "Off"}},
-        {"Timestamp": "2025-06-14T17:12:10.000000", "Changes": {"Engine 2": "Off"}},
-        {"Timestamp": "2025-06-14T17:13:00.000000", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}},
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Latitude": "39,020", 
+                "Longitude": "2,000",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "Off",
+                "Engine 2": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Flaps": "0"}},
         {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
-        {"Timestamp": "2025-06-14T17:15:00.000000", "Changes": {"Latitude": "39,000", "Longitude": "2,000"}}, # end
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = shutdown_detector.detect(events, None, None, context)
+    assert result is not None
+    start, end = result
+    assert start == parse_timestamp("2025-06-14T17:11:00.000000")
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000")     
+
+def test_detect_shutdown_changes_single_engine(shutdown_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:09:00.000000", 
+            "Changes": {
+                "Latitude": "39,010", 
+                "Longitude": "2,050",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Engine 1": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Flaps": "0"}},
+        {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
     ]
 
     events = [FlightEvent.from_json(e) for e in raw_events]
@@ -52,7 +210,219 @@ def test_detect_shutdown_phase_synthetic_multiple_events_same_place(shutdown_det
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:10:00.000000")
-    assert end == parse_timestamp("2025-06-14T17:15:00.000000")    
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
+
+def test_detect_shutdown_changes_multi_engine(shutdown_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:09:00.000000", 
+            "Changes": {
+                "Latitude": "39,010", 
+                "Longitude": "2,050",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Engine 1": "Off",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:12:00.000000", 
+            "Changes": {
+                "Engine 2": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:13:00.000000", "Changes": {"Flaps": "0"}},
+        {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = shutdown_detector.detect(events, None, None, context)
+    assert result is not None
+    start, end = result
+    assert start == parse_timestamp("2025-06-14T17:10:00.000000")
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000")
+
+
+def test_detect_engine_failure_landing_shutdown(shutdown_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:09:00.000000", 
+            "Changes": {
+                "Latitude": "39,010", 
+                "Longitude": "2,050",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "Off",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "Off",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Engine 1": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:13:00.000000", "Changes": {"Flaps": "0"}},
+        {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = shutdown_detector.detect(events, None, None, context)
+    assert result is not None
+    start, end = result
+    assert start == parse_timestamp("2025-06-14T17:10:00.000000")
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
+
+def test_detect_engine_shutdown_slow(shutdown_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:05:00.000000", 
+            "Changes": {
+                "Latitude": "39,010", 
+                "Longitude": "2,050",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:07:00.000000", 
+            "Changes": {
+                "Engine 1": "Off",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:10:00.000000", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "Off",
+                "Engine 2": "On",
+            }
+        },
+        {
+            "Timestamp": "2025-06-14T17:11:00.000000", 
+            "Changes": {
+                "Engine 2": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:13:00.000000", "Changes": {"Flaps": "0"}},
+        {"Timestamp": "2025-06-14T17:14:00.000000", "Changes": {"Squawk": "1234"}},
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = shutdown_detector.detect(events, None, None, context)
+    assert result is not None
+    start, end = result
+    assert start == parse_timestamp("2025-06-14T17:07:00.000000")
+    assert end == parse_timestamp("2025-06-14T17:14:00.000000")                
+
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
     ("LEPA-LEPP-737.json", "2025-06-14T18:26:59.8779366", "2025-06-14T18:29:23.9003458"),
