@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.detector import Detector
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.utils.engines import all_engines_are_off,get_engine_status
+from mam_analyzer.utils.engines import all_engines_are_off_from_status,get_engine_status
 from mam_analyzer.utils.search import find_first_index_backward,find_first_index_backward_starting_from_idx
 from mam_analyzer.utils.units import coords_differ
 
@@ -41,12 +41,13 @@ class ShutdownDetector(Detector):
         for idx in range(last_full_idx, len(events)):
             event = events[idx]
             for k,v in event.other_changes.items():
-                if k.startsWith("Engine "):
+                if k.startswith("Engine "):
                     engine_num = int(k[7:])
-                    engine_status[engine_num] = v
+                    engine_status[engine_num - 1] = v
 
-        if not all_engines_are_off(last_full_event):
-                return None # The engines aren't off so no shutdown detected
+        print(f"Engine status {engine_status}")
+        if not all_engines_are_off_from_status(engine_status):
+            return None # The engines aren't off so no shutdown detected
 
         # Step 2: get the first event backward with different location
         shutdown_lat = last_full_event.latitude

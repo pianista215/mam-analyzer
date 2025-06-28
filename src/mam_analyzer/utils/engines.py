@@ -23,9 +23,9 @@ def all_engines_are_on_from_status(status: List[str]) -> bool:
 	return all(state == "On" for state in status)	
 
 def all_engines_are_off(e: FlightEvent) -> bool:
-	return all_engines_are_of_from_status(get_engine_status(e))
+	return all_engines_are_off_from_status(get_engine_status(e))
 
-def all_engines_are_of_from_status(status: List[str]) -> bool:
+def all_engines_are_off_from_status(status: List[str]) -> bool:
 	return all(state == "Off" for state in status)		
 
 def some_engine_is_on(e: FlightEvent) -> bool:
