@@ -82,6 +82,99 @@ def test_detect_engine_start_phase_synthetic_single(startup_detector, context):
     assert start == parse_timestamp("2025-06-14T17:00:00.1234567")
     assert end == parse_timestamp("2025-06-14T17:04:00.3234679")
 
+def test_detect_engine_start_phase_synthetic_multi(startup_detector, context):
+    raw_events = [
+        {
+            "Timestamp": "2025-06-14T17:00:00.1234567", 
+            "Changes": {
+                "Latitude": "39,070", 
+                "Longitude": "2,080",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "Off",
+                "Engine 2": "Off",
+            },
+        },
+        {"Timestamp": "2025-06-14T17:01:00.23478", "Changes": {"Squawk": "1234"}},
+        {"Timestamp": "2025-06-14T17:02:00.3234679", "Changes": {"Flaps": "49"}},
+        {"Timestamp": "2025-06-14T17:03:00.3234679", "Changes": {"Engine 1": "On"}},
+        {
+            "Timestamp": "2025-06-14T17:04:00.3234679", 
+            "Changes": {
+                "Latitude": "39,072", 
+                "Longitude": "2,081",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "Off",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:05:00.3234679", "Changes": {"Engine 2": "On"}},
+        {
+            "Timestamp": "2025-06-14T17:06:00.3234679", 
+            "Changes": {
+                "Latitude": "39,077", 
+                "Longitude": "2,082",
+                "onGround": "True",
+                "Altitude": "190",
+                "AGLAltitude": "0",
+                "Altimeter": "-74",
+                "VSFpm": "0",
+                "Heading": "140",
+                "GSKnots": "0",
+                "IASKnots": "0",
+                "QNHSet": "1013",
+                "Flaps": "0",
+                "Gear": "Down",
+                "FuelKg": "9535,299668470565",
+                "Squawk": "2000",
+                "AP": "Off",
+                "Engine 1": "On",
+                "Engine 2": "On",
+            }
+        },
+        {"Timestamp": "2025-06-14T17:05:00.3234679", "Changes": {"QNHSet": "1012"}},
+        {
+            "Timestamp": "2025-06-14T17:07:00.3234679", 
+            "Changes": {
+                "Latitude": "39,079",
+                "Longitude": "2,081",
+            }
+        },
+    ]
+
+    events = [FlightEvent.from_json(e) for e in raw_events]
+
+    result = startup_detector.detect(events, None, None, context)
+    assert result is not None
+    start, end = result
+    assert start == parse_timestamp("2025-06-14T17:00:00.1234567")
+    assert end == parse_timestamp("2025-06-14T17:05:00.3234679")    
+
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
     ("LEPA-LEPP-737.json", "2025-06-14T17:03:35.5975269", "2025-06-14T17:10:41.9052048"),
     ("LEPP-LEMG-737.json", "2025-06-14T23:26:04.9623655", "2025-06-14T23:46:28.9605062"),
