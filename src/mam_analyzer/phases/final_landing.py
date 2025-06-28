@@ -21,7 +21,27 @@ class FinalLandingDetector(Detector):
         landing_start = None
         landing_end = None
 
-        # Step 1: First event with LandingVSFpm from backward
+        # Step 1: Ensure the aircraft is on ground at the end of the flight
+        def lastFullEvent(e: FlightEvent) -> bool:
+            return e.is_full_event()
+
+        found_last_full_event = find_first_index_backward(
+            events,
+            lastFullEvent,
+            from_time,
+            to_time
+        )
+
+        if found_last_full_event is None:
+            # Weird there should be enough full events
+            return None
+        else:
+            _, last_full_event = found_last_full_event
+            if last_full_event.on_ground != True:
+                return None
+
+
+        # Step 2: First event with LandingVSFpm from backward
         def withLandingVSFpm(e: FlightEvent) -> bool:
             return e.other_changes.get("LandingVSFpm") is not None
 
@@ -39,7 +59,7 @@ class FinalLandingDetector(Detector):
             touch_heading = landing_event.heading
             landing_start = landing_event.timestamp
 
-        # Step 2: Detect possible double bounces look in previous 10 seconds was another touch
+        # Step 3: Detect possible double bounces look in previous 10 seconds was another touch
         delta = landing_start + timedelta(seconds=-10)
 
         found_bounce = find_first_index_backward_starting_from_idx(
@@ -57,9 +77,7 @@ class FinalLandingDetector(Detector):
             landing_start = landing_event.timestamp
 
 
-        # Step 3: Look for the end of the landing until heading variate from touch_idx
-        # TODO: Needed limit of time or check speed?
-
+        # Step 4: Look for the end of the landing until heading variate from touch_idx
         def headingOutOfRange(e: FlightEvent) -> bool:
             return (
                 e.heading is not None 

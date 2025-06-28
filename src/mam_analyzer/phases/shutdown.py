@@ -72,8 +72,8 @@ class ShutdownDetector(Detector):
         )
 
         if last_diff_loc_event is None:
-            # Start is first event from from_time
-            # TODO: Check how to make that, is strange if we found this situation
+            # Start is first event of the flight 
+            # so a flight without takeoff and landing shouldn't be considered
             None
         else:
             start_diff_idx,_ = last_diff_loc_event
