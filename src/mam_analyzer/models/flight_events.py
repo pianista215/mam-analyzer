@@ -16,7 +16,10 @@ class FlightEvent:
     longitude: Optional[float] = None
 
     # Other changes not so important to trace
-    changes_raw: Dict[str, str] = None
+    other_changes: Dict[str, str] = None
+
+    def is_full_event(self) -> bool:
+        return len(self.other_changes) > 10
 
     @staticmethod
     def from_json(event: Dict[str, Any]) -> "FlightEvent":
@@ -34,7 +37,7 @@ class FlightEvent:
             try:
                 return int(val)
             except ValueError:
-                return None
+                return None        
 
         return FlightEvent(
             timestamp=ts,
@@ -44,5 +47,5 @@ class FlightEvent:
             heading=parse_int(changes.get("Heading")),
             flaps=parse_int(changes.get("Flaps")),
             gear=changes.get("Gear"),
-            changes_raw=changes
+            other_changes=changes
         )

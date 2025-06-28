@@ -2795,6 +2795,7 @@
     {
       "Timestamp": "2025-06-02T22:04:09.7386262",
       "Changes": {
+        "LandingVSFpm": "-55",
         "Latitude": "32,69455",
         "Longitude": "-16,77864",
         "onGround": "True",
@@ -4179,6 +4180,7 @@
     {
       "Timestamp": "2025-06-02T22:13:43.7386248",
       "Changes": {
+        "LandingVSFpm": "-995",
         "Latitude": "32,6901",
         "Longitude": "-16,78361",
         "onGround": "True",
@@ -4225,6 +4227,7 @@
     {
       "Timestamp": "2025-06-02T22:13:47.7429671",
       "Changes": {
+        "LandingVSFpm": "-80",
         "Latitude": "32,69161",
         "Longitude": "-16,78173",
         "onGround": "True",

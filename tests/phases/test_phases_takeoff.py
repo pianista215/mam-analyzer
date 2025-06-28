@@ -42,8 +42,8 @@ def test_takeoff_with_flaps_zero_then_gear_up(detector, context):
     events = [
         make_event(base + timedelta(seconds=0), onGround=True, Heading=70),
         make_event(base + timedelta(seconds=5), onGround=True, Heading=90),
-        make_event(base + timedelta(seconds=10), onGround=True, Heading=120, Flaps=0, Gear="Down"),  # start
-        make_event(base + timedelta(seconds=15), onGround=False, Heading=122),
+        make_event(base + timedelta(seconds=10), onGround=True, Heading=120),  # start
+        make_event(base + timedelta(seconds=15), onGround=False, Heading=122, Flaps=0, Gear="Down"),
         make_event(base + timedelta(seconds=20), Heading=125),
         make_event(base + timedelta(seconds=25), Gear="Up"),  # end
     ]
@@ -61,7 +61,7 @@ def test_takeoff_with_no_flaps_or_gear_change_fallback_to_1min(detector, context
     ]
     start, end = detector.detect(events, None, None, context)
     assert start == base + timedelta(seconds=0)
-    assert end == base + timedelta(seconds=61)
+    assert end == base + timedelta(seconds=70)
 
 def test_takeoff_no_onGround_false_returns_none(detector, context):
     base = datetime(2025, 6, 17, 14, 0, 0)
@@ -75,12 +75,12 @@ def test_takeoff_no_onGround_false_returns_none(detector, context):
 
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
-    ("LEPA-LEPP-737.json", "2025-06-14T17:17:51.8989784", "2025-06-14T17:19:23.8887749"),
-    ("LEPP-LEMG-737.json", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9575364"),
-    ("LPMA-Circuits-737.json", "2025-06-02T21:48:07.7370288", "2025-06-02T21:49:49.7389212"),
+    ("LEPA-LEPP-737.json", "2025-06-14T17:17:35.879139", "2025-06-14T17:19:23.8899645"),
+    ("LEPP-LEMG-737.json", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9812455"),
+    ("LPMA-Circuits-737.json", "2025-06-02T21:47:57.7378043", "2025-06-02T21:49:51.7385484"),
     ("UHMA-PAOM-B350.json", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508"),
-    ("UHPT-UHMA-B350.json", "2025-06-15T18:17:38.8254324", "2025-06-15T18:18:16.828107"),
-    ("UHPT-UHMA-SF34.json", "2025-06-05T13:08:25.2219923", "2025-06-05T13:09:09.2296981"),
+    ("UHPT-UHMA-B350.json", "2025-06-15T18:17:20.8170341", "2025-06-15T18:18:16.828107"),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981"),
     ("UHSH-UHMM-B350.json", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
 ])    
 def test_detect_takeoff_phase_from_real_files(filename, expected_start, expected_end, detector, context):

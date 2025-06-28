@@ -1,9 +1,12 @@
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
-from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.detector import Detector
-from mam_analyzer.utils.parsing import parse_coordinate, parse_timestamp
+
 from mam_analyzer.context import FlightDetectorContext
+from mam_analyzer.detector import Detector
+from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.utils.engines import all_engines_are_off, all_engines_are_on
+from mam_analyzer.utils.search import find_first_index_forward,find_first_index_forward_starting_from_idx
+from mam_analyzer.utils.units import coords_differ
 
 class StartupDetector(Detector):
     def detect(
@@ -13,32 +16,56 @@ class StartupDetector(Detector):
         to_time: Optional[datetime],
         context: FlightDetectorContext,
     ) -> Optional[Tuple[datetime, datetime]]:
-        """Detect startup phase: from first event until location changes (plane moves)."""
-        start_time = None
-        prev_lat = None
-        prev_lon = None
-        last_timestamp = None
+        """Detect startup phase: from first event (if engines are off) until location changes after engines are on."""
+        # In this detector we are not using from_time or to_time
 
-        for event in events:
-            ts = event.timestamp
-            if from_time and ts < from_time:
-                continue
-            if to_time and ts > to_time:
-                break
+        first_event = events[0]
 
-            if start_time is None:
-                start_time = ts
+        # Step 1: Check we start from engines off
+        if not all_engines_are_off(first_event):
+            return None # No startup detected. Some engine was started
 
-            if event.latitude is not None and event.longitude is not None:
-                lat = event.latitude
-                lon = event.longitude
+        start_time = first_event.timestamp
 
-                if prev_lat is not None and (lat != prev_lat or lon != prev_lon):
-                    return (start_time, last_timestamp)
+        # Step 2: look for the first full event with all engines started
+        def firstFullEventBothStarted(e: FlightEvent) -> bool:
+            return e.is_full_event() and all_engines_are_on(e)
 
-                prev_lat = lat
-                prev_lon = lon
+        found_engines_started = find_first_index_forward(
+            events,
+            firstFullEventBothStarted,
+            from_time,
+            to_time
+        )
 
-            last_timestamp = ts
+        if found_engines_started is None:
+            return None
+        else:
+            engines_started_idx, engines_started_event = found_engines_started
+            started_lat = engines_started_event.latitude
+            started_lon = engines_started_event.longitude
 
-        return None
+        # Step 3: look for the first event with different location
+        def eventDiffLocation(e: FlightEvent) -> bool:
+            return (
+                e.latitude is not None and 
+                e.longitude is not None and 
+                (
+                    coords_differ(e.latitude, started_lat) or
+                    coords_differ(e.longitude, started_lon)
+                )
+            )
+
+        found_startup_end = find_first_index_forward_starting_from_idx(
+            events,
+            engines_started_idx,
+            eventDiffLocation,
+            from_time,
+            to_time
+        )
+
+        if found_startup_end is None: 
+            return start_time, events[len(events) - 1].timestamp #All events are startup
+        else:
+            end_idx, x = found_startup_end
+            return start_time, events[end_idx - 1].timestamp

@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.detector import Detector
-from mam_analyzer.utils.parsing import parse_coordinate, parse_timestamp
+from mam_analyzer.utils.search import find_first_index_forward,find_first_index_backward_starting_from_idx,find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import heading_within_range
 
 class TakeoffDetector(Detector):
@@ -22,62 +22,70 @@ class TakeoffDetector(Detector):
         takeoff_end = None
         flaps_at_takeoff = None
 
-        # TODO: RETURN EVENTS INSTEAD OF TIMESTAMP?
-        # TODO: USE ACCELERATION INSTEAD OF HEADING?
-
         # Step 1: First event on air (onGround=False)
-        for idx, event in enumerate(events):
-            if event.on_ground is not None and event.on_ground is False:
-                airborne_idx = idx
-                airborne_heading = event.heading
-                flaps_at_takeoff = event.flaps
-                break
+        def onAirCondition(e: FlightEvent)->bool:
+            return e.on_ground is False
 
-        if airborne_idx is None:
-            return None  # Takeoff not detected
+        found_airborne = find_first_index_forward(
+            events, 
+            onAirCondition, 
+            from_time, 
+            to_time
+        )
 
-        # Step 2: Look back until the last event with heading on range
-        for i in range(airborne_idx - 1, -1, -1):
-            back_event = events[i]
-            heading = back_event.heading
-            on_ground = back_event.on_ground
+        if found_airborne is None:
+            return None  # Takeoff not detected 
+        else:
+            airborne_idx, airborne_event = found_airborne
+            airborne_heading = airborne_event.heading
+            flaps_at_takeoff = airborne_event.flaps      
+        
 
-            if heading is None:
-                continue
+        # Step 2: Look backward for first event with heading out of range
+        def headingIsOutOfRange(e: FlightEvent)->bool:
+            return (
+                e.heading is not None
+                and not heading_within_range(e.heading, airborne_heading)
+            )
 
-            if on_ground is False:
-                break  # Not in ground
 
-            if not heading_within_range(heading, airborne_heading):
-                break  # Heading drastically changes
+        found_diff_heading = find_first_index_backward_starting_from_idx(
+            events,
+            airborne_idx - 1,
+            headingIsOutOfRange,
+            from_time,
+            to_time
+        )
 
-            takeoff_start = back_event.timestamp
-
-        if takeoff_start is None:
-            # If we don't find nothing use airbone event as first
-            takeoff_start = events[airborne_idx].timestamp
+        if found_diff_heading is None:
+            # If all previous events are in correct heading use first event
+            takeoff_start = events[0].timestamp
+        else:
+            diff_heading_idx, _ = found_diff_heading
+            takeoff_start = events[diff_heading_idx + 1].timestamp
             
         # Step 3: Look for the end of the takeoff phase from airbone_idx
         deadline = events[airborne_idx].timestamp + timedelta(minutes=1)
 
-        for event in events[airborne_idx + 1:]:
-            ts = event.timestamp
+        def lastTakeoffEvent(e: FlightEvent)->bool:
+            return (
+              flaps_at_takeoff != 0 and e.flaps == 0
+              or
+              flaps_at_takeoff == 0 and e.gear == "Up"
+            )
 
-            if ts <= deadline:
-                takeoff_end = ts
-            else:
-                break
+        found_takeoff_end = find_first_index_forward_starting_from_idx(
+            events,
+            airborne_idx,
+            lastTakeoffEvent,
+            from_time,
+            deadline
+        )
 
-
-            if flaps_at_takeoff and event.flaps is not None:
-                if event.flaps == 0:
-                    break
-
-            if flaps_at_takeoff == 0 and event.gear == "up":
-                break
-
-
-        if takeoff_end is None:
+        if found_takeoff_end is None:
             takeoff_end = deadline
+        else:
+            _, end_event = found_takeoff_end
+            takeoff_end = end_event.timestamp
 
         return takeoff_start, takeoff_end
