@@ -9,27 +9,17 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, Tuple, List
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.startup import StartupDetector
-from mam_analyzer.phases.takeoff import TakeoffDetector
-from mam_analyzer.phases.final_landing import FinalLandingDetector
-from mam_analyzer.phases.shutdown import ShutdownDetector
+from mam_analyzer.phases.phases_aggregator import FlightPhase, PhasesAggregator
 
 PHASE_COLORS = {
     "startup": "#00ccff",
     "takeoff": "#00ff00",
     "final_landing": "#ff9900",
     "shutdown": "#cc00cc",
+    "taxi": "yellow",
     "none": "#888888",
 }
-
-DETECTORS = [
-    ("startup", StartupDetector()),
-    ("takeoff", TakeoffDetector()),
-    ("final_landing", FinalLandingDetector()),
-    ("shutdown", ShutdownDetector()),
-]
 
 TEMPLATE_HTML = """
 <!DOCTYPE html>
@@ -89,24 +79,13 @@ TEMPLATE_HTML = """
 """
 
 
-def get_phase_ranges(events: List[FlightEvent], context: FlightDetectorContext):
-    phases = {}
-    for name, detector in DETECTORS:
-        try:
-            result = detector.detect(events, None, None, context)
-            if result:
-                phases[name] = result
-        except Exception as e:
-            print(f"[!] Error in detector {name}: {e}")
-    return phases
-
-def assign_phase(phases, event: FlightEvent) -> str:
-    for name, (start, end) in phases.items():
-        if start <= event.timestamp <= end:
-            return name
+def assign_phase(phases: List[FlightPhase], event: FlightEvent) -> str:
+    for phase in phases:
+        if phase.contains(event):
+            return phase.name
     return "none"
 
-def extract_segmented_coordinates(events: List[FlightEvent], phases: dict) -> List[dict]:
+def extract_segmented_coordinates(events: List[FlightEvent], phases: List[FlightPhase]) -> List[dict]:
     segments = []
     last_phase = None
     current_segment = []
@@ -153,8 +132,8 @@ def main():
         raw_events = raw_json["Events"]
         events = [FlightEvent.from_json(e) for e in raw_events]
 
-        context = FlightDetectorContext()
-        phases = get_phase_ranges(events, context)
+        aggregator = PhasesAggregator()
+        phases = aggregator.identify_phases(events)
 
         segments = extract_segmented_coordinates(events, phases)
         if not segments:
