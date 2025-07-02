@@ -16,6 +16,11 @@ class FlightPhase():
     start: datetime
     end: datetime
 
+    def contains(self, event: FlightEvent) -> bool:
+        """Return True if the event happens in this flight phase."""
+        return self.start <= event.timestamp <= self.end
+
+
 class PhasesAggregator:
     def __init__(self) -> None:
         # Un diccionario flexible para guardar estado entre fases

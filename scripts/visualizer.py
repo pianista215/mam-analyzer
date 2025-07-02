@@ -79,13 +79,13 @@ TEMPLATE_HTML = """
 """
 
 
-def assign_phase(phases, event: FlightEvent) -> str:
+def assign_phase(phases: List[FlightPhase], event: FlightEvent) -> str:
     for phase in phases:
-        if phase.start <= event.timestamp <= phase.end:
+        if phase.contains(event):
             return phase.name
     return "none"
 
-def extract_segmented_coordinates(events: List[FlightEvent], phases: dict) -> List[dict]:
+def extract_segmented_coordinates(events: List[FlightEvent], phases: List[FlightPhase]) -> List[dict]:
     segments = []
     last_phase = None
     current_segment = []
