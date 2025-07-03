@@ -56,7 +56,7 @@ class TouchAndGoDetector(Detector):
 
         if found_touch_event is None:
             return None
-        else
+        else:
             touch_idx, touch_event = found_touch_event
 
         touch_go_start = touch_event.timestamp
@@ -82,7 +82,7 @@ class TouchAndGoDetector(Detector):
 
         # Step 3: check there are no bounces in the next 20 seconds
         look_for_bounces = True
-        while possible_bounces:
+        while look_for_bounces:
             limit_bounce = airborne_event.timestamp + timedelta(seconds=20)
 
             found_bounce = find_first_index_forward_starting_from_idx(
@@ -111,7 +111,7 @@ class TouchAndGoDetector(Detector):
                 else:
                     airborne_idx, airborne_event = found_airborne
             else:
-                look_for_bounces = false
+                look_for_bounces = False
 
         # Step 4: Look for the end of the takeoff phase from airbone_idx
         deadline = airborne_event.timestamp + timedelta(minutes=1)

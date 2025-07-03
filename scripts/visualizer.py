@@ -16,6 +16,7 @@ PHASE_COLORS = {
     "startup": "#00ccff",
     "takeoff": "#00ff00",
     "final_landing": "#ff9900",
+    "touch_go": "purple",
     "shutdown": "#cc00cc",
     "taxi": "yellow",
     "none": "#888888",
