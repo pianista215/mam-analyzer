@@ -9,6 +9,7 @@ from mam_analyzer.phases.final_landing import FinalLandingDetector
 from mam_analyzer.phases.shutdown import ShutdownDetector
 from mam_analyzer.phases.startup import StartupDetector
 from mam_analyzer.phases.takeoff import TakeoffDetector
+from mam_analyzer.phases.touch_go import TouchAndGoDetector
 
 @dataclass
 class FlightPhase():
@@ -23,11 +24,41 @@ class FlightPhase():
 
 class PhasesAggregator:
     def __init__(self) -> None:
-        # Un diccionario flexible para guardar estado entre fases
         self.startup_detector = StartupDetector()
         self.takeoff_detector = TakeoffDetector()
+        self.touch_go_detector = TouchAndGoDetector()
         self.final_landing_detector = FinalLandingDetector()
         self.shutdown_detector = ShutdownDetector()
+
+    def __get_touch_go_phases(
+        self, 
+        events: List[FlightEvent],
+        takeoff_end: datetime, 
+        landing_start: datetime,
+        context: FlightDetectorContext
+    ) -> List[FlightPhase]:
+        
+        result = list()
+        curr_start = takeoff_end
+
+        while curr_start < landing_start:
+            found_touch_go = self.touch_go_detector.detect(
+                events, 
+                curr_start, 
+                landing_start, 
+                context
+            )
+
+            if found_touch_go is None:
+                curr_start = landing_start
+            else:
+                touch_go_start, touch_go_end = found_touch_go
+                touch_go_phase = FlightPhase("touch_go", touch_go_start, touch_go_end)
+                result.append(touch_go_phase)
+                curr_start = touch_go_end
+
+        return result
+
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
         context = FlightDetectorContext() # Not used for now
@@ -52,6 +83,16 @@ class PhasesAggregator:
         _takeoff_phase = FlightPhase("takeoff", _takeoff_start, _takeoff_end)
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = FlightPhase("final_landing", _landing_start, _landing_end)
+
+        _touch_go_phases = self.__get_touch_go_phases(
+            events, 
+            _takeoff_end, 
+            _landing_start,
+            context
+        )
+
+        for _touch_go in _touch_go_phases:
+            result.append(_touch_go)
 
         _startup = self.startup_detector.detect(events, None, None, context)
 
