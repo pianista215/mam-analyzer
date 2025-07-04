@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from mam_analyzer.detector import Detector
@@ -59,6 +59,15 @@ class PhasesAggregator:
 
         return result
 
+    def _generate_approach(self, touch_phase: FlightPhase)-> FlightPhase:
+        if touch_phase.name != "final_landing" and touch_phase.name != "touch_go":
+            raise RuntimeError("Final landing or touch_go expected to generate approach")
+
+        # Approach starts 3 minutes before touch
+        app_start = touch_phase.start + timedelta(seconds=-180)
+        app_phase = FlightPhase("approach", app_start, touch_phase.start)
+        return app_phase 
+
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
         context = FlightDetectorContext() # Not used for now
@@ -84,16 +93,6 @@ class PhasesAggregator:
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = FlightPhase("final_landing", _landing_start, _landing_end)
 
-        _touch_go_phases = self.__get_touch_go_phases(
-            events, 
-            _takeoff_end, 
-            _landing_start,
-            context
-        )
-
-        for _touch_go in _touch_go_phases:
-            result.append(_touch_go)
-
         _startup = self.startup_detector.detect(events, None, None, context)
 
         if _startup is None:
@@ -111,6 +110,20 @@ class PhasesAggregator:
                 result.append(FlightPhase("taxi", _startup_end, _takeoff_start))
 
         result.append(_takeoff_phase)
+
+        _touch_go_phases = self.__get_touch_go_phases(
+            events, 
+            _takeoff_end, 
+            _landing_start,
+            context
+        )
+
+        # Consider approach the last 3 minutes before landing
+        for _touch_go in _touch_go_phases:
+            result.append(self._generate_approach(_touch_go))
+            result.append(_touch_go)
+
+        result.append(self._generate_approach(_landing_phase))
         result.append(_landing_phase)
 
         _shutdown = self.shutdown_detector.detect(events, None, None, context)
