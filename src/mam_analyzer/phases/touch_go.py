@@ -23,7 +23,7 @@ class TouchAndGoDetector(Detector):
         """
 
         if from_time is None or to_time is None:
-            raise("TouchAndGoDetector must have from_time and to_time")
+            raise RuntimeError("TouchAndGoDetector must have from_time and to_time")
 
 
         # TODO: Pass events already filtered from from_time? or pass start index?
