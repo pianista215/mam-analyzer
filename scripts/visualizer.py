@@ -20,6 +20,7 @@ PHASE_COLORS = {
     "shutdown": "#cc00cc",
     "taxi": "yellow",
     "none": "#888888",
+    "approach": "red",
 }
 
 TEMPLATE_HTML = """
