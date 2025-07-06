@@ -21,6 +21,7 @@ PHASE_COLORS = {
     "taxi": "yellow",
     "none": "#888888",
     "approach": "red",
+    "cruise": "blue",
 }
 
 TEMPLATE_HTML = """
@@ -128,6 +129,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for json_file in data_dir.glob("*.json"):
+        print(f"Generating: {json_file}:")
         with open(json_file, "r") as f:
             raw_json = json.load(f)
 
@@ -151,7 +153,7 @@ def main():
         with open(output_file, "w") as f:
             f.write(html_content)
 
-        print(f"[✓] Generated: {output_file}")
+        print(f"[✓] Generated: {output_file}\n")
 
 if __name__ == "__main__":
     main()
