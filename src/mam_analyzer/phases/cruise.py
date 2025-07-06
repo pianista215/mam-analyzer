@@ -36,9 +36,8 @@ class CruiseDetector(Detector):
 
                 e_altitude = e.other_changes.get("Altitude")
                 if e_altitude is not None:
-                    norm_alt = round(int(e_altitude) / 1000) * 1000 # Round to nearest 1000ft altitude
-                    if norm_alt > high_altitude:
-                        high_altitude = norm_alt
+                    if int(e_altitude) > high_altitude:
+                        high_altitude = int(e_altitude)
                         high_altitude_agl = int(e.other_changes.get("AGLAltitude"))
                         high_altitude_first_event_idx = idx
 
@@ -62,10 +61,8 @@ class CruiseDetector(Detector):
 
         # Look backwards and forward from the event to see when starts and ends
         def outOfCruise(e: FlightEvent) -> bool:
-            return (
-                e.other_changes.get("Altitude") is not None 
-                and (high_altitude - int(e.other_changes.get("Altitude")) > margin_altitude)
-            )
+            e_alt = e.other_changes.get("Altitude")
+            return e_alt is not None and abs(high_altitude - int(e_alt)) > margin_altitude
 
         found_start = find_first_index_backward_starting_from_idx(
             events,
@@ -87,12 +84,12 @@ class CruiseDetector(Detector):
         end_cruise_time = to_time
 
         if found_start is not None:
-            _, start_event = found_start
-            start_cruise_time = start_event.timestamp
+            start_idx, _ = found_start
+            start_cruise_time = events[start_idx + 1].timestamp
 
         if found_end is not None:
-            _, end_event = found_end
-            end_cruise_time = end_event.timestamp
+            end_idx, _ = found_end
+            end_cruise_time = events[end_idx - 1].timestamp
 
         diff = end_cruise_time - start_cruise_time
 
