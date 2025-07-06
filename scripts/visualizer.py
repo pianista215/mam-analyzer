@@ -21,6 +21,7 @@ PHASE_COLORS = {
     "taxi": "yellow",
     "none": "#888888",
     "approach": "red",
+    "cruise": "blue",
 }
 
 TEMPLATE_HTML = """
