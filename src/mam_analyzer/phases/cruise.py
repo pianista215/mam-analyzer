@@ -56,7 +56,7 @@ class CruiseDetector(Detector):
         elif high_altitude_agl > 7000:
             margin_altitude = 2000
         else:
-            margin_altitude = 10000
+            margin_altitude = 1000
 
         print(f"Margin altitude {margin_altitude} for high {high_altitude} (AGL {high_altitude_agl})")
 
@@ -94,7 +94,12 @@ class CruiseDetector(Detector):
             _, end_event = found_end
             end_cruise_time = end_event.timestamp
 
-        return start_cruise_time, end_cruise_time
+        diff = end_cruise_time - start_cruise_time
+
+        if diff > timedelta(minutes = 7):
+            return start_cruise_time, end_cruise_time
+        else:
+            return None
 
 
                 
