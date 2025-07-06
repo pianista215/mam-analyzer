@@ -22,6 +22,8 @@ class FlightPhase():
         """Return True if the event happens in this flight phase."""
         return self.start <= event.timestamp <= self.end
 
+    def __str__(self):
+        return f"{self.name}: {self.start} → {self.end}"
 
 class PhasesAggregator:
     def __init__(self) -> None:
@@ -113,7 +115,7 @@ class PhasesAggregator:
 
         result.append(_takeoff_phase)
 
-        # Generate cruise between takeoff and touch_goes and final_landing
+        # Generate cruise between takeoff and touch_goes apps and final_landing apps
 
         _touch_go_phases = self.__get_touch_go_phases(
             events, 
@@ -122,25 +124,34 @@ class PhasesAggregator:
             context
         )
 
-        if len(_touch_go_phases) == 0:
+        # Generate last approach for final_landing
+        _last_landing_app = self._generate_approach(_landing_phase)
+
+        if len(_touch_go_phases) == 0:   
+            
             found_cruise = self.cruise_detector.detect(
                 events,
                 _takeoff_end,
-                _landing_start,
+                _last_landing_app.start,
                 context
             )
+
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
                 result.append(cruise_phase)
+
         else:
             look_for_cruise_start = _takeoff_end
+
             for _touch_go in _touch_go_phases:
-                _touch_go_start = _touch_go.start
+
+                _touch_go_app = self._generate_approach(_touch_go)
+
                 found_cruise = self.cruise_detector.detect(
                     events,
                     look_for_cruise_start,
-                    _touch_go_start,
+                    _touch_go_app.start,
                     context
                 )
                 if found_cruise is not None:
@@ -148,15 +159,15 @@ class PhasesAggregator:
                     cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
                     result.append(cruise_phase)
 
-                result.append(self._generate_approach(_touch_go))
+                result.append(_touch_go_app)
                 result.append(_touch_go)
                 look_for_cruise_start = _touch_go.end
 
-            # Add cruise part from last_touch_go and landing
+            # Add cruise part from last_touch_go to last_landing_app start
             found_cruise = self.cruise_detector.detect(
                 events,
                 look_for_cruise_start,
-                _landing_start,
+                _last_landing_app.start,
                 context
             )
             if found_cruise is not None:
@@ -164,8 +175,8 @@ class PhasesAggregator:
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
                 result.append(cruise_phase)
 
-        # Generate last approach for final_landing
-        result.append(self._generate_approach(_landing_phase))
+        # Once cruise and touch and goes apps are computed, add app and landing
+        result.append(_last_landing_app)
         result.append(_landing_phase)
 
         _shutdown = self.shutdown_detector.detect(events, None, None, context)
@@ -184,6 +195,9 @@ class PhasesAggregator:
                 result.append(FlightPhase("taxi", _landing_end, _shutdown_start))
 
             result.append(_shutdown_phase)
+
+        for phase in result:
+            print(phase)
 
         return result
 

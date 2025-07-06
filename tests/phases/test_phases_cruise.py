@@ -184,9 +184,9 @@ def test_cruise_detected_above_3000_ft_agl(detector, context):
     (
         "LEBB-touchgoLEXJ-LEAS.json", 
         "2025-07-04T22:48:17.3083458", 
-        "2025-07-04T23:07:23.315419", 
+        "2025-07-04T23:04:23.315419", 
         "2025-07-04T22:48:17.3083458", 
-        "2025-07-04T23:05:23.3235357"
+        "2025-07-04T23:04:23.315419"
     ),
     (
         "LEBB-touchgoLEXJ-LEAS.json", 
