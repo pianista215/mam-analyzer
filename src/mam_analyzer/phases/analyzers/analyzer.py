@@ -1,19 +1,25 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 
 class Analyzer(ABC):
-    phase_name: str 
-
     @abstractmethod
-    def detect(
+    def analyze(
         self,
         events: List[FlightEvent],
-        start_time: datetime,
-        end_time: datetime
-    ) -> Optional[Tuple[datetime, datetime]]:
-        """Detect phase between `start_time` and `end_time` from `events`.
-        Return (start, end) or None if phase is not detected."""
+        start_idx: int,
+        end_idx: int
+    ) -> List[Tuple[str, str]]:
+        """
+        Analyze the phase of flight that begins at `start_idx` and ends at `end_idx`,
+        using the subset of `events` that occurred within this interval.
+
+        Returns a list of (name, value) pairs, where both elements are strings,
+        representing the metrics or results extracted from the analyzed phase.
+
+        Example:
+            [("Fuel consumed", "200 Kg"),
+             ("Max VS", "-200 fpm")]
+        """
         pass

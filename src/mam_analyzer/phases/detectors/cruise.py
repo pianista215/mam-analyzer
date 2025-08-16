@@ -32,7 +32,7 @@ class CruiseDetector(Detector):
 
             if e.timestamp >= from_time and e.timestamp <= to_time:
 
-                e_altitude = e.other_changes.get("Altitude")
+                e_altitude = e.other_changes.get("Altitude") # TODO: Use altitude utils
                 if e_altitude is not None:
                     if int(e_altitude) > high_altitude:
                         high_altitude = int(e_altitude)

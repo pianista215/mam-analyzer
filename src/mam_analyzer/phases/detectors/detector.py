@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.models.flight_events import FlightEvent
 
 class Detector(ABC):
-    phase_name: str 
+    phase_name: str # TODO: Check, is not used
 
     @abstractmethod
     def detect(
