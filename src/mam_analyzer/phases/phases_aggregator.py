@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
@@ -39,7 +38,6 @@ class PhasesAggregator:
         events: List[FlightEvent],
         takeoff_end: datetime, 
         landing_start: datetime,
-        context: FlightDetectorContext
     ) -> List[FlightPhase]:        
         result = list()
         curr_start = takeoff_end
@@ -49,7 +47,6 @@ class PhasesAggregator:
                 events, 
                 curr_start, 
                 landing_start, 
-                context
             )
 
             if found_touch_go is None:
@@ -74,17 +71,16 @@ class PhasesAggregator:
 
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
-        context = FlightDetectorContext() # Not used for now
         result = list()
 
         # First check that the flight has takeoff and landing
-        _takeoff = self.takeoff_detector.detect(events, None, None, context)
+        _takeoff = self.takeoff_detector.detect(events, None, None)
 
         if _takeoff is None:
             print("No takeoff found")
             return result
 
-        _landing = self.final_landing_detector.detect(events, None, None, context)
+        _landing = self.final_landing_detector.detect(events, None, None)
 
         if _landing is None:
             print("No landing detected")
@@ -97,7 +93,7 @@ class PhasesAggregator:
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = FlightPhase("final_landing", _landing_start, _landing_end)
 
-        _startup = self.startup_detector.detect(events, None, None, context)
+        _startup = self.startup_detector.detect(events, None, None)
 
         if _startup is None:
             first_timestamp = events[0].timestamp
@@ -121,7 +117,6 @@ class PhasesAggregator:
             events, 
             _takeoff_end, 
             _landing_start,
-            context
         )
 
         # Generate last approach for final_landing
@@ -132,8 +127,7 @@ class PhasesAggregator:
             found_cruise = self.cruise_detector.detect(
                 events,
                 _takeoff_end,
-                _last_landing_app.start,
-                context
+                _last_landing_app.start
             )
 
             if found_cruise is not None:
@@ -151,8 +145,7 @@ class PhasesAggregator:
                 found_cruise = self.cruise_detector.detect(
                     events,
                     look_for_cruise_start,
-                    _touch_go_app.start,
-                    context
+                    _touch_go_app.start
                 )
                 if found_cruise is not None:
                     cruise_start, cruise_end = found_cruise
@@ -167,8 +160,7 @@ class PhasesAggregator:
             found_cruise = self.cruise_detector.detect(
                 events,
                 look_for_cruise_start,
-                _last_landing_app.start,
-                context
+                _last_landing_app.start
             )
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
@@ -179,7 +171,7 @@ class PhasesAggregator:
         result.append(_last_landing_app)
         result.append(_landing_phase)
 
-        _shutdown = self.shutdown_detector.detect(events, None, None, context)
+        _shutdown = self.shutdown_detector.detect(events, None, None)
 
         if _shutdown is None:
             last_timestamp = events[len(events) - 1].timestamp

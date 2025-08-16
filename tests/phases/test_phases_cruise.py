@@ -3,7 +3,6 @@ import json
 import os
 import pytest
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -20,11 +19,7 @@ def make_event(timestamp, **changes):
 def detector():
     return CruiseDetector()
 
-@pytest.fixture
-def context():
-    return FlightDetectorContext()
-
-def test_no_cruise_due_to_low_agl_altitude(detector, context):
+def test_no_cruise_due_to_low_agl_altitude(detector):
     base = datetime(2025, 7, 5, 10, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=10)
@@ -32,11 +27,11 @@ def test_no_cruise_due_to_low_agl_altitude(detector, context):
         make_event(base + timedelta(seconds=i * 30), Altitude=2000, AGLAltitude=1000)
         for i in range(20)
     ]
-    result = detector.detect(events, from_time, to_time, context)
+    result = detector.detect(events, from_time, to_time)
     assert result is None    
 
 
-def test_cruise_detected_above_10000_ft_agl(detector, context):
+def test_cruise_detected_above_10000_ft_agl(detector):
     base = datetime(2025, 7, 5, 11, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=10)
@@ -60,12 +55,12 @@ def test_cruise_detected_above_10000_ft_agl(detector, context):
             events.append(
                 make_event(seconds, Altitude = 24000, AGLAltitude = 22000) # end
             )
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(minutes = 2)
     assert end == base + timedelta(minutes=10)
 
 
-def test_cruise_detected_above_7000_ft_agl(detector, context):
+def test_cruise_detected_above_7000_ft_agl(detector):
     base = datetime(2025, 7, 5, 11, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=20)
@@ -89,11 +84,11 @@ def test_cruise_detected_above_7000_ft_agl(detector, context):
             events.append(
                 make_event(seconds, Altitude = 5000, AGLAltitude = 4000) 
             )
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(minutes = 2)
     assert end == base + timedelta(minutes=13)
 
-def test_cruise_detected_above_3000_ft_agl(detector, context):
+def test_cruise_detected_above_3000_ft_agl(detector):
     base = datetime(2025, 7, 5, 11, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=20)
@@ -117,7 +112,7 @@ def test_cruise_detected_above_3000_ft_agl(detector, context):
             events.append(
                 make_event(seconds, Altitude = 5500, AGLAltitude = 3500) #end
             )
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(minutes = 0)
     assert end == base + timedelta(minutes=20) 
 
@@ -202,8 +197,7 @@ def test_cruise_detects_from_real_files(
     to_time, 
     expected_start, 
     expected_end, 
-    detector, 
-    context
+    detector
 ):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
@@ -211,7 +205,7 @@ def test_cruise_detects_from_real_files(
 
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
-    result = detector.detect(events, parse_timestamp(from_time), parse_timestamp(to_time), context)
+    result = detector.detect(events, parse_timestamp(from_time), parse_timestamp(to_time))
 
     if expected_start != 'None' and expected_end != 'None':
         assert result is not None, f"Cruise not detected in {filename}"

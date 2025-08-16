@@ -3,7 +3,6 @@ import os
 from datetime import datetime, timedelta
 import pytest
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -45,11 +44,7 @@ def make_full_event(timestamp, **extra_changes) -> FlightEvent:
 def detector():
     return FinalLandingDetector()
 
-@pytest.fixture
-def context():
-    return FlightDetectorContext()
-
-def test_landing_detects_phase_with_heading_change(detector, context):
+def test_landing_detects_phase_with_heading_change(detector):
     base = datetime(2025, 6, 23, 10, 0, 0)
     events = [
         make_full_event(base + timedelta(seconds=0), Heading=90, onGround=False),
@@ -59,11 +54,11 @@ def test_landing_detects_phase_with_heading_change(detector, context):
         make_event(base + timedelta(seconds=20), Heading=130),  # change > 8°
         make_event(base + timedelta(seconds=25), Heading=140),
     ]
-    start, end = detector.detect(events, None, None, context)
+    start, end = detector.detect(events, None, None)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=15)  # justo antes del cambio
 
-def test_landing_no_heading_change_uses_last_event(detector, context):
+def test_landing_no_heading_change_uses_last_event(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
         make_full_event(base + timedelta(seconds=0), Heading=85, onGround=False),
@@ -72,21 +67,21 @@ def test_landing_no_heading_change_uses_last_event(detector, context):
         make_event(base + timedelta(seconds=30), Heading=84),
         make_event(base + timedelta(seconds=40), Heading=86),
     ]
-    start, end = detector.detect(events, None, None, context)
+    start, end = detector.detect(events, None, None)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=40)
 
-def test_landing_not_detected_without_vs(detector, context):
+def test_landing_not_detected_without_vs(detector):
     base = datetime(2025, 6, 23, 14, 0, 0)
     events = [
         make_event(base + timedelta(seconds=0), Heading=100),
         make_event(base + timedelta(seconds=5), Heading=105),
         make_event(base + timedelta(seconds=10), Heading=110),
     ]
-    result = detector.detect(events, None, None, context)
+    result = detector.detect(events, None, None)
     assert result is None
 
-def test_landing_bounces(detector, context):
+def test_landing_bounces(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
         make_event(base + timedelta(seconds=0), Heading=85),
@@ -96,11 +91,11 @@ def test_landing_bounces(detector, context):
         make_event(base + timedelta(seconds=30), Heading=84),
         make_event(base + timedelta(seconds=40), Heading=86),
     ]
-    start, end = detector.detect(events, None, None, context)
+    start, end = detector.detect(events, None, None)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=40)
 
-def test_only_last_landing(detector, context):
+def test_only_last_landing(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
         make_event(base + timedelta(seconds=0), Heading=85),
@@ -110,12 +105,12 @@ def test_only_last_landing(detector, context):
         make_event(base + timedelta(seconds=80), Heading=84),
         make_event(base + timedelta(seconds=90), Heading=102),
     ]
-    start, end = detector.detect(events, None, None, context)
+    start, end = detector.detect(events, None, None)
     assert start == base + timedelta(seconds=70)
     assert end == base + timedelta(seconds=80)
 
 
-def test_final_landing_remains_on_ground(detector, context):
+def test_final_landing_remains_on_ground(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
         make_event(base + timedelta(seconds=0), Heading=85, onGround=False),
@@ -124,7 +119,7 @@ def test_final_landing_remains_on_ground(detector, context):
         make_full_event(base + timedelta(seconds=70), Heading=86, onGround=False),
         make_event(base + timedelta(seconds=80), Heading=86),
     ]
-    result = detector.detect(events, None, None, context)
+    result = detector.detect(events, None, None)
     assert result is None, f"Landing doesn't remain on ground"    
 
 @pytest.mark.parametrize("filename, expected_start, expected_end", [
@@ -137,14 +132,14 @@ def test_final_landing_remains_on_ground(detector, context):
     ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
 ])
-def test_landing_detects_from_real_files(filename, expected_start, expected_end, detector, context):
+def test_landing_detects_from_real_files(filename, expected_start, expected_end, detector):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
-    result = detector.detect(events, None, None, context)
+    result = detector.detect(events, None, None)
 
     if expected_start != 'None' and expected_end != 'None':
         assert result is not None, f"Final landing not detected in {filename}"

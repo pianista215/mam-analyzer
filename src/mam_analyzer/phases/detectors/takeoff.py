@@ -1,7 +1,6 @@
 from datetime import datetime,timedelta
 from typing import List, Optional, Tuple, Dict, Any
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.search import find_first_index_forward,find_first_index_backward_starting_from_idx,find_first_index_forward_starting_from_idx
@@ -12,8 +11,7 @@ class TakeoffDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime],
-        context: FlightDetectorContext,
+        to_time: Optional[datetime]
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect the first takeoff: from the start of takeoff run until flaps 0, gear up or 1 minute."""
         airborne_idx = None

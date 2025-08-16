@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
+from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 
-class Detector(ABC):
+class Analyzer(ABC):
     phase_name: str 
 
     @abstractmethod

@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 import pytest
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.shutdown import ShutdownDetector
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -12,11 +11,7 @@ from mam_analyzer.utils.parsing import parse_timestamp
 def shutdown_detector():
     return ShutdownDetector()
 
-@pytest.fixture
-def context():
-    return FlightDetectorContext()
-
-def test_no_detect_shutdown_phase_synthetic(shutdown_detector, context):
+def test_no_detect_shutdown_phase_synthetic(shutdown_detector):
     raw_events = [
         {"Timestamp": "2025-06-14T17:10:00.000000", "Changes": {"Latitude": "39,020", "Longitude": "2,000"}},
         {"Timestamp": "2025-06-14T17:12:00.000000", "Changes": {"Flaps": "0"}},
@@ -27,10 +22,10 @@ def test_no_detect_shutdown_phase_synthetic(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is None
 
-def test_detect_shutdown_full_event_single_engine(shutdown_detector, context):
+def test_detect_shutdown_full_event_single_engine(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:10:00.000000", 
@@ -82,13 +77,13 @@ def test_detect_shutdown_full_event_single_engine(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:11:00.000000")
     assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
 
-def test_detect_shutdown_full_event_multi_engine(shutdown_detector, context):
+def test_detect_shutdown_full_event_multi_engine(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:10:00.000000", 
@@ -142,13 +137,13 @@ def test_detect_shutdown_full_event_multi_engine(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:11:00.000000")
     assert end == parse_timestamp("2025-06-14T17:14:00.000000")     
 
-def test_detect_shutdown_changes_single_engine(shutdown_detector, context):
+def test_detect_shutdown_changes_single_engine(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:09:00.000000", 
@@ -206,13 +201,13 @@ def test_detect_shutdown_changes_single_engine(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:10:00.000000")
     assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
 
-def test_detect_shutdown_changes_multi_engine(shutdown_detector, context):
+def test_detect_shutdown_changes_multi_engine(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:09:00.000000", 
@@ -278,14 +273,14 @@ def test_detect_shutdown_changes_multi_engine(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:10:00.000000")
     assert end == parse_timestamp("2025-06-14T17:14:00.000000")
 
 
-def test_detect_engine_failure_landing_shutdown(shutdown_detector, context):
+def test_detect_engine_failure_landing_shutdown(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:09:00.000000", 
@@ -345,13 +340,13 @@ def test_detect_engine_failure_landing_shutdown(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:10:00.000000")
     assert end == parse_timestamp("2025-06-14T17:14:00.000000") 
 
-def test_detect_engine_shutdown_slow(shutdown_detector, context):
+def test_detect_engine_shutdown_slow(shutdown_detector):
     raw_events = [
         {
             "Timestamp": "2025-06-14T17:05:00.000000", 
@@ -417,7 +412,7 @@ def test_detect_engine_shutdown_slow(shutdown_detector, context):
 
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
     assert result is not None
     start, end = result
     assert start == parse_timestamp("2025-06-14T17:07:00.000000")
@@ -433,7 +428,7 @@ def test_detect_engine_shutdown_slow(shutdown_detector, context):
     ("UHPT-UHMA-SF34.json", "2025-06-05T15:10:25.2342953", "2025-06-05T15:11:27.2262993"),
     ("UHSH-UHMM-B350.json", "2025-05-17T19:44:49.2465901", "2025-05-17T19:46:07.2591295"),
 ])
-def test_detect_shutdown_phase_from_real_files(filename, expected_start, expected_end, shutdown_detector, context):
+def test_detect_shutdown_phase_from_real_files(filename, expected_start, expected_end, shutdown_detector):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -441,7 +436,7 @@ def test_detect_shutdown_phase_from_real_files(filename, expected_start, expecte
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
 
-    result = shutdown_detector.detect(events, None, None, context)
+    result = shutdown_detector.detect(events, None, None)
 
     if expected_start != 'None' and expected_end != 'None':
         assert result is not None, f"Shutdown not detected in {filename}"
