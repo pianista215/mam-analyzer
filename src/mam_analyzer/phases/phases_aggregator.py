@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List
 
-from mam_analyzer.detector import Detector
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
+from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
 from mam_analyzer.phases.detectors.shutdown import ShutdownDetector
 from mam_analyzer.phases.detectors.startup import StartupDetector

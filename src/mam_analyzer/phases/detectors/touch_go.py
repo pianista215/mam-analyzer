@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple, Dict, Any
 
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.detector import Detector
+from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.search import find_first_index_forward,find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import heading_within_range
 

@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
 
 from mam_analyzer.context import FlightDetectorContext
-from mam_analyzer.detector import Detector
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.engines import all_engines_are_off, all_engines_are_on
 from mam_analyzer.utils.search import find_first_index_forward,find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import coords_differ
