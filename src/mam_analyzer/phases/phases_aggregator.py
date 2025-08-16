@@ -5,12 +5,12 @@ from typing import List
 from mam_analyzer.detector import Detector
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.cruise import CruiseDetector
-from mam_analyzer.phases.final_landing import FinalLandingDetector
-from mam_analyzer.phases.shutdown import ShutdownDetector
-from mam_analyzer.phases.startup import StartupDetector
-from mam_analyzer.phases.takeoff import TakeoffDetector
-from mam_analyzer.phases.touch_go import TouchAndGoDetector
+from mam_analyzer.phases.detectors.cruise import CruiseDetector
+from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
+from mam_analyzer.phases.detectors.shutdown import ShutdownDetector
+from mam_analyzer.phases.detectors.startup import StartupDetector
+from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
+from mam_analyzer.phases.detectors.touch_go import TouchAndGoDetector
 
 @dataclass
 class FlightPhase():

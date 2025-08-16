@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 
 from mam_analyzer.context import FlightDetectorContext
-from mam_analyzer.phases.takeoff import TakeoffDetector
+from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.parsing import parse_timestamp
 

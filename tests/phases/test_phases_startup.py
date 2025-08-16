@@ -5,7 +5,7 @@ import pytest
 
 from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.startup import StartupDetector
+from mam_analyzer.phases.detectors.startup import StartupDetector
 from mam_analyzer.utils.parsing import parse_timestamp
 
 @pytest.fixture
