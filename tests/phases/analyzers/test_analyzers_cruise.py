@@ -102,6 +102,29 @@ def test_high_altitude_differs_from_common(analyzer):
     assert result[1] == ('CommonAlt', 20000)
     assert result[2] == ('HighAlt', 26000)
 
+def test_intermediate_fuel_changes_are_ignored(analyzer):
+    base = datetime(2025, 7, 5, 16, 0, 0)
+    events = []
+
+    # Start with initial fuel
+    events.append(make_event(base, Altitude=20000, FuelKg="7000"))
+
+    # Intermediate events
+    for i in range(1, 6):
+        delta = timedelta(minutes=i)
+        fuel_val = 7000 - (i * 50)
+        events.append(make_event(base + delta, Altitude=20000, FuelKg=str(fuel_val)))
+
+    # Last fuel event
+    events.append(make_event(base + timedelta(minutes=10), Altitude=20000, FuelKg="6500"))
+
+    result = analyzer.analyze(events, 0, len(events))
+    assert result is not None
+
+    assert result[0] == ('Fuel', 500)
+    assert result[1] == ('CommonAlt', 20000)
+    assert result[2] == ('HighAlt', 20000)    
+
 def test_missing_start_fuel_raises(analyzer):
     base = datetime(2025, 7, 5, 13, 0, 0)
     events = []
