@@ -5,16 +5,17 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.utils.altitude import event_has_altitude, get_altitude_as_int_rounded_to
+from mam_analyzer.utils.filter import always_true
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
-from mam_analyzer.utils.search import find_first_index_backward_starting_from_idx, find_first_index_forward_starting_from_idx
+from mam_analyzer.utils.search import find_first_index_backward, find_first_index_backward_starting_from_idx, find_first_index_forward, find_first_index_forward_starting_from_idx
 
 
 class CruiseAnalyzer(Analyzer):
     def analyze(
         self,
         events: List[FlightEvent],
-        start_idx: int,
-        end_idx: int
+        start_time: datetime,
+        end_time: datetime
     ) -> List[Tuple[str, str]]:
         """Analyze cruise phase generating:
            - fuel consumption
@@ -41,7 +42,7 @@ class CruiseAnalyzer(Analyzer):
 
             found_end_fuel = find_first_index_backward_starting_from_idx(
                 events,
-                end_idx - 1,
+                end_idx,
                 event_has_fuel,
                 None,
                 None
@@ -98,6 +99,31 @@ class CruiseAnalyzer(Analyzer):
 
             return most_time_alt, high_altitude
 
+        found_start_idx = find_first_index_forward(
+            events,
+            always_true,
+            start_time,
+            end_time,
+        )
+
+        if found_start_idx is None:
+            raise RuntimeError("Cruise phase: can't determine valid start_idx")
+
+        start_idx, _ = found_start_idx
+
+        found_end_idx = find_first_index_backward(
+            events,
+            always_true,
+            start_time,
+            end_time,
+        )
+
+        if found_end_idx is None:
+            raise RuntimeError("Cruise phase: can't determine valid end_idx")
+
+        end_idx, _ = found_end_idx
+
+        print("start %s end %s" % (start_idx, end_idx))
 
         fuel_consumption = get_fuel_consumption(events, start_idx, end_idx)
         result_altitudes = get_most_flown_altitude(events, start_idx, end_idx)

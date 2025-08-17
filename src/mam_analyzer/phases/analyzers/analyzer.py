@@ -8,11 +8,11 @@ class Analyzer(ABC):
     def analyze(
         self,
         events: List[FlightEvent],
-        start_idx: int,
-        end_idx: int
+        start_time: int,
+        end_time: int
     ) -> List[Tuple[str, str]]:
         """
-        Analyze the phase of flight that begins at `start_idx` and ends at `end_idx` (not included),
+        Analyze the phase of flight that begins at `start_time` and ends at `end_time`,
         using the subset of `events` that occurred within this interval.
 
         Returns a list of (name, value) pairs, where both elements are strings,

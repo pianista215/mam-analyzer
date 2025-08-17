@@ -40,7 +40,7 @@ def test_basic_cruise(analyzer):
     end_event = make_event(base + timedelta(seconds=40 * 30), Altitude=20050, FuelKg="6400,125")
     events.append(end_event)    
 
-    result = analyzer.analyze(events, 0, len(events))
+    result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
     assert result[0] == ('Fuel', 200)
     assert result[1] == ('CommonAlt', 20000)
@@ -71,7 +71,7 @@ def test_multiple_altitude_on_cruise(analyzer):
     events.append(end_event)   
     print(events) 
 
-    result = analyzer.analyze(events, 0, len(events))
+    result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
     print(result)
     assert result[0] == ('Fuel', 616)
@@ -96,7 +96,7 @@ def test_high_altitude_differs_from_common(analyzer):
     # End fuel
     events.append(make_event(base + timedelta(minutes=20), Altitude=20020, FuelKg="4800"))
 
-    result = analyzer.analyze(events, 0, len(events))
+    result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
     assert result[0] == ('Fuel', 200)
     assert result[1] == ('CommonAlt', 20000)
@@ -118,7 +118,7 @@ def test_intermediate_fuel_changes_are_ignored(analyzer):
     # Last fuel event
     events.append(make_event(base + timedelta(minutes=10), Altitude=20000, FuelKg="6500"))
 
-    result = analyzer.analyze(events, 0, len(events))
+    result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
 
     assert result[0] == ('Fuel', 500)
@@ -134,7 +134,7 @@ def test_missing_start_fuel_raises(analyzer):
         events.append(make_event(base + timedelta(seconds=i*30), Altitude=20000))
 
     with pytest.raises(RuntimeError, match="Can't retrieve start fuel event"):
-        analyzer.analyze(events, 0, len(events))    
+        result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)   
 
 def test_missing_altitudes_raises(analyzer):
     base = datetime(2025, 7, 5, 15, 0, 0)
@@ -149,4 +149,29 @@ def test_missing_altitudes_raises(analyzer):
     events.append(make_event(base + timedelta(minutes=5), FuelKg="5900"))
 
     with pytest.raises(RuntimeError, match="Can't retrieve most flown altitude or high altitude"):
-        analyzer.analyze(events, 0, len(events))        
+        result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
+
+
+@pytest.mark.parametrize("filename, cruise_start, cruise_end, fuel, common, highest", [
+    ("LEPA-LEPP-737.json", "2025-06-14T17:29:25.8916254", "2025-06-14T17:53:55.8771022", "904", "30000", "30000"),
+    ("LEPP-LEMG-737.json", "2025-06-15T00:02:56.9507605", "2025-06-15T00:42:12.9611013", "1436", "33000", "33000"),
+    ("UHMA-PAOM-B350.json", "2025-06-15T23:11:10.5834039", "2025-06-15T23:40:06.5834885", "134", "29000", "29000"),
+    ("UHPT-UHMA-B350.json", "2025-06-15T18:33:34.8288609", "2025-06-15T19:31:56.8139074", "267", "28500", "28500"),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T13:19:55.2269445", "2025-06-05T14:28:41.2361792", "521", "23000", "23000"),
+    ("UHSH-UHMM-B350.json", "2025-05-17T18:13:39.2464222", "2025-05-17T19:13:55.253485", "273", "29000", "29000"),
+    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-22T22:42:46.5642602", "2025-06-22T23:49:56.574365", "348", "27000", "27000"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T22:48:17.3083458", "2025-07-04T23:04:23.315419", "17", "1000", "1500"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:22:03.3293345", "15", "3000", "3000")
+])
+def test_cruise_analyzer_from_real_files(filename, cruise_start, cruise_end, fuel, common, highest, analyzer):
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    raw_events = data["Events"]
+    events = [FlightEvent.from_json(e) for e in raw_events]
+    result = analyzer.analyze(events, parse_timestamp(cruise_start), parse_timestamp(cruise_end))
+
+    assert result[0] == ('Fuel', int(fuel))
+    assert result[1] == ('CommonAlt', int(common))
+    assert result[2] == ('HighAlt', int(highest))
