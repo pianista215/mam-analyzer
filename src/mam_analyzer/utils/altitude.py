@@ -6,5 +6,5 @@ def event_has_altitude(e: FlightEvent) -> bool:
 def get_altitude_as_int(e: FlightEvent) -> int:
 	return int(e.other_changes.get("Altitude"))
 
-def get_altitude_as_int_rounded_to(e: FlightEvent, round: int) -> int: 
-	return round(get_altitude_as_int(e) / round) * round
+def get_altitude_as_int_rounded_to(e: FlightEvent, round_val: int) -> int: 
+	return round(get_altitude_as_int(e) / round_val) * round_val

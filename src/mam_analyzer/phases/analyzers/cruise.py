@@ -41,7 +41,7 @@ class CruiseAnalyzer(Analyzer):
 
             found_end_fuel = find_first_index_backward_starting_from_idx(
                 events,
-                end_idx,
+                end_idx - 1,
                 event_has_fuel,
                 None,
                 None
@@ -106,8 +106,8 @@ class CruiseAnalyzer(Analyzer):
             raise RuntimeError("Can't retrieve most flown altitude or high altitude")
 
         fuel_tuple = ("Fuel", fuel_consumption)
-        most_tuple = ("Common alt", most_time_alt)
-        high_tuple = ("High alt", high_altitude)
+        most_tuple = ("CommonAlt", most_time_alt)
+        high_tuple = ("HighAlt", high_altitude)
 
         return [fuel_tuple, most_tuple, high_tuple]
 

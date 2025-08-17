@@ -12,7 +12,7 @@ class Analyzer(ABC):
         end_idx: int
     ) -> List[Tuple[str, str]]:
         """
-        Analyze the phase of flight that begins at `start_idx` and ends at `end_idx`,
+        Analyze the phase of flight that begins at `start_idx` and ends at `end_idx` (not included),
         using the subset of `events` that occurred within this interval.
 
         Returns a list of (name, value) pairs, where both elements are strings,
