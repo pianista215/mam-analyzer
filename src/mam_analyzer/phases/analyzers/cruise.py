@@ -100,11 +100,12 @@ class CruiseAnalyzer(Analyzer):
 
 
         fuel_consumption = get_fuel_consumption(events, start_idx, end_idx)
-        most_time_alt, high_altitude = get_most_flown_altitude(events, start_idx, end_idx)
+        result_altitudes = get_most_flown_altitude(events, start_idx, end_idx)
             
-        if most_time_alt is None or high_altitude is None:
+        if result_altitudes is None:
             raise RuntimeError("Can't retrieve most flown altitude or high altitude")
 
+        most_time_alt, high_altitude = result_altitudes
         fuel_tuple = ("Fuel", fuel_consumption)
         most_tuple = ("CommonAlt", most_time_alt)
         high_tuple = ("HighAlt", high_altitude)
