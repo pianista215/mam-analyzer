@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
@@ -32,6 +34,7 @@ class PhasesAggregator:
         self.final_landing_detector = FinalLandingDetector()
         self.shutdown_detector = ShutdownDetector()
         self.cruise_detector = CruiseDetector()
+        self.cruise_analyzer = CruiseAnalyzer()
 
     def __get_touch_go_phases(
         self, 
@@ -68,6 +71,10 @@ class PhasesAggregator:
         app_start = touch_phase.start + timedelta(seconds=-180)
         app_phase = FlightPhase("approach", app_start, touch_phase.start)
         return app_phase 
+
+    def print_analyzer(self, analyzer: Analyzer, events: List[FlightEvent], start: datetime, end: datetime):
+        analyzer_result = analyzer.analyze(events, start, end)
+        print(analyzer_result)
 
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
@@ -133,6 +140,8 @@ class PhasesAggregator:
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                # TODO: instead of print save
+                self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                 result.append(cruise_phase)
 
         else:
@@ -150,6 +159,8 @@ class PhasesAggregator:
                 if found_cruise is not None:
                     cruise_start, cruise_end = found_cruise
                     cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                    # TODO: instead of print save
+                    self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                     result.append(cruise_phase)
 
                 result.append(_touch_go_app)
@@ -165,6 +176,8 @@ class PhasesAggregator:
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                # TODO: instead of print save
+                self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                 result.append(cruise_phase)
 
         # Once cruise and touch and goes apps are computed, add app and landing
