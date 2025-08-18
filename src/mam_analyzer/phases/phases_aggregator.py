@@ -4,6 +4,7 @@ from typing import List
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
@@ -35,6 +36,7 @@ class PhasesAggregator:
         self.shutdown_detector = ShutdownDetector()
         self.cruise_detector = CruiseDetector()
         self.cruise_analyzer = CruiseAnalyzer()
+        self.approach_analyzer = ApproachAnalyzer()
 
     def __get_touch_go_phases(
         self, 
@@ -128,6 +130,8 @@ class PhasesAggregator:
 
         # Generate last approach for final_landing
         _last_landing_app = self._generate_approach(_landing_phase)
+        # TODO: instead of print save
+        self.print_analyzer(self.approach_analyzer, events, _last_landing_app.start, _last_landing_app.end)
 
         if len(_touch_go_phases) == 0:   
             
@@ -150,6 +154,8 @@ class PhasesAggregator:
             for _touch_go in _touch_go_phases:
 
                 _touch_go_app = self._generate_approach(_touch_go)
+                # TODO: instead of print save
+                self.print_analyzer(self.approach_analyzer, events, _touch_go_app.start, _touch_go_app.end)
 
                 found_cruise = self.cruise_detector.detect(
                     events,
