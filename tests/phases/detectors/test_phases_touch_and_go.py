@@ -3,9 +3,8 @@ import json
 import os
 import pytest
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.touch_go import TouchAndGoDetector
+from mam_analyzer.phases.detectors.touch_go import TouchAndGoDetector
 from mam_analyzer.utils.parsing import parse_timestamp
 
 
@@ -20,11 +19,7 @@ def make_event(timestamp, **changes):
 def detector():
     return TouchAndGoDetector()
 
-@pytest.fixture
-def context():
-    return FlightDetectorContext()
-
-def test_touch_and_go_normal_flaps(detector, context):
+def test_touch_and_go_normal_flaps(detector):
     base = datetime(2025, 7, 4, 10, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -35,11 +30,11 @@ def test_touch_and_go_normal_flaps(detector, context):
         make_event(base + timedelta(seconds=25), Flaps=2),
         make_event(base + timedelta(seconds=30), Flaps=0),  # Should end here
     ]
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=30)
 
-def test_no_touch_and_go_returns_none(detector, context):
+def test_no_touch_and_go_returns_none(detector):
     base = datetime(2025, 7, 4, 11, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -47,10 +42,10 @@ def test_no_touch_and_go_returns_none(detector, context):
         make_event(base + timedelta(seconds=0), onGround=False),
         make_event(base + timedelta(seconds=30), Flaps=0),
     ]
-    result = detector.detect(events, from_time, to_time, context)
+    result = detector.detect(events, from_time, to_time)
     assert result is None
 
-def test_touch_and_go_with_one_bounce(detector, context):
+def test_touch_and_go_with_one_bounce(detector):
     base = datetime(2025, 7, 4, 12, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -62,11 +57,11 @@ def test_touch_and_go_with_one_bounce(detector, context):
         make_event(base + timedelta(seconds=19), onGround=False, Flaps=10),
         make_event(base + timedelta(seconds=30), Flaps=0),
     ]
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=30)
 
-def test_touch_and_go_with_two_bounces(detector, context):
+def test_touch_and_go_with_two_bounces(detector):
     base = datetime(2025, 7, 4, 13, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -80,11 +75,11 @@ def test_touch_and_go_with_two_bounces(detector, context):
         make_event(base + timedelta(seconds=23), onGround=False, Flaps=10),
         make_event(base + timedelta(seconds=35), Flaps=0),
     ]
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=35)
 
-def test_touch_and_go_with_flaps_0_and_gear_up(detector, context):
+def test_touch_and_go_with_flaps_0_and_gear_up(detector):
     base = datetime(2025, 7, 4, 14, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -94,11 +89,11 @@ def test_touch_and_go_with_flaps_0_and_gear_up(detector, context):
         make_event(base + timedelta(seconds=15), onGround=False, Flaps=0, Gear="Down"),
         make_event(base + timedelta(seconds=25), Gear="Up"),
     ]
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=25)
 
-def test_touch_and_go_timeout_1_minute(detector, context):
+def test_touch_and_go_timeout_1_minute(detector):
     base = datetime(2025, 7, 4, 15, 0, 0)
     from_time = base
     to_time = base + timedelta(minutes=5)
@@ -109,7 +104,7 @@ def test_touch_and_go_timeout_1_minute(detector, context):
         make_event(base + timedelta(seconds=30)),
         make_event(base + timedelta(seconds=75)),  # 60s after airborne
     ]
-    start, end = detector.detect(events, from_time, to_time, context)
+    start, end = detector.detect(events, from_time, to_time)
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=75)
 
@@ -180,7 +175,6 @@ def test_landing_detects_from_real_files(
     expected_start, 
     expected_end, 
     detector, 
-    context
 ):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
@@ -188,7 +182,7 @@ def test_landing_detects_from_real_files(
 
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
-    result = detector.detect(events, parse_timestamp(from_time), parse_timestamp(to_time), context)
+    result = detector.detect(events, parse_timestamp(from_time), parse_timestamp(to_time))
 
     if expected_start != 'None' and expected_end != 'None':
         assert result is not None, f"Touch & go not detected in {filename}"

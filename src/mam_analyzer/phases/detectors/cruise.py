@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple, Dict, Any
 
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.detector import Detector
+from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.search import find_first_index_backward_starting_from_idx, find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import heading_within_range
 
@@ -12,8 +11,7 @@ class CruiseDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime],
-        context: FlightDetectorContext,
+        to_time: Optional[datetime]
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect the cruise_phase: period the plane stays in the same altitude 
             with a range of variation allowed, but should be maintained along time
@@ -34,7 +32,7 @@ class CruiseDetector(Detector):
 
             if e.timestamp >= from_time and e.timestamp <= to_time:
 
-                e_altitude = e.other_changes.get("Altitude")
+                e_altitude = e.other_changes.get("Altitude") # TODO: Use altitude utils
                 if e_altitude is not None:
                     if int(e_altitude) > high_altitude:
                         high_altitude = int(e_altitude)

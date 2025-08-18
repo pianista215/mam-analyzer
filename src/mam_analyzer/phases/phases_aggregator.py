@@ -2,15 +2,16 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List
 
-from mam_analyzer.detector import Detector
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.cruise import CruiseDetector
-from mam_analyzer.phases.final_landing import FinalLandingDetector
-from mam_analyzer.phases.shutdown import ShutdownDetector
-from mam_analyzer.phases.startup import StartupDetector
-from mam_analyzer.phases.takeoff import TakeoffDetector
-from mam_analyzer.phases.touch_go import TouchAndGoDetector
+from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
+from mam_analyzer.phases.detectors.cruise import CruiseDetector
+from mam_analyzer.phases.detectors.detector import Detector
+from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
+from mam_analyzer.phases.detectors.shutdown import ShutdownDetector
+from mam_analyzer.phases.detectors.startup import StartupDetector
+from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
+from mam_analyzer.phases.detectors.touch_go import TouchAndGoDetector
 
 @dataclass
 class FlightPhase():
@@ -33,13 +34,13 @@ class PhasesAggregator:
         self.final_landing_detector = FinalLandingDetector()
         self.shutdown_detector = ShutdownDetector()
         self.cruise_detector = CruiseDetector()
+        self.cruise_analyzer = CruiseAnalyzer()
 
     def __get_touch_go_phases(
         self, 
         events: List[FlightEvent],
         takeoff_end: datetime, 
         landing_start: datetime,
-        context: FlightDetectorContext
     ) -> List[FlightPhase]:        
         result = list()
         curr_start = takeoff_end
@@ -49,7 +50,6 @@ class PhasesAggregator:
                 events, 
                 curr_start, 
                 landing_start, 
-                context
             )
 
             if found_touch_go is None:
@@ -72,19 +72,22 @@ class PhasesAggregator:
         app_phase = FlightPhase("approach", app_start, touch_phase.start)
         return app_phase 
 
+    def print_analyzer(self, analyzer: Analyzer, events: List[FlightEvent], start: datetime, end: datetime):
+        analyzer_result = analyzer.analyze(events, start, end)
+        print(analyzer_result)
+
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
-        context = FlightDetectorContext() # Not used for now
         result = list()
 
         # First check that the flight has takeoff and landing
-        _takeoff = self.takeoff_detector.detect(events, None, None, context)
+        _takeoff = self.takeoff_detector.detect(events, None, None)
 
         if _takeoff is None:
             print("No takeoff found")
             return result
 
-        _landing = self.final_landing_detector.detect(events, None, None, context)
+        _landing = self.final_landing_detector.detect(events, None, None)
 
         if _landing is None:
             print("No landing detected")
@@ -97,7 +100,7 @@ class PhasesAggregator:
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = FlightPhase("final_landing", _landing_start, _landing_end)
 
-        _startup = self.startup_detector.detect(events, None, None, context)
+        _startup = self.startup_detector.detect(events, None, None)
 
         if _startup is None:
             first_timestamp = events[0].timestamp
@@ -121,7 +124,6 @@ class PhasesAggregator:
             events, 
             _takeoff_end, 
             _landing_start,
-            context
         )
 
         # Generate last approach for final_landing
@@ -132,13 +134,14 @@ class PhasesAggregator:
             found_cruise = self.cruise_detector.detect(
                 events,
                 _takeoff_end,
-                _last_landing_app.start,
-                context
+                _last_landing_app.start
             )
 
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                # TODO: instead of print save
+                self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                 result.append(cruise_phase)
 
         else:
@@ -151,12 +154,13 @@ class PhasesAggregator:
                 found_cruise = self.cruise_detector.detect(
                     events,
                     look_for_cruise_start,
-                    _touch_go_app.start,
-                    context
+                    _touch_go_app.start
                 )
                 if found_cruise is not None:
                     cruise_start, cruise_end = found_cruise
                     cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                    # TODO: instead of print save
+                    self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                     result.append(cruise_phase)
 
                 result.append(_touch_go_app)
@@ -167,19 +171,20 @@ class PhasesAggregator:
             found_cruise = self.cruise_detector.detect(
                 events,
                 look_for_cruise_start,
-                _last_landing_app.start,
-                context
+                _last_landing_app.start
             )
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
                 cruise_phase = FlightPhase("cruise", cruise_start, cruise_end)
+                # TODO: instead of print save
+                self.print_analyzer(self.cruise_analyzer, events, cruise_start, cruise_end)
                 result.append(cruise_phase)
 
         # Once cruise and touch and goes apps are computed, add app and landing
         result.append(_last_landing_app)
         result.append(_landing_phase)
 
-        _shutdown = self.shutdown_detector.detect(events, None, None, context)
+        _shutdown = self.shutdown_detector.detect(events, None, None)
 
         if _shutdown is None:
             last_timestamp = events[len(events) - 1].timestamp

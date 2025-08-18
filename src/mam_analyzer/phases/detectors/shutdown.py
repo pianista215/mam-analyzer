@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple, Dict, Any
 
-from mam_analyzer.detector import Detector
-from mam_analyzer.context import FlightDetectorContext
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.engines import all_engines_are_off_from_status,get_engine_status
 from mam_analyzer.utils.search import find_first_index_backward,find_first_index_backward_starting_from_idx
 from mam_analyzer.utils.units import coords_differ
@@ -13,8 +12,7 @@ class ShutdownDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime],
-        context: FlightDetectorContext,
+        to_time: Optional[datetime]
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period with the plane in the position where the shutdown of the engines happens"""
         # In this detector we are not using from_time or to_time
