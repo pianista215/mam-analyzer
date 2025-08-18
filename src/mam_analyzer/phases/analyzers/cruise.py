@@ -123,8 +123,6 @@ class CruiseAnalyzer(Analyzer):
 
         end_idx, _ = found_end_idx
 
-        print("start %s end %s" % (start_idx, end_idx))
-
         fuel_consumption = get_fuel_consumption(events, start_idx, end_idx)
         result_altitudes = get_most_flown_altitude(events, start_idx, end_idx)
             
