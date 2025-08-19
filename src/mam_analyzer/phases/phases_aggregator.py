@@ -82,6 +82,7 @@ class PhasesAggregator:
 
     def print_analyzer(self, analyzer: Analyzer, events: List[FlightEvent], start: datetime, end: datetime):
         analyzer_result = analyzer.analyze(events, start, end)
+        print("Analyzer %s" % analyzer)
         print(analyzer_result)
 
 
