@@ -131,6 +131,7 @@ def test_final_landing_remains_on_ground(detector):
     ("UHPT-UHMA-SF34.json", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
     ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:44:13.3164862", "2025-07-04T23:44:13.3164862"),
 ])
 def test_landing_detects_from_real_files(filename, expected_start, expected_end, detector):
     path = os.path.join("data", filename)
