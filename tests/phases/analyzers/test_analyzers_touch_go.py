@@ -1,8 +1,12 @@
 from datetime import datetime, timedelta
+import json
+import os
 import pytest
+
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
+from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
 
@@ -76,8 +80,8 @@ def test_touch_and_go_with_bounces(analyzer):
 
     expected_distance = round(haversine(44.0, -3.0, 44.0, -3.005))
 
-    assert result[0] == ("TouchGoVSFpm", -250)       # VS del primer toque
-    assert result[1] == ("TouchGoBounces", [-180, -220])  # rebotes recogidos
+    assert result[0] == ("TouchGoVSFpm", -250)
+    assert result[1] == ("TouchGoBounces", [-180, -220])
     assert result[2] == ("TouchGoGroundDistance", expected_distance)
 
 
@@ -88,3 +92,37 @@ def test_no_touchdown_raises(analyzer):
 
     with pytest.raises(RuntimeError, match="Can't find touchdown from touch & go phase"):
         analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
+
+@pytest.mark.parametrize(
+    "filename, touch_go_start, touch_go_end, touch_go_vs, bounces_str, touch_ground_distance", [
+    (
+        "LPMA-Circuits-737.json", 
+        "2025-06-02T22:04:09.7386262", 
+        "2025-06-02T22:05:15.7409833", 
+        "-55", 
+        "",
+        "354"
+    ),
+    (
+        "LEBB-touchgoLEXJ-LEAS.json", 
+        "2025-07-04T23:07:23.315419", 
+        "2025-07-04T23:08:17.3078436", 
+        "-193", 
+        "",
+        "418"
+    ),
+])
+def test_touch_go_analyzer_from_real_files(filename, touch_go_start, touch_go_end, touch_go_vs, bounces_str, touch_ground_distance, analyzer):
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    raw_events = data["Events"]
+    events = [FlightEvent.from_json(e) for e in raw_events]
+    result = analyzer.analyze(events, parse_timestamp(touch_go_start), parse_timestamp(touch_go_end))
+
+    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+
+    assert result[0] == ("TouchGoVSFpm", int(touch_go_vs))
+    assert result[1] == ("TouchGoBounces", expected_bounces)
+    assert result[2] == ("TouchGoGroundDistance", int(touch_ground_distance))         
