@@ -179,6 +179,7 @@ def test_detect_engine_start_phase_synthetic_multi(startup_detector):
     ("UHPT-UHMA-SF34.json", "2025-06-05T12:59:29.2149344", "2025-06-05T13:03:33.2361648"),
     ("UHSH-UHMM-B350.json", "2025-05-17T17:35:51.2435736", "2025-05-17T17:52:11.2488295"),
     ("PAOM-PANC-B350-fromtaxi.json", "None", "None"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T22:34:41.3093045", "2025-07-04T22:42:53.3191554"),
 ])    
 def test_detect_engine_start_phase_from_real_files(filename, expected_start, expected_end, startup_detector):
     path = os.path.join("data", filename)
