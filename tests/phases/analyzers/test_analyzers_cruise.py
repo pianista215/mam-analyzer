@@ -69,11 +69,9 @@ def test_multiple_altitude_on_cruise(analyzer):
 
     end_event = make_event(base + timedelta(seconds=41 * 30), Altitude=20050, FuelKg="5984,204")
     events.append(end_event)   
-    print(events) 
 
     result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
-    print(result)
     assert result[0] == ('Fuel', 616)
     assert result[1] == ('CommonAlt', 24000)
     assert result[2] == ('HighAlt', 24000)    
