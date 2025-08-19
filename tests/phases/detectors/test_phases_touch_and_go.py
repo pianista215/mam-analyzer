@@ -167,6 +167,13 @@ def test_touch_and_go_timeout_1_minute(detector):
         "None", 
         "None"
     ),
+    (
+        "LEBB-touchgoLEXJ-LEAS.json", 
+        "2025-07-04T22:48:17.3083458", 
+        "2025-07-04T23:44:13.3164862", 
+        "2025-07-04T23:07:23.315419", 
+        "2025-07-04T23:08:17.3078436"
+    ),
 ])
 def test_landing_detects_from_real_files(
     filename, 

@@ -78,6 +78,7 @@ def test_takeoff_no_onGround_false_returns_none(detector):
     ("UHPT-UHMA-SF34.json", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981"),
     ("UHSH-UHMM-B350.json", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458"),
 ])    
 def test_detect_takeoff_phase_from_real_files(filename, expected_start, expected_end, detector):
     path = os.path.join("data", filename)

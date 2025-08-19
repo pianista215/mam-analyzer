@@ -7,6 +7,7 @@ from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
+from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
@@ -39,6 +40,7 @@ class PhasesAggregator:
         self.cruise_analyzer = CruiseAnalyzer()
         self.approach_analyzer = ApproachAnalyzer()
         self.final_landing_analyzer = FinalLandingAnalyzer()
+        self.touch_go_analyzer = TouchAndGoAnalyzer()
 
     def __get_touch_go_phases(
         self, 
@@ -63,6 +65,8 @@ class PhasesAggregator:
                 touch_go_start, touch_go_end = found_touch_go
                 touch_go_phase = FlightPhase("touch_go", touch_go_start, touch_go_end)
                 result.append(touch_go_phase)
+                # TODO: instead of print save
+                self.print_analyzer(self.touch_go_analyzer, events, touch_go_start, touch_go_end)
                 curr_start = touch_go_end
 
         return result
@@ -78,6 +82,7 @@ class PhasesAggregator:
 
     def print_analyzer(self, analyzer: Analyzer, events: List[FlightEvent], start: datetime, end: datetime):
         analyzer_result = analyzer.analyze(events, start, end)
+        print("Analyzer %s" % analyzer)
         print(analyzer_result)
 
 
