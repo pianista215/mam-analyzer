@@ -6,6 +6,7 @@ from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
+from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
@@ -37,6 +38,7 @@ class PhasesAggregator:
         self.cruise_detector = CruiseDetector()
         self.cruise_analyzer = CruiseAnalyzer()
         self.approach_analyzer = ApproachAnalyzer()
+        self.final_landing_analyzer = FinalLandingAnalyzer()
 
     def __get_touch_go_phases(
         self, 
@@ -101,6 +103,8 @@ class PhasesAggregator:
         _takeoff_phase = FlightPhase("takeoff", _takeoff_start, _takeoff_end)
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = FlightPhase("final_landing", _landing_start, _landing_end)
+        # TODO: instead of print save
+        self.print_analyzer(self.final_landing_analyzer, events, _landing_phase.start, _landing_phase.end)
 
         _startup = self.startup_detector.detect(events, None, None)
 
