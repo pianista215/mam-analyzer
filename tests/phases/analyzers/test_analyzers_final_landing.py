@@ -125,7 +125,7 @@ def test_no_brake_event_returns_none(analyzer):
     ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305", "-121", "", "596"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404", "-11", "", "1005"),
 ])
-def test_cruise_analyzer_from_real_files(filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, analyzer):
+def test_final_landing_analyzer_from_real_files(filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, analyzer):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
