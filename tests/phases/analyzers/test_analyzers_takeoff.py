@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
+import json
+import os
 import pytest
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
+from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
 
@@ -126,6 +129,7 @@ def test_run_start_is_first_location_even_if_initial_events_have_no_location(ana
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(44.0, -6.0, 44.0, -6.006))
+    assert result[0] == ("TakeoffBounces", [])
     assert result[1] == ("TakeoffGroundDistance", expected_distance)
     assert result[2] == ("TakeoffSpeed", 140)
 
@@ -149,5 +153,33 @@ def test_first_location_is_sticky_even_if_next_locations_change(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(45.0, -7.000, 45.003, -7.004))
+    assert result[0] == ("TakeoffBounces", [])
     assert result[1] == ("TakeoffGroundDistance", expected_distance)
     assert result[2] == ("TakeoffSpeed", 145)
+
+
+@pytest.mark.parametrize("filename, takeoff_start, takeoff_end, bounces_str, takeoff_distance, takeoff_speed", [
+    ("LEPA-LEPP-737.json", "2025-06-14T17:17:35.879139", "2025-06-14T17:19:23.8899645", "", "1798", "159"),
+    ("LEPP-LEMG-737.json", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9812455", "", "1368", "154"),
+    ("LPMA-Circuits-737.json", "2025-06-02T21:47:57.7378043", "2025-06-02T21:49:51.7385484", "", "1225", "141"),
+    ("UHMA-PAOM-B350.json", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508", "", "723", "109"),
+    ("UHPT-UHMA-B350.json", "2025-06-15T18:17:20.8170341", "2025-06-15T18:18:16.828107", "", "1366", "101"),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981", "", "1111", "125"),
+    ("UHSH-UHMM-B350.json", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871", "", "1041", "108"),
+    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209", "", "577", "94"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458", "", "557", "98"),
+])
+def test_final_landing_analyzer_from_real_files(filename, takeoff_start, takeoff_end, bounces_str, takeoff_distance, takeoff_speed, analyzer):
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    raw_events = data["Events"]
+    events = [FlightEvent.from_json(e) for e in raw_events]
+    result = analyzer.analyze(events, parse_timestamp(takeoff_start), parse_timestamp(takeoff_end))
+
+    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+
+    assert result[0] == ("TakeoffBounces", [])
+    assert result[1] == ("TakeoffGroundDistance", int(takeoff_distance))
+    assert result[2] == ("TakeoffSpeed", int(takeoff_speed)) 
