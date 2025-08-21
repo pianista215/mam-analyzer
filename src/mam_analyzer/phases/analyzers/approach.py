@@ -71,8 +71,6 @@ class ApproachAnalyzer(Analyzer):
         avg = round(vs_sum/vs_found)
         result["AvgVSFpm"] = avg
 
-        
-
         result["LastMinuteMinVSFpm"] = last_minute_min_vs
         result["LastMinuteMaxVSFpm"] = last_minute_max_vs
 
