@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Tuple
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -16,7 +16,7 @@ class CruiseAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> List[Tuple[str, str]]:
+    ) -> dict:
         """Analyze cruise phase generating:
            - fuel consumption
            - most common altitude flown
@@ -129,12 +129,14 @@ class CruiseAnalyzer(Analyzer):
         if result_altitudes is None:
             raise RuntimeError("Can't retrieve most flown altitude or high altitude")
 
-        most_time_alt, high_altitude = result_altitudes
-        fuel_tuple = ("Fuel", fuel_consumption)
-        most_tuple = ("CommonAlt", most_time_alt)
-        high_tuple = ("HighAlt", high_altitude)
+        result = {}
 
-        return [fuel_tuple, most_tuple, high_tuple]
+        most_time_alt, high_altitude = result_altitudes
+        result["Fuel"] =  fuel_consumption
+        result["CommonAlt"] =  most_time_alt
+        result["HighAlt"] = high_altitude
+
+        return result
 
 
 
