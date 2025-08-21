@@ -42,9 +42,9 @@ def test_basic_takeoff_distance_and_speed(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(40.0, -3.0, 40.0, -3.005))
-    assert result[0] == ("TakeoffBounces", [])
-    assert result[1] == ("TakeoffGroundDistance", expected_distance)
-    assert result[2] == ("TakeoffSpeed", 135)
+    assert result["TakeoffBounces"] == []
+    assert result["TakeoffGroundDistance"] == expected_distance
+    assert result["TakeoffSpeed"] == 135
 
 
 def test_takeoff_with_bounces_resets_flags_but_keeps_run_start(analyzer):
@@ -73,9 +73,9 @@ def test_takeoff_with_bounces_resets_flags_but_keeps_run_start(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(41.0, -3.0, 41.0, -3.006))
-    assert result[0] == ("TakeoffBounces", [-120, -180])
-    assert result[1] == ("TakeoffGroundDistance", expected_distance)
-    assert result[2] == ("TakeoffSpeed", 150)
+    assert result["TakeoffBounces"] == [-120, -180]
+    assert result["TakeoffGroundDistance"] == expected_distance
+    assert result["TakeoffSpeed"] == 150
 
 
 def test_no_airborne_raises(analyzer):
@@ -129,9 +129,9 @@ def test_run_start_is_first_location_even_if_initial_events_have_no_location(ana
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(44.0, -6.0, 44.0, -6.006))
-    assert result[0] == ("TakeoffBounces", [])
-    assert result[1] == ("TakeoffGroundDistance", expected_distance)
-    assert result[2] == ("TakeoffSpeed", 140)
+    assert result["TakeoffBounces"] == []
+    assert result["TakeoffGroundDistance"] == expected_distance
+    assert result["TakeoffSpeed"] == 140
 
 
 def test_first_location_is_sticky_even_if_next_locations_change(analyzer):
@@ -153,9 +153,9 @@ def test_first_location_is_sticky_even_if_next_locations_change(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(45.0, -7.000, 45.003, -7.004))
-    assert result[0] == ("TakeoffBounces", [])
-    assert result[1] == ("TakeoffGroundDistance", expected_distance)
-    assert result[2] == ("TakeoffSpeed", 145)
+    assert result["TakeoffBounces"] == []
+    assert result["TakeoffGroundDistance"] == expected_distance
+    assert result["TakeoffSpeed"] == 145
 
 
 @pytest.mark.parametrize("filename, takeoff_start, takeoff_end, bounces_str, takeoff_distance, takeoff_speed", [
@@ -180,6 +180,6 @@ def test_final_landing_analyzer_from_real_files(filename, takeoff_start, takeoff
 
     expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
-    assert result[0] == ("TakeoffBounces", [])
-    assert result[1] == ("TakeoffGroundDistance", int(takeoff_distance))
-    assert result[2] == ("TakeoffSpeed", int(takeoff_speed)) 
+    assert result["TakeoffBounces"] == expected_bounces
+    assert result["TakeoffGroundDistance"] == int(takeoff_distance)
+    assert result["TakeoffSpeed"] == int(takeoff_speed)
