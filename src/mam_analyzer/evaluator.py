@@ -16,7 +16,9 @@ class FlightEvaluator:
         if not phases:
             return metrics
 
-        metrics["duration_seconds"] = (phases[-1].end - phases[0].start).total_seconds()
+        seconds = (phases[-1].end - phases[0].start).total_seconds()
+
+        metrics["duration_minutes"] = round(seconds/60)
 
         return metrics
 

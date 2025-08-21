@@ -18,6 +18,9 @@ class FlightEvent:
     # Other changes not so important to trace
     other_changes: Dict[str, str] = None
 
+    # Raw (export purposes)
+    _raw: Dict[str, Any] = None
+
     def is_full_event(self) -> bool:
         return len(self.other_changes) > 10
 
@@ -47,17 +50,10 @@ class FlightEvent:
             heading=parse_int(changes.get("Heading")),
             flaps=parse_int(changes.get("Flaps")),
             gear=changes.get("Gear"),
-            other_changes=changes
+            other_changes=changes,
+            _raw=event,
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "Timestamp": self.timestamp.isoformat(),
-            "Latitude": self.latitude,
-            "Longitude": self.longitude,
-            "onGround": self.on_ground,
-            "Heading": self.heading,
-            "Flaps": self.flaps,
-            "Gear": self.gear,
-            "Changes": self.other_changes or {}
-        }
+        """Return the event as we imported"""
+        return self._raw
