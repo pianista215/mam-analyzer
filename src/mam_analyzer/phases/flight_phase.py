@@ -19,3 +19,13 @@ class FlightPhase():
 
     def __str__(self):
         return f"{self.name}: {self.start} → {self.end}"
+
+    def to_dict(self) -> dict:
+        """Serialize this phase to a JSON-friendly dict."""
+        return {
+            "name": self.name,
+            "start": self.start.isoformat(),
+            "end": self.end.isoformat(),
+            "analysis": self.analysis,
+            "events": [ev.to_dict() for ev in self.events],  # assumes FlightEvent has to_dict()
+        }

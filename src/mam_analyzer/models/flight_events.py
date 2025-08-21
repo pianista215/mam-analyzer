@@ -49,3 +49,15 @@ class FlightEvent:
             gear=changes.get("Gear"),
             other_changes=changes
         )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "Timestamp": self.timestamp.isoformat(),
+            "Latitude": self.latitude,
+            "Longitude": self.longitude,
+            "onGround": self.on_ground,
+            "Heading": self.heading,
+            "Flaps": self.flaps,
+            "Gear": self.gear,
+            "Changes": self.other_changes or {}
+        }

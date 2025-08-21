@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -14,7 +14,7 @@ class TouchAndGoAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> dict:
+    ) -> Dict[str, Any]:
         """Analyze touch phase generating:
            - number of bounces
            - meters traveled until we are back in the sky

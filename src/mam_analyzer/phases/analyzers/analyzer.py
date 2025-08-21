@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List
+from typing import List, Dict, Any
 from mam_analyzer.models.flight_events import FlightEvent
 
 class Analyzer(ABC):
@@ -10,7 +10,7 @@ class Analyzer(ABC):
         events: List[FlightEvent],
         start_time: int,
         end_time: int
-    ) -> dict:
+    ) -> Dict[str, Any]:
         """
         Analyze the phase of flight that begins at `start_time` and ends at `end_time`,
         using the subset of `events` that occurred within this interval.

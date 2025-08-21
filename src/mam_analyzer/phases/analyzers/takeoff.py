@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -16,7 +16,7 @@ class TakeoffAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> dict:
+    ) -> Dict[str, Any]:
         """Analyze takeoff phase generating:
            - number of bounces
            - takeoff speed 
