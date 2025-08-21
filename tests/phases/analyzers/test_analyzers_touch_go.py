@@ -43,9 +43,9 @@ def test_basic_touch_and_go(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(40.0, -3.0, 40.0, -3.005))
-    assert result[0] == ("TouchGoVSFpm", -300)
-    assert result[1] == ("TouchGoBounces", [])
-    assert result[2] == ("TouchGoGroundDistance", expected_distance)
+    assert result["TouchGoVSFpm"] == -300
+    assert result["TouchGoBounces"] == []
+    assert result["TouchGoGroundDistance"] == expected_distance
 
 
 def test_touch_and_go_with_bounces(analyzer):
@@ -80,9 +80,9 @@ def test_touch_and_go_with_bounces(analyzer):
 
     expected_distance = round(haversine(44.0, -3.0, 44.0, -3.005))
 
-    assert result[0] == ("TouchGoVSFpm", -250)
-    assert result[1] == ("TouchGoBounces", [-180, -220])
-    assert result[2] == ("TouchGoGroundDistance", expected_distance)
+    assert result["TouchGoVSFpm"] == -250
+    assert result["TouchGoBounces"] == [-180, -220]
+    assert result["TouchGoGroundDistance"] == expected_distance
 
 
 
@@ -123,6 +123,6 @@ def test_touch_go_analyzer_from_real_files(filename, touch_go_start, touch_go_en
 
     expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
-    assert result[0] == ("TouchGoVSFpm", int(touch_go_vs))
-    assert result[1] == ("TouchGoBounces", expected_bounces)
-    assert result[2] == ("TouchGoGroundDistance", int(touch_ground_distance))         
+    assert result["TouchGoVSFpm"] == int(touch_go_vs)
+    assert result["TouchGoBounces"] == expected_bounces
+    assert result["TouchGoGroundDistance"] == int(touch_ground_distance)
