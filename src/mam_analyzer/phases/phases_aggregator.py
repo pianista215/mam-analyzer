@@ -100,7 +100,8 @@ class PhasesAggregator:
 
         # Approach starts 3 minutes before touch
         app_start = touch_phase.start + timedelta(seconds=-180)
-        app_phase = self.__generate_phase(events, "approach", app_start, touch_phase.start, self.approach_analyzer)
+        app_end = touch_phase.start +timedelta(microseconds=-1)
+        app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer)
         return app_phase 
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
@@ -137,7 +138,15 @@ class PhasesAggregator:
             first_timestamp = events[0].timestamp
 
             if first_timestamp != _takeoff_start:
-                result.append(self.__generate_phase(events, "taxi", first_timestamp, _takeoff_start, None))
+                result.append(
+                    self.__generate_phase(
+                        events, 
+                        "taxi", 
+                        first_timestamp, 
+                        _takeoff_start + timedelta(microseconds=-1), 
+                        None
+                    )
+                )
 
         else:
             _startup_start, _startup_end = _startup
@@ -145,7 +154,15 @@ class PhasesAggregator:
             result.append(_startup_phase)
 
             if _startup_end != _takeoff_start:
-                result.append(self.__generate_phase(events, "taxi", _startup_end, _takeoff_start, None))
+                result.append(
+                    self.__generate_phase(
+                        events, 
+                        "taxi", 
+                        _startup_end + timedelta(microseconds=1), 
+                        _takeoff_start + timedelta(microseconds=-1), 
+                        None
+                    )
+                )
 
         result.append(_takeoff_phase)
 
@@ -168,8 +185,8 @@ class PhasesAggregator:
             
             found_cruise = cruise_detector.detect(
                 events,
-                _takeoff_end,
-                _last_landing_app.start
+                _takeoff_end + timedelta(microseconds=1),
+                _last_landing_app.start + timedelta(microseconds=-1)
             )
 
             if found_cruise is not None:
@@ -178,7 +195,7 @@ class PhasesAggregator:
                 result.append(cruise_phase)
 
         else:
-            look_for_cruise_start = _takeoff_end
+            look_for_cruise_start = _takeoff_end + timedelta(microseconds=1)
 
             for _touch_go in _touch_go_phases:
 
@@ -187,7 +204,7 @@ class PhasesAggregator:
                 found_cruise = cruise_detector.detect(
                     events,
                     look_for_cruise_start,
-                    _touch_go_app.start
+                    _touch_go_app.start + timedelta(microseconds=-1)
                 )
                 if found_cruise is not None:
                     cruise_start, cruise_end = found_cruise
@@ -196,13 +213,13 @@ class PhasesAggregator:
 
                 result.append(_touch_go_app)
                 result.append(_touch_go)
-                look_for_cruise_start = _touch_go.end
+                look_for_cruise_start = _touch_go.end + timedelta(microseconds=1)
 
             # Add cruise part from last_touch_go to last_landing_app start
             found_cruise = cruise_detector.detect(
                 events,
                 look_for_cruise_start,
-                _last_landing_app.start
+                _last_landing_app.start + timedelta(microseconds=-1)
             )
             if found_cruise is not None:
                 cruise_start, cruise_end = found_cruise
@@ -222,14 +239,30 @@ class PhasesAggregator:
             last_timestamp = events[len(events) - 1].timestamp
 
             if _landing_end != last_timestamp:
-                result.append(self.__generate_phase(events, "taxi", _landing_end, last_timestamp, None))
+                result.append(
+                    self.__generate_phase(
+                        events, 
+                        "taxi", 
+                        _landing_end + timedelta(microseconds=1), 
+                        last_timestamp, 
+                        None
+                    )
+                )
 
         else:
             _shutdown_start, _shutdown_end = _shutdown
             _shutdown_phase = self.__generate_phase(events, "shutdown", _shutdown_start, _shutdown_end, None)
 
             if _landing_end != _shutdown_start:
-                result.append(self.__generate_phase(events, "taxi", _landing_end, _shutdown_start, None))
+                result.append(
+                    self.__generate_phase(
+                        events, 
+                        "taxi", 
+                        _landing_end + timedelta(microseconds=1), 
+                        _shutdown_start + timedelta(microseconds=-1), 
+                        None
+                    )
+                )
 
             result.append(_shutdown_phase)
 
