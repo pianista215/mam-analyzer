@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -14,7 +14,7 @@ class TouchAndGoAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> List[Tuple[str, str]]:
+    ) -> Dict[str, Any]:
         """Analyze touch phase generating:
            - number of bounces
            - meters traveled until we are back in the sky
@@ -65,11 +65,13 @@ class TouchAndGoAnalyzer(Analyzer):
         if landing_vs_fpm is None:
             raise RuntimeError("Can't find touchdown from touch & go phase")
 
-        landing_tuple = ("TouchGoVSFpm", landing_vs_fpm)
-        bounces_tuple = ("TouchGoBounces", bounces_vs)
-        distance_tuple = ("TouchGoGroundDistance", meters_until_airborne)
+        result = {}
 
-        return [landing_tuple, bounces_tuple, distance_tuple]
+        result["TouchGoVSFpm"] = landing_vs_fpm
+        result["TouchGoBounces"] = bounces_vs
+        result["TouchGoGroundDistance"] = meters_until_airborne
+
+        return result
 
 
 

@@ -33,14 +33,14 @@ def test_analyze_basic_case(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    expected = [
-        ("MinVSFpm", -700),
-        ("MaxVSFpm", -300),
-        ("AvgVSFpm", -500),
-        ("LastMinuteMinVSFpm", -400),
-        ("LastMinuteMaxVSFpm", -300),
-        ("LastMinuteAvgVSFpm", -350),
-    ]
+    expected = {
+        "MinVSFpm": -700,
+        "MaxVSFpm": -300,
+        "AvgVSFpm": -500,
+        "LastMinuteMinVSFpm": -400,
+        "LastMinuteMaxVSFpm": -300,
+        "LastMinuteAvgVSFpm": -350,
+    }
     assert result == expected
 
 
@@ -54,14 +54,14 @@ def test_analyze_only_one_event(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    expected = [
-        ("MinVSFpm", -800),
-        ("MaxVSFpm", -800),
-        ("AvgVSFpm", -800),
-        ("LastMinuteMinVSFpm", -800),
-        ("LastMinuteMaxVSFpm", -800),
-        ("LastMinuteAvgVSFpm", -800),
-    ]
+    expected = {
+        "MinVSFpm": -800,
+        "MaxVSFpm": -800,
+        "AvgVSFpm": -800,
+        "LastMinuteMinVSFpm": -800,
+        "LastMinuteMaxVSFpm": -800,
+        "LastMinuteAvgVSFpm": -800,
+    }
     assert result == expected
 
 
@@ -78,14 +78,14 @@ def test_analyze_ignores_events_outside_range(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    expected = [
-        ("MinVSFpm", -600),
-        ("MaxVSFpm", -500),
-        ("AvgVSFpm", -550),
-        ("LastMinuteMinVSFpm", -600),
-        ("LastMinuteMaxVSFpm", -600),
-        ("LastMinuteAvgVSFpm", -600),
-    ]
+    expected = {
+        "MinVSFpm": -600,
+        "MaxVSFpm": -500,
+        "AvgVSFpm": -550,
+        "LastMinuteMinVSFpm": -600,
+        "LastMinuteMaxVSFpm": -600,
+        "LastMinuteAvgVSFpm": -600,
+    }
     assert result == expected
 
 
@@ -135,9 +135,9 @@ def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs,
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end))
 
-    assert result[0] == ('MinVSFpm', int(min_vs))
-    assert result[1] == ('MaxVSFpm', int(max_vs))
-    assert result[2] == ('AvgVSFpm', int(avg_vs))        
-    assert result[3] == ('LastMinuteMinVSFpm', int(last_min_min_vs))
-    assert result[4] == ('LastMinuteMaxVSFpm', int(last_min_max_vs))
-    assert result[5] == ('LastMinuteAvgVSFpm', int(last_min_avg_vs))
+    assert result['MinVSFpm'] == int(min_vs)
+    assert result['MaxVSFpm'] == int(max_vs)
+    assert result['AvgVSFpm'] == int(avg_vs)        
+    assert result['LastMinuteMinVSFpm'] == int(last_min_min_vs)
+    assert result['LastMinuteMaxVSFpm'] == int(last_min_max_vs)
+    assert result['LastMinuteAvgVSFpm'] == int(last_min_avg_vs)

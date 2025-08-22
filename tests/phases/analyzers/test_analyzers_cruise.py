@@ -41,10 +41,9 @@ def test_basic_cruise(analyzer):
     events.append(end_event)    
 
     result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
-    assert result is not None
-    assert result[0] == ('Fuel', 200)
-    assert result[1] == ('CommonAlt', 20000)
-    assert result[2] == ('HighAlt', 20000)
+    assert result['Fuel'] == 200
+    assert result['CommonAlt'] == 20000
+    assert result['HighAlt'] == 20000
 
 def test_multiple_altitude_on_cruise(analyzer):
     base = datetime(2025, 7, 5, 10, 0, 0)
@@ -71,10 +70,9 @@ def test_multiple_altitude_on_cruise(analyzer):
     events.append(end_event)   
 
     result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
-    assert result is not None
-    assert result[0] == ('Fuel', 616)
-    assert result[1] == ('CommonAlt', 24000)
-    assert result[2] == ('HighAlt', 24000)    
+    assert result['Fuel'] == 616
+    assert result['CommonAlt'] == 24000
+    assert result['HighAlt'] == 24000
 
 def test_high_altitude_differs_from_common(analyzer):
     base = datetime(2025, 7, 5, 12, 0, 0)
@@ -95,10 +93,9 @@ def test_high_altitude_differs_from_common(analyzer):
     events.append(make_event(base + timedelta(minutes=20), Altitude=20020, FuelKg="4800"))
 
     result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
-    assert result is not None
-    assert result[0] == ('Fuel', 200)
-    assert result[1] == ('CommonAlt', 20000)
-    assert result[2] == ('HighAlt', 26000)
+    assert result['Fuel'] == 200
+    assert result['CommonAlt'] == 20000
+    assert result['HighAlt'] == 26000
 
 def test_intermediate_fuel_changes_are_ignored(analyzer):
     base = datetime(2025, 7, 5, 16, 0, 0)
@@ -119,9 +116,9 @@ def test_intermediate_fuel_changes_are_ignored(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[len(events)- 1].timestamp)
     assert result is not None
 
-    assert result[0] == ('Fuel', 500)
-    assert result[1] == ('CommonAlt', 20000)
-    assert result[2] == ('HighAlt', 20000)    
+    assert result['Fuel'] == 500
+    assert result['CommonAlt'] == 20000
+    assert result['HighAlt'] == 20000
 
 def test_missing_start_fuel_raises(analyzer):
     base = datetime(2025, 7, 5, 13, 0, 0)
@@ -170,6 +167,6 @@ def test_cruise_analyzer_from_real_files(filename, cruise_start, cruise_end, fue
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(cruise_start), parse_timestamp(cruise_end))
 
-    assert result[0] == ('Fuel', int(fuel))
-    assert result[1] == ('CommonAlt', int(common))
-    assert result[2] == ('HighAlt', int(highest))
+    assert result['Fuel'] == int(fuel)
+    assert result['CommonAlt'] == int(common)
+    assert result['HighAlt'] == int(highest)

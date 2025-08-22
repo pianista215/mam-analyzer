@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -16,7 +16,7 @@ class TakeoffAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> List[Tuple[str, str]]:
+    ) -> Dict[str, Any]:
         """Analyze takeoff phase generating:
            - number of bounces
            - takeoff speed 
@@ -73,11 +73,13 @@ class TakeoffAnalyzer(Analyzer):
         if meters_until_airborne is None or airborne_speed is None:
             raise RuntimeError("Can't get meters and speed for takeoff phase")
 
-        bounces_tuple = ("TakeoffBounces", bounces_vs)
-        distance_tuple = ("TakeoffGroundDistance", meters_until_airborne)
-        speed_tuple = ("TakeoffSpeed", airborne_speed)
+        result = {}
 
-        return [bounces_tuple, distance_tuple, speed_tuple]
+        result["TakeoffBounces"] = bounces_vs
+        result["TakeoffGroundDistance"] = meters_until_airborne
+        result["TakeoffSpeed"] = airborne_speed
+
+        return result
 
 
 

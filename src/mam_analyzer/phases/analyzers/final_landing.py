@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
@@ -14,7 +14,7 @@ class FinalLandingAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> List[Tuple[str, str]]:
+    ) -> Dict[str, Any]:
         """Analyze final landing phase generating:
            - number of bounces
            - meters traveled until brake below 40knots
@@ -65,11 +65,13 @@ class FinalLandingAnalyzer(Analyzer):
         if landing_vs_fpm is None:
             raise RuntimeError("Can't find touchdown from landing phase")
 
-        landing_tuple = ("LandingVSFpm", landing_vs_fpm)
-        bounces_tuple = ("LandingBounces", bounces_vs)
-        brake_tuple = ("BrakeDistance", meters_until_brake)
+        result = {}
 
-        return [landing_tuple, bounces_tuple, brake_tuple]
+        result["LandingVSFpm"] = landing_vs_fpm
+        result["LandingBounces"] = bounces_vs
+        result["BrakeDistance"] = meters_until_brake
+
+        return result
 
 
 

@@ -1,23 +1,28 @@
-from datetime import datetime
-from typing import List, Tuple, Optional
-from mam_analyzer.phases.base import PhaseDetector
-from mam_analyzer.models import FlightEvent  # Asumo que ya tienes un modelo así
+from typing import List, Dict, Any
+
+from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.phases_aggregator import PhasesAggregator
+from mam_analyzer.phases.flight_phase import FlightPhase
+from mam_analyzer.flight_report import FlightReport
 
 
 class FlightEvaluator:
     def __init__(self):
-        self.detectors: List[PhaseDetector] = []
-        self.results: List[Tuple[str, datetime, datetime]] = []
+        self.aggregator = PhasesAggregator()
 
-    def add_detector(self, detector: PhaseDetector):
-        self.detectors.append(detector)
+    def calculate_global_metrics(self, phases: List[FlightPhase])-> Dict[str, Any]:
+        metrics: dict[str, Any] = {}
 
-    def evaluate(self, events: List[FlightEvent]):
-        self.results.clear()
-        for detector in self.detectors:
-            result = detector.detect(events)
-            if result:
-                self.results.append((detector.phase_name, *result))
+        if not phases:
+            return metrics
 
-    def get_results(self) -> List[Tuple[str, datetime, datetime]]:
-        return self.results
+        seconds = (phases[-1].end - phases[0].start).total_seconds()
+
+        metrics["duration_minutes"] = round(seconds/60)
+
+        return metrics
+
+    def evaluate(self, events: List[FlightEvent]) -> FlightReport:
+        phases: List[FlightPhase] = self.aggregator.identify_phases(events)
+        global_metrics = self.calculate_global_metrics(phases)
+        return FlightReport(phases=phases, global_metrics=global_metrics)
