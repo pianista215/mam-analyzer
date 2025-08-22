@@ -166,8 +166,22 @@ def test_phases_aggregator(filename, expected_phases):
         phase_found = None
         for phase in phases:
             for ev in phase.events:
-                if e.timestamp == ev.timestamp:
+                if e._raw["Timestamp"] == ev._raw["Timestamp"]:
                     if phase_found is None:
                         phase_found = phase
                     else:
-                        pytest.fail(f"Event {e} found in multiple phases: {phase_found.name}, {phase.name}")
+                        pytest.fail(
+                            f"Event {e} found in multiple phases: "
+                            f"{phase_found.name}, {phase.name}"
+                        )
+
+        if phase_found is None:
+            # Check if there is a phase where it should be
+            containing = [p for p in phases if p.contains(e)]
+            if containing:
+                pytest.fail(
+                    f"Event {e} not assigned to any phase.events, "
+                    f"but its timestamp is within phase ranges: "
+                    f"{[p.name for p in containing]}"
+                )
+
