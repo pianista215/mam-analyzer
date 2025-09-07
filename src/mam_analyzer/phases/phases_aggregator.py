@@ -102,7 +102,59 @@ class PhasesAggregator:
         app_start = touch_phase.start + timedelta(seconds=-180)
         app_end = touch_phase.start +timedelta(microseconds=-1)
         app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer)
-        return app_phase 
+        return app_phase
+
+    def __fill_gaps_with_unknown(
+        self, 
+        phases: List[FlightPhase], 
+        events: List[FlightEvent]
+    ) -> List[FlightPhase]:
+        if not phases:
+            return []
+
+        filled = []
+        phases = sorted(phases, key=lambda p: p.start)
+
+        # Unknown at the beginning
+        if events[0].timestamp < phases[0].start:
+            filled.append(
+                self.__generate_phase(
+                    events,
+                    "unknown",
+                    events[0].timestamp,
+                    phases[0].start - timedelta(microseconds=1),
+                    None,
+                )
+            )
+
+        for prev, nxt in zip(phases, phases[1:]):
+            filled.append(prev)
+            if prev.end + timedelta(microseconds=1) < nxt.start:
+                filled.append(
+                    self.__generate_phase(
+                        events,
+                        "unknown",
+                        prev.end + timedelta(microseconds=1),
+                        nxt.start - timedelta(microseconds=1),
+                        None,
+                    )
+                )
+
+        filled.append(phases[-1])
+
+        # Unknown at the end
+        if phases[-1].end < events[-1].timestamp:
+            filled.append(
+                self.__generate_phase(
+                    events,
+                    "unknown",
+                    phases[-1].end + timedelta(microseconds=1),
+                    events[-1].timestamp,
+                    None,
+                )
+            )
+
+        return filled        
 
     def identify_phases(self, events: List[FlightEvent])-> List[FlightPhase]:
         result: List[FlightPhase] = []
@@ -266,9 +318,11 @@ class PhasesAggregator:
 
             result.append(_shutdown_phase)
 
-        for phase in result:
+        final_result = self.__fill_gaps_with_unknown(result, events)
+
+        for phase in final_result:
             print(phase)
 
-        return result
+        return final_result
 
 
