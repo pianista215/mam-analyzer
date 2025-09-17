@@ -93,14 +93,23 @@ class PhasesAggregator:
     def _generate_approach(
         self, 
         events: List[FlightEvent], 
-        touch_phase: FlightPhase
+        touch_phase: FlightPhase,
+        prev_phase: Optional[FlightPhase] = None,
     )-> FlightPhase:
         if touch_phase.name not in {"final_landing", "touch_go"}:
             raise RuntimeError("Final landing or touch_go expected to generate approach")
 
-        # Approach starts 3 minutes before touch
-        app_start = touch_phase.start + timedelta(seconds=-180)
+        # Approach starts 3 minutes before touch if it doesn't overlap other phase
+        proposed_start = touch_phase.start + timedelta(seconds=-180)
+
+        if prev_phase:
+            min_allowed = prev_phase.end + timedelta(microseconds=1)
+            app_start = max(proposed_start, min_allowed)
+        else:
+            app_start = proposed_start
+
         app_end = touch_phase.start +timedelta(microseconds=-1)
+
         app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer)
         return app_phase
 
@@ -229,7 +238,7 @@ class PhasesAggregator:
         )
 
         # Generate last approach for final_landing
-        _last_landing_app = self._generate_approach(events, _landing_phase)
+        _last_landing_app = self._generate_approach(events, _landing_phase, result[-1] if result else None)
 
         cruise_detector, cruise_analyzer = self.detectors["cruise"]
         
@@ -251,7 +260,7 @@ class PhasesAggregator:
 
             for _touch_go in _touch_go_phases:
 
-                _touch_go_app = self._generate_approach(events, _touch_go)
+                _touch_go_app = self._generate_approach(events, _touch_go, result[-1] if result else None)
                 
                 found_cruise = cruise_detector.detect(
                     events,
@@ -284,11 +293,15 @@ class PhasesAggregator:
         result.append(_landing_phase)
 
         # === Shutdown / Taxi after landing ===
+        last_timestamp = events[len(events) - 1].timestamp
         shutdown_detector, _ = self.detectors["shutdown"]
-        _shutdown = shutdown_detector.detect(events, None, None)
+        _shutdown = shutdown_detector.detect(
+            events, 
+            _landing_end + timedelta(microseconds=1), 
+            last_timestamp
+        )
 
-        if _shutdown is None:
-            last_timestamp = events[len(events) - 1].timestamp
+        if _shutdown is None:            
 
             if _landing_end != last_timestamp:
                 result.append(
