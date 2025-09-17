@@ -27,12 +27,29 @@ class FlightEvaluator:
         if block_time is not None:
             metrics["block_time_minutes"] = block_time
 
+        metrics["airborne_time_minutes"] = self.calculate_airborne_time(phases)
+
         return metrics
 
     def evaluate(self, events: List[FlightEvent]) -> FlightReport:
         phases: List[FlightPhase] = self.aggregator.identify_phases(events)
         global_metrics = self.calculate_global_metrics(phases)
         return FlightReport(phases=phases, global_metrics=global_metrics)
+
+    def calculate_airborne_time(self, phases: List[FlightPhase]) -> int:
+        start_airborne_time = None
+        end_airborne_time = None
+
+        for phase in phases:
+            if phase.name == 'takeoff':
+                start_airborne_time = phase.start
+            elif phase.name == 'final_landing':
+                end_airborne_time = phase.start
+
+        elapsed_seconds = (end_airborne_time - start_airborne_time).total_seconds()
+        return round(elapsed_seconds / 60)
+
+
 
     def calculate_block_time(self, phases: List[FlightPhase]) -> Optional[int]:
         first_phase = phases[0]

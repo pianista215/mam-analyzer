@@ -14,57 +14,67 @@ DATA_DIR = Path("data")
         (
             "UHSH-UHMM-B350.json",
             [
-                ("block_time_minutes","113")
+                ("block_time_minutes","113"),
+                ("airborne_time_minutes", "105")
             ],
         ),
         (
             "LEPA-LEPP-737.json",
             [
-                ("block_time_minutes","79")
+                ("block_time_minutes","79"),
+                ("airborne_time_minutes", "64")
             ],
         ),
         (
             "UHPT-UHMA-SF34.json",
             [
-                ("block_time_minutes","127")
+                ("block_time_minutes","127"),
+                ("airborne_time_minutes", "117")
             ],
         ),
         (
             "PAOM-PANC-B350-fromtaxi.json",
             [
+                ("airborne_time_minutes", "111")
             ],
         ),
         (
             "UHPT-UHMA-B350.json",
             [
-                ("block_time_minutes","117")
+                ("block_time_minutes","117"),
+                ("airborne_time_minutes", "104")
             ],
         ),
         (
             "UHMA-PAOM-B350.json",
             [
-                ("block_time_minutes","115")
+                ("block_time_minutes","115"),
+                ("airborne_time_minutes", "108")
             ],
         ),
         (
             "LEBB-touchgoLEXJ-LEAS.json",
             [
+                ("airborne_time_minutes", "57")
             ],
         ),
         (
             "LPMA-Circuits-737.json",
             [
+                ("airborne_time_minutes", "26")
             ],
         ),
         (
             "LEPP-LEMG-737.json",
             [
-                ("block_time_minutes","85")
+                ("block_time_minutes","85"),
+                ("airborne_time_minutes", "79")
             ],
         ),
         (
             "LEVD-fast-crash.json",
-            [            
+            [
+                ("airborne_time_minutes", "2")      
             ],
         ),
     ],
