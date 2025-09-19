@@ -29,7 +29,12 @@ class FlightEvaluator:
             metrics["block_time_minutes"] = block_time
 
         metrics["airborne_time_minutes"] = self.calculate_airborne_time(phases)
-        metrics["initial_fob_kg"] = self.calculate_initial_fob(phases[0])
+
+        initial_fob_kg = self.calculate_initial_fob(phases[0])
+        metrics["initial_fob_kg"] = round(initial_fob_kg)
+
+        fuel_consumed = self.calculate_consumed_fuel(initial_fob_kg, phases)
+        metrics["fuel_consumed_kg"] = round(fuel_consumed)
 
         return metrics
 
@@ -93,7 +98,7 @@ class FlightEvaluator:
         else:
             return None
 
-    def calculate_initial_fob(self, first_phase: FlightPhase) -> int:
+    def calculate_initial_fob(self, first_phase: FlightPhase) -> float:
         initial_fob = 0
         for event in first_phase.events:
             if event_has_fuel(event):
@@ -101,4 +106,22 @@ class FlightEvaluator:
                 if initial_fob < fuel :
                     initial_fob = fuel                
 
-        return round(initial_fob)
+        return initial_fob
+
+    def calculate_consumed_fuel(self, initial_fob: float, phases: List[FlightPhase]) -> float:
+        last_fuel_event_kg = 0
+
+        def look_for_fuel_event(phase: FlightPhase) -> float:
+            fuel_event_kg = None
+            for event in reversed(phase.events):
+                if event_has_fuel(event):
+                    fuel_event_kg = get_fuel_kg_as_float(event)
+                    break
+            return fuel_event_kg
+
+        for phase in reversed(phases):
+            last_fuel_event_kg = look_for_fuel_event(phase)
+            if last_fuel_event_kg is not None:
+                break
+
+        return initial_fob - last_fuel_event_kg
