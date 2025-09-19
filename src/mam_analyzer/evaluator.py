@@ -4,6 +4,7 @@ from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.phases_aggregator import PhasesAggregator
 from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.flight_report import FlightReport
+from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
 from mam_analyzer.utils.units import coords_differ
@@ -28,6 +29,7 @@ class FlightEvaluator:
             metrics["block_time_minutes"] = block_time
 
         metrics["airborne_time_minutes"] = self.calculate_airborne_time(phases)
+        metrics["initial_fob_kg"] = self.calculate_initial_fob(phases[0])
 
         return metrics
 
@@ -48,8 +50,6 @@ class FlightEvaluator:
 
         elapsed_seconds = (end_airborne_time - start_airborne_time).total_seconds()
         return round(elapsed_seconds / 60)
-
-
 
     def calculate_block_time(self, phases: List[FlightPhase]) -> Optional[int]:
         first_phase = phases[0]
@@ -92,3 +92,13 @@ class FlightEvaluator:
 
         else:
             return None
+
+    def calculate_initial_fob(self, first_phase: FlightPhase) -> int:
+        initial_fob = 0
+        for event in first_phase.events:
+            if event_has_fuel(event):
+                fuel = get_fuel_kg_as_float(event)
+                if initial_fob < fuel :
+                    initial_fob = fuel                
+
+        return round(initial_fob)
