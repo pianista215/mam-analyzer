@@ -23,4 +23,7 @@ def haversine(lat1, lon1, lat2, lon2):
     a = sin(dphi/2)**2 + cos(phi1) * cos(phi2) * sin(dlambda/2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     
-    return R * c    
+    return R * c
+
+def meters_to_nm(meters: float) -> float:
+    return meters / 1852

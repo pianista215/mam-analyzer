@@ -7,7 +7,7 @@ from mam_analyzer.flight_report import FlightReport
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
-from mam_analyzer.utils.units import coords_differ
+from mam_analyzer.utils.units import coords_differ, haversine, meters_to_nm
 
 
 
@@ -35,6 +35,8 @@ class FlightEvaluator:
 
         fuel_consumed = self.calculate_consumed_fuel(initial_fob_kg, phases)
         metrics["fuel_consumed_kg"] = round(fuel_consumed)
+
+        metrics["distance_nm"] = self.calculate_distance(phases)
 
         return metrics
 
@@ -125,3 +127,20 @@ class FlightEvaluator:
                 break
 
         return initial_fob - last_fuel_event_kg
+
+    def calculate_distance(self, phases: List[FlightPhase]) -> int:
+        distance_meters = 0.0
+        last_lat = None
+        last_lon = None
+
+        for phase in phases:
+            if phase.name != "startup" and phase.name != "taxi" and phase.name != "shutdown":
+                for event in phase.events:
+                    if event_has_location(event):
+                        if last_lat is not None and last_lon is not None:
+                            distance_meters += haversine(event.latitude, event.longitude, last_lat, last_lon)
+                        last_lat = event.latitude
+                        last_lon = event.longitude
+                        
+        return round(meters_to_nm(distance_meters))
+
