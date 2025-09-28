@@ -55,7 +55,7 @@ def test_landing_with_bounces(analyzer):
     events.append(touchdown)
 
     # Bounce 1
-    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-180, IASKnots=100, Latitude=41.0, Longitude=-3.001)
+    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-780, IASKnots=100, Latitude=41.0, Longitude=-3.001)
     events.append(bounce1)
 
     # Bounce 2
@@ -70,12 +70,15 @@ def test_landing_with_bounces(analyzer):
 
     expected_distance = round(haversine(41.0, -3.0, 41.0, -3.01))
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -800
-    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == [-180, -220]
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == [-780, -220]
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == expected_distance
-    assert len(result.issues) == 1
+    assert len(result.issues) == 2
     assert result.issues[0].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
     assert result.issues[0].timestamp == base
     assert result.issues[0].value == -800
+    assert result.issues[1].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[1].timestamp == base + timedelta(seconds=3)
+    assert result.issues[1].value == -780    
 
 
 def test_touchdown_already_below_40_knots(analyzer):
@@ -119,17 +122,17 @@ def test_no_brake_event_returns_none(analyzer):
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == None
 
 
-@pytest.mark.parametrize("filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance", [
-    ("LEPA-LEPP-737.json", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681", "-73", "", "1120"),
-    ("LEPP-LEMG-737.json", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811", "-329", "", "997"),
-    ("LPMA-Circuits-737.json", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146", "-995", "-80", "781"),
-    ("UHMA-PAOM-B350.json", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254", "-27", "", "675"),
-    ("UHPT-UHMA-B350.json", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667", "-83", "", "766"),
-    ("UHPT-UHMA-SF34.json", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155", "-150", "", "1437"),
-    ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305", "-121", "", "596"),
-    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404", "-11", "", "1005"),
+@pytest.mark.parametrize("filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, landing_issue", [
+    ("LEPA-LEPP-737.json", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681", "-73", "", "1120", ""),
+    ("LEPP-LEMG-737.json", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811", "-329", "", "997", ""),
+    ("LPMA-Circuits-737.json", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146", "-995", "-80", "781", "-995"),
+    ("UHMA-PAOM-B350.json", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254", "-27", "", "675", ""),
+    ("UHPT-UHMA-B350.json", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667", "-83", "", "766", ""),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155", "-150", "", "1437", ""),
+    ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305", "-121", "", "596", ""),
+    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404", "-11", "", "1005", ""),
 ])
-def test_final_landing_analyzer_from_real_files(filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, analyzer):
+def test_final_landing_analyzer_from_real_files(filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, landing_issue, analyzer):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -143,3 +146,10 @@ def test_final_landing_analyzer_from_real_files(filename, landing_start, landing
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == int(landing_vs)
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == expected_bounces
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == int(brake_distance) 
+
+    if landing_issue != "":
+        assert result.issues[0].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+        assert result.issues[0].timestamp == parse_timestamp(landing_start)
+        assert result.issues[0].value == int(landing_issue)
+    else:
+        assert len(result.issues) == 0
