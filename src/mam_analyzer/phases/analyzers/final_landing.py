@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
 from mam_analyzer.utils.units import haversine
@@ -14,7 +15,7 @@ class FinalLandingAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> Dict[str, Any]:
+    ) -> AnalysisResult:
         """Analyze final landing phase generating:
            - number of bounces
            - meters traveled until brake below 40knots
@@ -65,11 +66,11 @@ class FinalLandingAnalyzer(Analyzer):
         if landing_vs_fpm is None:
             raise RuntimeError("Can't find touchdown from landing phase")
 
-        result = {}
+        result = AnalysisResult()
 
-        result["LandingVSFpm"] = landing_vs_fpm
-        result["LandingBounces"] = bounces_vs
-        result["BrakeDistance"] = meters_until_brake
+        result.phase_metrics["LandingVSFpm"] = landing_vs_fpm
+        result.phase_metrics["LandingBounces"] = bounces_vs
+        result.phase_metrics["BrakeDistance"] = meters_until_brake
 
         return result
 

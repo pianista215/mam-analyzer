@@ -41,7 +41,7 @@ def test_analyze_basic_case(analyzer):
         "LastMinuteMaxVSFpm": -300,
         "LastMinuteAvgVSFpm": -350,
     }
-    assert result == expected
+    assert result.phase_metrics == expected
 
 
 def test_analyze_only_one_event(analyzer):
@@ -62,7 +62,7 @@ def test_analyze_only_one_event(analyzer):
         "LastMinuteMaxVSFpm": -800,
         "LastMinuteAvgVSFpm": -800,
     }
-    assert result == expected
+    assert result.phase_metrics == expected
 
 
 def test_analyze_ignores_events_outside_range(analyzer):
@@ -86,7 +86,7 @@ def test_analyze_ignores_events_outside_range(analyzer):
         "LastMinuteMaxVSFpm": -600,
         "LastMinuteAvgVSFpm": -600,
     }
-    assert result == expected
+    assert result.phase_metrics == expected
 
 
 def test_analyze_raises_if_no_vertical_speed(analyzer):
@@ -135,9 +135,9 @@ def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs,
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end))
 
-    assert result['MinVSFpm'] == int(min_vs)
-    assert result['MaxVSFpm'] == int(max_vs)
-    assert result['AvgVSFpm'] == int(avg_vs)        
-    assert result['LastMinuteMinVSFpm'] == int(last_min_min_vs)
-    assert result['LastMinuteMaxVSFpm'] == int(last_min_max_vs)
-    assert result['LastMinuteAvgVSFpm'] == int(last_min_avg_vs)
+    assert result.phase_metrics['MinVSFpm'] == int(min_vs)
+    assert result.phase_metrics['MaxVSFpm'] == int(max_vs)
+    assert result.phase_metrics['AvgVSFpm'] == int(avg_vs)        
+    assert result.phase_metrics['LastMinuteMinVSFpm'] == int(last_min_min_vs)
+    assert result.phase_metrics['LastMinuteMaxVSFpm'] == int(last_min_max_vs)
+    assert result.phase_metrics['LastMinuteAvgVSFpm'] == int(last_min_avg_vs)

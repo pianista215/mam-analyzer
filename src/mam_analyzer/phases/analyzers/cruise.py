@@ -4,6 +4,7 @@ from typing import List, Tuple, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.altitude import event_has_altitude, get_altitude_as_int_rounded_to
 from mam_analyzer.utils.filter import always_true
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
@@ -16,7 +17,7 @@ class CruiseAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> Dict[str, Any]:
+    ) -> AnalysisResult:
         """Analyze cruise phase generating:
            - fuel consumption
            - most common altitude flown
@@ -129,12 +130,12 @@ class CruiseAnalyzer(Analyzer):
         if result_altitudes is None:
             raise RuntimeError("Can't retrieve most flown altitude or high altitude")
 
-        result = {}
+        result = AnalysisResult()
 
         most_time_alt, high_altitude = result_altitudes
-        result["Fuel"] =  fuel_consumption
-        result["CommonAlt"] =  most_time_alt
-        result["HighAlt"] = high_altitude
+        result.phase_metrics["Fuel"] =  fuel_consumption
+        result.phase_metrics["CommonAlt"] =  most_time_alt
+        result.phase_metrics["HighAlt"] = high_altitude
 
         return result
 

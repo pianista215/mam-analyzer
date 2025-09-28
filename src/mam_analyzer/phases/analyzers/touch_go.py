@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.units import haversine
@@ -14,7 +15,7 @@ class TouchAndGoAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> Dict[str, Any]:
+    ) -> AnalysisResult:
         """Analyze touch phase generating:
            - number of bounces
            - meters traveled until we are back in the sky
@@ -65,11 +66,11 @@ class TouchAndGoAnalyzer(Analyzer):
         if landing_vs_fpm is None:
             raise RuntimeError("Can't find touchdown from touch & go phase")
 
-        result = {}
+        result = AnalysisResult()
 
-        result["TouchGoVSFpm"] = landing_vs_fpm
-        result["TouchGoBounces"] = bounces_vs
-        result["TouchGoGroundDistance"] = meters_until_airborne
+        result.phase_metrics["TouchGoVSFpm"] = landing_vs_fpm
+        result.phase_metrics["TouchGoBounces"] = bounces_vs
+        result.phase_metrics["TouchGoGroundDistance"] = meters_until_airborne
 
         return result
 
