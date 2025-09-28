@@ -4,12 +4,19 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
-from mam_analyzer.phases.analyzers.result import AnalysisResult
+from mam_analyzer.phases.analyzers.result import AnalysisResult,AnalysisIssue
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
 from mam_analyzer.utils.units import haversine
 
 class FinalLandingAnalyzer(Analyzer):
+
+    METRIC_LANDING_FPM = "LandingVSFpm"
+    METRIC_BOUNCES = "LandingBounces"
+    METRIC_BRAKE_DISTANCE = "BrakeDistance"
+
+    ISSUE_HARD_FPM = "LandingHardFpm"
+
     def analyze(
         self,
         events: List[FlightEvent],
@@ -20,6 +27,8 @@ class FinalLandingAnalyzer(Analyzer):
            - number of bounces
            - meters traveled until brake below 40knots
         """
+
+        result = AnalysisResult()
 
         landing_vs_fpm = None
         bounces_vs = []
@@ -36,6 +45,16 @@ class FinalLandingAnalyzer(Analyzer):
                 if ts <= end_time:
                     if event_has_landing_vs_fpm(e):
                         fpm = get_landing_vs_fpm_as_int(e)
+
+                        if fpm < -700:
+                            result.issues.append(
+                                AnalysisIssue(
+                                    code=self.ISSUE_HARD_FPM,
+                                    timestamp=e.timestamp,
+                                    value=fpm
+                                )
+                            )
+
 
                         if landing_vs_fpm is None:
                             landing_vs_fpm = fpm
@@ -64,13 +83,11 @@ class FinalLandingAnalyzer(Analyzer):
                     break
             
         if landing_vs_fpm is None:
-            raise RuntimeError("Can't find touchdown from landing phase")
+            raise RuntimeError("Can't find touchdown from landing phase")        
 
-        result = AnalysisResult()
-
-        result.phase_metrics["LandingVSFpm"] = landing_vs_fpm
-        result.phase_metrics["LandingBounces"] = bounces_vs
-        result.phase_metrics["BrakeDistance"] = meters_until_brake
+        result.phase_metrics[self.METRIC_LANDING_FPM] = landing_vs_fpm
+        result.phase_metrics[self.METRIC_BOUNCES] = bounces_vs
+        result.phase_metrics[self.METRIC_BRAKE_DISTANCE] = meters_until_brake
 
         return result
 

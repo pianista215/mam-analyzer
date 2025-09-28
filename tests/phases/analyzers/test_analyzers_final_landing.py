@@ -42,16 +42,16 @@ def test_basic_landing_and_brake(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(40.0, -3.0, 40.0, -3.01))
-    assert result.phase_metrics["LandingVSFpm"] == -250
-    assert result.phase_metrics["LandingBounces"] == []
-    assert result.phase_metrics["BrakeDistance"] == expected_distance
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -250
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == []
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == expected_distance
 
 
 def test_landing_with_bounces(analyzer):
     base = datetime(2025, 7, 6, 13, 0, 0)
     events = []
 
-    touchdown = make_event(base, LandingVSFpm=-300, IASKnots=110, Latitude=41.0, Longitude=-3.0)
+    touchdown = make_event(base, LandingVSFpm=-800, IASKnots=110, Latitude=41.0, Longitude=-3.0)
     events.append(touchdown)
 
     # Bounce 1
@@ -69,9 +69,13 @@ def test_landing_with_bounces(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(41.0, -3.0, 41.0, -3.01))
-    assert result.phase_metrics["LandingVSFpm"] == -300
-    assert result.phase_metrics["LandingBounces"] == [-180, -220]
-    assert result.phase_metrics["BrakeDistance"] == expected_distance
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -800
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == [-180, -220]
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == expected_distance
+    assert len(result.issues) == 1
+    assert result.issues[0].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].timestamp == base
+    assert result.issues[0].value == -800
 
 
 def test_touchdown_already_below_40_knots(analyzer):
@@ -83,9 +87,9 @@ def test_touchdown_already_below_40_knots(analyzer):
 
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
-    assert result.phase_metrics["LandingVSFpm"] == -150
-    assert result.phase_metrics["LandingBounces"] == []
-    assert result.phase_metrics["BrakeDistance"] == 0
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -150
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == []
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == 0
 
 
 def test_no_touchdown_raises(analyzer):
@@ -110,9 +114,9 @@ def test_no_brake_event_returns_none(analyzer):
 
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
-    assert result.phase_metrics["LandingVSFpm"] == -200
-    assert result.phase_metrics["LandingBounces"] == []
-    assert result.phase_metrics["BrakeDistance"] == None
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -200
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == []
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == None
 
 
 @pytest.mark.parametrize("filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance", [
@@ -136,6 +140,6 @@ def test_final_landing_analyzer_from_real_files(filename, landing_start, landing
 
     expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
-    assert result.phase_metrics["LandingVSFpm"] == int(landing_vs)
-    assert result.phase_metrics["LandingBounces"] == expected_bounces
-    assert result.phase_metrics["BrakeDistance"] == int(brake_distance) 
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == int(landing_vs)
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == expected_bounces
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == int(brake_distance) 
