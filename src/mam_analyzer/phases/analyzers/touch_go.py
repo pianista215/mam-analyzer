@@ -4,12 +4,20 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
-from mam_analyzer.phases.analyzers.result import AnalysisResult
+from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.units import haversine
 
 class TouchAndGoAnalyzer(Analyzer):
+
+    METRIC_TG_FPM = "TouchGoVSFpm"
+    METRIC_TG_BOUNCES = "TouchGoBounces"
+    METRIC_TG_GOUND_DISTANCE = "TouchGoGroundDistance"
+
+    # TODO: Move to constants? Same key as Final Landing
+    ISSUE_HARD_FPM = "LandingHardFpm"
+
     def analyze(
         self,
         events: List[FlightEvent],
@@ -20,6 +28,9 @@ class TouchAndGoAnalyzer(Analyzer):
            - number of bounces
            - meters traveled until we are back in the sky
         """
+
+        result = AnalysisResult()
+
 
         landing_vs_fpm = None
         bounces_vs = []
@@ -36,6 +47,15 @@ class TouchAndGoAnalyzer(Analyzer):
                 if ts <= end_time:
                     if event_has_landing_vs_fpm(e):
                         fpm = get_landing_vs_fpm_as_int(e)
+
+                        if fpm < -700:
+                            result.issues.append(
+                                AnalysisIssue(
+                                    code=self.ISSUE_HARD_FPM,
+                                    timestamp=e.timestamp,
+                                    value=fpm
+                                )
+                            )
 
                         if landing_vs_fpm is None:
                             landing_vs_fpm = fpm
@@ -66,11 +86,9 @@ class TouchAndGoAnalyzer(Analyzer):
         if landing_vs_fpm is None:
             raise RuntimeError("Can't find touchdown from touch & go phase")
 
-        result = AnalysisResult()
-
-        result.phase_metrics["TouchGoVSFpm"] = landing_vs_fpm
-        result.phase_metrics["TouchGoBounces"] = bounces_vs
-        result.phase_metrics["TouchGoGroundDistance"] = meters_until_airborne
+        result.phase_metrics[self.METRIC_TG_FPM] = landing_vs_fpm
+        result.phase_metrics[self.METRIC_TG_BOUNCES] = bounces_vs
+        result.phase_metrics[self.METRIC_TG_GOUND_DISTANCE] = meters_until_airborne
 
         return result
 

@@ -28,7 +28,7 @@ def test_basic_touch_and_go(analyzer):
     events = []
 
     # First touchdown
-    touchdown = make_event(base, LandingVSFpm=-300, IASKnots=110, Latitude=40.0, Longitude=-3.0, onGround=True)
+    touchdown = make_event(base, LandingVSFpm=-710, IASKnots=110, Latitude=40.0, Longitude=-3.0, onGround=True)
     events.append(touchdown)
 
     # Rollout for a while
@@ -43,9 +43,13 @@ def test_basic_touch_and_go(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(40.0, -3.0, 40.0, -3.005))
-    assert result.phase_metrics["TouchGoVSFpm"] == -300
-    assert result.phase_metrics["TouchGoBounces"] == []
-    assert result.phase_metrics["TouchGoGroundDistance"] == expected_distance
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == -710
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == []
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
+    assert len(result.issues) == 1
+    assert result.issues[0].code == TouchAndGoAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].timestamp == base
+    assert result.issues[0].value == -710
 
 
 def test_touch_and_go_with_bounces(analyzer):
@@ -61,7 +65,7 @@ def test_touch_and_go_with_bounces(analyzer):
     events.append(airborne1)
 
     # Bounce 1
-    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-180, IASKnots=93, Latitude=44.0, Longitude=-3.001, onGround="True")
+    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-780, IASKnots=93, Latitude=44.0, Longitude=-3.001, onGround="True")
     events.append(bounce1)
 
     # Airborne until bounce
@@ -80,9 +84,13 @@ def test_touch_and_go_with_bounces(analyzer):
 
     expected_distance = round(haversine(44.0, -3.0, 44.0, -3.005))
 
-    assert result.phase_metrics["TouchGoVSFpm"] == -250
-    assert result.phase_metrics["TouchGoBounces"] == [-180, -220]
-    assert result.phase_metrics["TouchGoGroundDistance"] == expected_distance
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == -250
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == [-780, -220]
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
+    assert len(result.issues) == 1
+    assert result.issues[0].code == TouchAndGoAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].timestamp == base + timedelta(seconds=3)
+    assert result.issues[0].value == -780
 
 
 
@@ -123,6 +131,7 @@ def test_touch_go_analyzer_from_real_files(filename, touch_go_start, touch_go_en
 
     expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
-    assert result.phase_metrics["TouchGoVSFpm"] == int(touch_go_vs)
-    assert result.phase_metrics["TouchGoBounces"] == expected_bounces
-    assert result.phase_metrics["TouchGoGroundDistance"] == int(touch_ground_distance)
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == int(touch_go_vs)
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == expected_bounces
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == int(touch_ground_distance)
+    assert len(result.issues) == 0
