@@ -178,7 +178,7 @@ def test_final_landing_analyzer_from_real_files(filename, takeoff_start, takeoff
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(takeoff_start), parse_timestamp(takeoff_end))
 
-    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+    expected_bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
     assert result.phase_metrics["TakeoffBounces"] == expected_bounces
     assert result.phase_metrics["TakeoffGroundDistance"] == int(takeoff_distance)

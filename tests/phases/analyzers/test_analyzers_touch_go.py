@@ -130,7 +130,7 @@ def test_touch_go_analyzer_from_real_files(filename, touch_go_start, touch_go_en
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(touch_go_start), parse_timestamp(touch_go_end))
 
-    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+    expected_bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == int(touch_go_vs)
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == expected_bounces

@@ -142,7 +142,7 @@ def test_final_landing_analyzer_from_real_files(filename, landing_start, landing
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(landing_start), parse_timestamp(landing_end))
 
-    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+    expected_bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == int(landing_vs)
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == expected_bounces
