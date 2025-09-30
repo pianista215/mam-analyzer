@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
@@ -14,9 +15,6 @@ class TouchAndGoAnalyzer(Analyzer):
     METRIC_TG_FPM = "TouchGoVSFpm"
     METRIC_TG_BOUNCES = "TouchGoBounces"
     METRIC_TG_GOUND_DISTANCE = "TouchGoGroundDistance"
-
-    # TODO: Move to constants? Same key as Final Landing
-    ISSUE_HARD_FPM = "LandingHardFpm"
 
     def analyze(
         self,
@@ -51,7 +49,7 @@ class TouchAndGoAnalyzer(Analyzer):
                         if fpm < -700:
                             result.issues.append(
                                 AnalysisIssue(
-                                    code=self.ISSUE_HARD_FPM,
+                                    code=Issues.ISSUE_HARD_LANDING_FPM,
                                     timestamp=e.timestamp,
                                     value=fpm
                                 )

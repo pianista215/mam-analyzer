@@ -5,6 +5,7 @@ import pytest
 
 
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
@@ -47,7 +48,7 @@ def test_basic_touch_and_go(analyzer):
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == []
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
     assert len(result.issues) == 1
-    assert result.issues[0].code == TouchAndGoAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
     assert result.issues[0].timestamp == base
     assert result.issues[0].value == -710
 
@@ -88,7 +89,7 @@ def test_touch_and_go_with_bounces(analyzer):
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == [-780, -220]
     assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
     assert len(result.issues) == 1
-    assert result.issues[0].code == TouchAndGoAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
     assert result.issues[0].timestamp == base + timedelta(seconds=3)
     assert result.issues[0].value == -780
 

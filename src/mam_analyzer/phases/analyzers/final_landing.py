@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult,AnalysisIssue
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
@@ -14,8 +15,6 @@ class FinalLandingAnalyzer(Analyzer):
     METRIC_LANDING_FPM = "LandingVSFpm"
     METRIC_BOUNCES = "LandingBounces"
     METRIC_BRAKE_DISTANCE = "BrakeDistance"
-
-    ISSUE_HARD_FPM = "LandingHardFpm"
 
     def analyze(
         self,
@@ -49,7 +48,7 @@ class FinalLandingAnalyzer(Analyzer):
                         if fpm < -700:
                             result.issues.append(
                                 AnalysisIssue(
-                                    code=self.ISSUE_HARD_FPM,
+                                    code=Issues.ISSUE_HARD_LANDING_FPM,
                                     timestamp=e.timestamp,
                                     value=fpm
                                 )

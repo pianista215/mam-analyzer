@@ -5,6 +5,7 @@ import pytest
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
@@ -73,10 +74,10 @@ def test_landing_with_bounces(analyzer):
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == [-780, -220]
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == expected_distance
     assert len(result.issues) == 2
-    assert result.issues[0].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
     assert result.issues[0].timestamp == base
     assert result.issues[0].value == -800
-    assert result.issues[1].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+    assert result.issues[1].code == Issues.ISSUE_HARD_LANDING_FPM
     assert result.issues[1].timestamp == base + timedelta(seconds=3)
     assert result.issues[1].value == -780    
 
@@ -148,7 +149,7 @@ def test_final_landing_analyzer_from_real_files(filename, landing_start, landing
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == int(brake_distance) 
 
     if landing_issue != "":
-        assert result.issues[0].code == FinalLandingAnalyzer.ISSUE_HARD_FPM
+        assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
         assert result.issues[0].timestamp == parse_timestamp(landing_start)
         assert result.issues[0].value == int(landing_issue)
     else:
