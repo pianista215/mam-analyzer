@@ -89,16 +89,3 @@ class FinalLandingAnalyzer(Analyzer):
         result.phase_metrics[self.METRIC_BRAKE_DISTANCE] = meters_until_brake
 
         return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       

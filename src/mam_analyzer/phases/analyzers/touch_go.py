@@ -88,17 +88,4 @@ class TouchAndGoAnalyzer(Analyzer):
         result.phase_metrics[self.METRIC_TG_BOUNCES] = bounces_vs
         result.phase_metrics[self.METRIC_TG_GOUND_DISTANCE] = meters_until_airborne
 
-        return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       
+        return result  

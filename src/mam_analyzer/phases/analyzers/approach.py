@@ -78,17 +78,4 @@ class ApproachAnalyzer(Analyzer):
         last_min_avg = round(last_minute_vs_sum/last_minute_vs_found)
         result.phase_metrics["LastMinuteAvgVSFpm"] = last_min_avg
 
-        return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       
+        return result   

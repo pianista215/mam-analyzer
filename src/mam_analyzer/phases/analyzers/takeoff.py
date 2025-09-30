@@ -81,16 +81,3 @@ class TakeoffAnalyzer(Analyzer):
         result.phase_metrics["TakeoffSpeed"] = airborne_speed
 
         return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       

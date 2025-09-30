@@ -137,17 +137,4 @@ class CruiseAnalyzer(Analyzer):
         result.phase_metrics["CommonAlt"] =  most_time_alt
         result.phase_metrics["HighAlt"] = high_altitude
 
-        return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       
+        return result       
