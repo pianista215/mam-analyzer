@@ -3,14 +3,14 @@ from datetime import datetime, timedelta
 from typing import List
 
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 
 @dataclass
 class FlightPhase():
     name: str
     start: datetime
     end: datetime
-    analysis: dict
-    # TODO: add penalties/failures
+    analysis: AnalysisResult
     events: List[FlightEvent]
 
     def contains(self, event: FlightEvent) -> bool:
@@ -26,6 +26,6 @@ class FlightPhase():
             "name": self.name,
             "start": self.start.isoformat(),
             "end": self.end.isoformat(),
-            "analysis": self.analysis,
+            "analysis": self.analysis.to_dict(),
             "events": [ev.to_dict() for ev in self.events],  # assumes FlightEvent has to_dict()
         }

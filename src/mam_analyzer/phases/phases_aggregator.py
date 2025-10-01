@@ -8,6 +8,7 @@ from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
 from mam_analyzer.phases.analyzers.taxi import TaxiAnalyzer
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
@@ -58,7 +59,7 @@ class PhasesAggregator:
     ) -> FlightPhase:
         filtered_events = self.__filter_events(events, start, end)
 
-        analysis = analyzer.analyze(filtered_events, start, end) if analyzer else {}
+        analysis = analyzer.analyze(filtered_events, start, end) if analyzer else AnalysisResult()
 
         return FlightPhase(name, start, end, analysis, filtered_events)
 

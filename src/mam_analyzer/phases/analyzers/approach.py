@@ -53,7 +53,7 @@ class ApproachAnalyzer(Analyzer):
                             if agl < 1000 and vs < -1000:
                                 result.issues.append(
                                     AnalysisIssue(
-                                        code=Issues.ISSUE_APP_LOW_VS_BELOW_1000AGL,
+                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
                                         timestamp=e.timestamp,
                                         value=f"{vs}|{agl}"
                                     )
@@ -61,7 +61,7 @@ class ApproachAnalyzer(Analyzer):
                             elif agl < 2000 and vs < -2000:
                                 result.issues.append(
                                     AnalysisIssue(
-                                        code=Issues.ISSUE_APP_LOW_VS_BELOW_2000AGL,
+                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL,
                                         timestamp=e.timestamp,
                                         value=f"{vs}|{agl}"
                                     )

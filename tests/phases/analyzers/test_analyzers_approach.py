@@ -128,8 +128,8 @@ def test_issue_low_vs_below_1000agl(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    assert any(i.code == Issues.ISSUE_APP_LOW_VS_BELOW_1000AGL for i in result.issues)
-    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_LOW_VS_BELOW_1000AGL)
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
     assert issue.value == "-1200|900"
 
 
@@ -143,8 +143,8 @@ def test_issue_low_vs_below_2000agl(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    assert any(i.code == Issues.ISSUE_APP_LOW_VS_BELOW_2000AGL for i in result.issues)
-    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_LOW_VS_BELOW_2000AGL)
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL)
     assert issue.value == "-2500|1500"        
 
 
@@ -175,8 +175,8 @@ def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs,
     assert result.phase_metrics['LastMinuteMaxVSFpm'] == int(last_min_max_vs)
     assert result.phase_metrics['LastMinuteAvgVSFpm'] == int(last_min_avg_vs)
 
-    issues_1000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_LOW_VS_BELOW_1000AGL]
-    issues_2000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_LOW_VS_BELOW_2000AGL]
+    issues_1000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL]
+    issues_2000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL]
 
     issues_1000_str = "|".join(issues_1000)
     issues_2000_str = "|".join(issues_2000)
