@@ -1,3 +1,5 @@
 class Issues:
     ISSUE_HARD_LANDING_FPM = "LandingHardFpm"
     ISSUE_TAXI_OVERSPEED = "TaxiOverSpeed"
+    ISSUE_APP_LOW_VS_BELOW_1000AGL = "AppLowVsBelow1000AGL"
+    ISSUE_APP_LOW_VS_BELOW_2000AGL = "AppLowVsBelow2000AGL"
