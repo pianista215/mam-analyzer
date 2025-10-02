@@ -103,7 +103,7 @@ DATA_DIR = Path("data")
             [
                 ("airborne_time_minutes", "2"),
                 ("initial_fob_kg", "79"),
-                ("fuel_consumed_kg", "1"),
+                ("fuel_consumed_kg", "33"), # Fuel refueled
                 ("distance_nm", "3") 
             ],
         ),
