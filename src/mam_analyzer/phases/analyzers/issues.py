@@ -3,3 +3,4 @@ class Issues:
     ISSUE_TAXI_OVERSPEED = "TaxiOverSpeed"
     ISSUE_APP_HIGH_VS_BELOW_1000AGL = "AppHighVsBelow1000AGL"
     ISSUE_APP_HIGH_VS_BELOW_2000AGL = "AppHighVsBelow2000AGL"
+    ISSUE_REFUELING = "Refueling"

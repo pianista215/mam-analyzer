@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Optional
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.phases_aggregator import PhasesAggregator
 from mam_analyzer.phases.flight_phase import FlightPhase
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.flight_report import FlightReport
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
@@ -147,4 +148,29 @@ class FlightEvaluator:
                         last_lon = event.longitude
                         
         return round(meters_to_nm(distance_meters))
+
+    def check_refueling(self, phases: List[FlightPhase]):
+        last_fuel = None
+        # Check all phases except first phase
+        for i in range(1, len(phases)):
+            phase = phases[i]
+
+            for event in phase.events:
+                if event_has_fuel(event):
+                    fuel_event_kg = get_fuel_kg_as_float(event)
+
+                    if last_fuel is not None and last_fuel < fuel_event_kg:
+                        refueled_quantity = round(fuel_event_kg - last_fuel)
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_REFUELING,
+                                timestamp=e.timestamp,
+                                value=refueled_quantity
+                            )
+                        )
+                    else:
+                        last_fuel = fuel_event_kg
+                        
+
+
 
