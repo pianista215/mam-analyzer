@@ -102,11 +102,15 @@ class FlightEvaluator:
 
     def calculate_initial_fob(self, first_phase: FlightPhase) -> float:
         initial_fob = 0
-        for event in first_phase.events:
-            if event_has_fuel(event):
-                fuel = get_fuel_kg_as_float(event)
-                if initial_fob < fuel :
-                    initial_fob = fuel                
+        if first_phase.name == "startup":
+            for event in first_phase.events:
+                if event_has_fuel(event):
+                    fuel = get_fuel_kg_as_float(event)
+                    if initial_fob < fuel :
+                        initial_fob = fuel
+        else:
+            # First event has always all the data
+            initial_fob = get_fuel_kg_as_float(first_phase.events[0])
 
         return initial_fob
 
