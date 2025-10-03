@@ -19,7 +19,12 @@ class FlightPhase():
 
     def is_airborne_phase(self) -> bool:
         # Consider unknown as climb and descend for now are "unknown"
-        return self.name == "unknown" or self.name == "cruise" or self.name == "approach"
+        return (
+            self.name == "takeoff" or 
+            self.name == "unknown" or 
+            self.name == "cruise" or 
+            self.name == "approach"
+        )
 
     def __str__(self):
         return f"{self.name}: {self.start} → {self.end}"
