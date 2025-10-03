@@ -9,11 +9,32 @@ from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
+BASE_CHANGES = {
+    "Latitude": "0",
+    "Longitude": "0",
+    "onGround": "True",
+    "Altitude": "0",
+    "AGLAltitude": "0",
+    "Altimeter": "0",
+    "VSFpm": "0",
+    "Heading": "0",
+    "GSKnots": "0",
+    "IASKnots": "0",
+    "QNHSet": "1013",
+    "Flaps": "0",
+    "Gear": "Down",
+    "FuelKg": "1000",
+    "Squawk": "7000",
+    "AP": "Off",
+    "Engine 1": "On",
+    "Engine 2": "On",
+}
+
 
 def make_event(timestamp, **changes):
     event_dict = {
         "Timestamp": timestamp.isoformat(timespec="microseconds"),
-        "Changes": {k: str(v) for k, v in changes.items()},
+        "Changes": {**BASE_CHANGES, **{k: str(v) for k, v in changes.items()}},
     }
     return FlightEvent.from_json(event_dict)
 
@@ -121,6 +142,32 @@ def test_no_brake_event_returns_none(analyzer):
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_FPM] == -200
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BOUNCES] == []
     assert result.phase_metrics[FinalLandingAnalyzer.METRIC_BRAKE_DISTANCE] == None
+
+def test_landing_with_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "Off",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITHOUT_ENGINES
+    assert result.issues[0].timestamp == base
+
+def test_landing_with_some_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "On",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED
+    assert result.issues[0].timestamp == base
 
 
 @pytest.mark.parametrize("filename, landing_start, landing_end, landing_vs, bounces_str, brake_distance, landing_issue", [

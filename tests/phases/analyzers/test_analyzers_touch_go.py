@@ -10,11 +10,31 @@ from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
+BASE_CHANGES = {
+    "Latitude": "0",
+    "Longitude": "0",
+    "onGround": "True",
+    "Altitude": "0",
+    "AGLAltitude": "0",
+    "Altimeter": "0",
+    "VSFpm": "0",
+    "Heading": "0",
+    "GSKnots": "0",
+    "IASKnots": "0",
+    "QNHSet": "1013",
+    "Flaps": "0",
+    "Gear": "Down",
+    "FuelKg": "1000",
+    "Squawk": "7000",
+    "AP": "Off",
+    "Engine 1": "On",
+    "Engine 2": "On",
+}
 
 def make_event(timestamp, **changes):
     event_dict = {
         "Timestamp": timestamp.isoformat(timespec="microseconds"),
-        "Changes": {k: str(v) for k, v in changes.items()},
+        "Changes": {**BASE_CHANGES, **{k: str(v) for k, v in changes.items()}},
     }
     return FlightEvent.from_json(event_dict)
 
@@ -101,6 +121,32 @@ def test_no_touchdown_raises(analyzer):
 
     with pytest.raises(RuntimeError, match="Can't find touchdown from touch & go phase"):
         analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
+
+def test_touch_go_with_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "Off",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITHOUT_ENGINES
+    assert result.issues[0].timestamp == base
+
+def test_touch_go_with_some_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "On",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED
+    assert result.issues[0].timestamp == base        
 
 @pytest.mark.parametrize(
     "filename, touch_go_start, touch_go_end, touch_go_vs, bounces_str, touch_ground_distance", [

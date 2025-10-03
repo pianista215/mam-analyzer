@@ -4,3 +4,5 @@ class Issues:
     ISSUE_APP_HIGH_VS_BELOW_1000AGL = "AppHighVsBelow1000AGL"
     ISSUE_APP_HIGH_VS_BELOW_2000AGL = "AppHighVsBelow2000AGL"
     ISSUE_REFUELING = "Refueling"
+    ISSUE_LANDING_WITHOUT_ENGINES = "LandingAllEnginesStopped"
+    ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED = "LandingSomeEngineStopped"

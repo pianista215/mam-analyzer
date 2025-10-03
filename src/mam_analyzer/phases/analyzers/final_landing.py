@@ -6,6 +6,7 @@ from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult,AnalysisIssue
+from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
 from mam_analyzer.utils.units import haversine
@@ -54,12 +55,26 @@ class FinalLandingAnalyzer(Analyzer):
                                 )
                             )
 
-
                         if landing_vs_fpm is None:
                             landing_vs_fpm = fpm
                             # Landing events have all information
                             touch_lat = e.latitude
                             touch_lon = e.longitude
+                            #Check only in main touchdown for engine failures
+                            if all_engines_are_off(e):
+                                result.issues.append(
+                                    AnalysisIssue(
+                                        code=Issues.ISSUE_LANDING_WITHOUT_ENGINES,
+                                        timestamp=e.timestamp,
+                                    )
+                                ) 
+                            elif some_engine_is_off(e):
+                                result.issues.append(
+                                    AnalysisIssue(
+                                        code=Issues.ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED,
+                                        timestamp=e.timestamp,
+                                    )
+                                )
                         else:
                             bounces_vs.append(fpm)
 
