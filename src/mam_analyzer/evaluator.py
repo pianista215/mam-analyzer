@@ -3,7 +3,10 @@ from typing import List, Dict, Any, Optional
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.phases_aggregator import PhasesAggregator
 from mam_analyzer.phases.flight_phase import FlightPhase
+from mam_analyzer.phases.analyzers.issues import Issues
+from mam_analyzer.phases.analyzers.result import AnalysisIssue
 from mam_analyzer.flight_report import FlightReport
+from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
@@ -33,10 +36,14 @@ class FlightEvaluator:
         initial_fob_kg = self.calculate_initial_fob(phases[0])
         metrics["initial_fob_kg"] = round(initial_fob_kg)
 
+        fuel_refueled = self.check_refueling(phases)
+
         fuel_consumed = self.calculate_consumed_fuel(initial_fob_kg, phases)
-        metrics["fuel_consumed_kg"] = round(fuel_consumed)
+        metrics["fuel_consumed_kg"] = round(fuel_consumed + fuel_refueled)
 
         metrics["distance_nm"] = self.calculate_distance(phases)
+
+        self.check_engine_stopped_in_flight(phases)
 
         return metrics
 
@@ -102,11 +109,15 @@ class FlightEvaluator:
 
     def calculate_initial_fob(self, first_phase: FlightPhase) -> float:
         initial_fob = 0
-        for event in first_phase.events:
-            if event_has_fuel(event):
-                fuel = get_fuel_kg_as_float(event)
-                if initial_fob < fuel :
-                    initial_fob = fuel                
+        if first_phase.name == "startup":
+            for event in first_phase.events:
+                if event_has_fuel(event):
+                    fuel = get_fuel_kg_as_float(event)
+                    if initial_fob < fuel :
+                        initial_fob = fuel
+        else:
+            # First event has always all the data
+            initial_fob = get_fuel_kg_as_float(first_phase.events[0])
 
         return initial_fob
 
@@ -143,4 +154,60 @@ class FlightEvaluator:
                         last_lon = event.longitude
                         
         return round(meters_to_nm(distance_meters))
+
+    def check_refueling(self, phases: List[FlightPhase]) -> int:
+        fuel_refueled = 0
+        last_fuel = None
+        # Check all phases except first phase
+        for i in range(1, len(phases)):
+            phase = phases[i]
+
+            for event in phase.events:
+                if event_has_fuel(event):
+                    fuel_event_kg = get_fuel_kg_as_float(event)
+
+                    if last_fuel is not None and last_fuel < fuel_event_kg:
+                        refueled_quantity = round(fuel_event_kg - last_fuel)
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_REFUELING,
+                                timestamp=event.timestamp,
+                                value=refueled_quantity
+                            )
+                        )
+                        fuel_refueled += refueled_quantity
+                    else:
+                        last_fuel = fuel_event_kg
+
+        return fuel_refueled
+
+    def check_engine_stopped_in_flight(self, phases: List[FlightPhase]):
+        single_failure_detected = False
+
+        for phase in phases:
+            if phase.is_airborne_phase():
+                for event in phase.events:
+                    if event.is_full_event() and all_engines_are_off(event):
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_AIRBORNE_ALL_ENGINES_STOPPED,
+                                timestamp=event.timestamp,
+                            )
+                        )
+                        return
+                    elif some_engine_is_off(event) and not single_failure_detected:
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_AIRBORNE_ENGINE_STOPPED,
+                                timestamp=event.timestamp,
+                            )
+                        )
+                        single_failure_detected = True
+
+
+
+
+                        
+
+
 

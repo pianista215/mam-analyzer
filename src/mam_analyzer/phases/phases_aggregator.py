@@ -8,7 +8,9 @@ from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
+from mam_analyzer.phases.analyzers.taxi import TaxiAnalyzer
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
@@ -28,7 +30,8 @@ class PhasesAggregator:
             "final_landing": (FinalLandingDetector(), FinalLandingAnalyzer()),
             "cruise": (CruiseDetector(), CruiseAnalyzer()),
         }
-        # Approach only has analyzer
+        # Approach and taxi only have analyzer
+        self.taxi_analyzer = TaxiAnalyzer()
         self.approach_analyzer = ApproachAnalyzer()
 
     def __filter_events(
@@ -56,7 +59,7 @@ class PhasesAggregator:
     ) -> FlightPhase:
         filtered_events = self.__filter_events(events, start, end)
 
-        analysis = analyzer.analyze(filtered_events, start, end) if analyzer else {}
+        analysis = analyzer.analyze(filtered_events, start, end) if analyzer else AnalysisResult()
 
         return FlightPhase(name, start, end, analysis, filtered_events)
 
@@ -205,7 +208,7 @@ class PhasesAggregator:
                         "taxi", 
                         first_timestamp, 
                         _takeoff_start + timedelta(microseconds=-1), 
-                        None
+                        self.taxi_analyzer
                     )
                 )
 
@@ -221,7 +224,7 @@ class PhasesAggregator:
                         "taxi", 
                         _startup_end + timedelta(microseconds=1), 
                         _takeoff_start + timedelta(microseconds=-1), 
-                        None
+                        self.taxi_analyzer
                     )
                 )
 
@@ -310,7 +313,7 @@ class PhasesAggregator:
                         "taxi", 
                         _landing_end + timedelta(microseconds=1), 
                         last_timestamp, 
-                        None
+                        self.taxi_analyzer
                     )
                 )
 
@@ -325,7 +328,7 @@ class PhasesAggregator:
                         "taxi", 
                         _landing_end + timedelta(microseconds=1), 
                         _shutdown_start + timedelta(microseconds=-1), 
-                        None
+                        self.taxi_analyzer
                     )
                 )
 

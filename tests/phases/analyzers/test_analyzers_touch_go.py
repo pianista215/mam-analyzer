@@ -5,15 +5,36 @@ import pytest
 
 
 from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.utils.parsing import parse_timestamp
 from mam_analyzer.utils.units import haversine
 
+BASE_CHANGES = {
+    "Latitude": "0",
+    "Longitude": "0",
+    "onGround": "True",
+    "Altitude": "0",
+    "AGLAltitude": "0",
+    "Altimeter": "0",
+    "VSFpm": "0",
+    "Heading": "0",
+    "GSKnots": "0",
+    "IASKnots": "0",
+    "QNHSet": "1013",
+    "Flaps": "0",
+    "Gear": "Down",
+    "FuelKg": "1000",
+    "Squawk": "7000",
+    "AP": "Off",
+    "Engine 1": "On",
+    "Engine 2": "On",
+}
 
 def make_event(timestamp, **changes):
     event_dict = {
         "Timestamp": timestamp.isoformat(timespec="microseconds"),
-        "Changes": {k: str(v) for k, v in changes.items()},
+        "Changes": {**BASE_CHANGES, **{k: str(v) for k, v in changes.items()}},
     }
     return FlightEvent.from_json(event_dict)
 
@@ -28,7 +49,7 @@ def test_basic_touch_and_go(analyzer):
     events = []
 
     # First touchdown
-    touchdown = make_event(base, LandingVSFpm=-300, IASKnots=110, Latitude=40.0, Longitude=-3.0, onGround=True)
+    touchdown = make_event(base, LandingVSFpm=-710, IASKnots=110, Latitude=40.0, Longitude=-3.0, onGround=True)
     events.append(touchdown)
 
     # Rollout for a while
@@ -43,9 +64,13 @@ def test_basic_touch_and_go(analyzer):
     result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
 
     expected_distance = round(haversine(40.0, -3.0, 40.0, -3.005))
-    assert result["TouchGoVSFpm"] == -300
-    assert result["TouchGoBounces"] == []
-    assert result["TouchGoGroundDistance"] == expected_distance
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == -710
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == []
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
+    assert len(result.issues) == 1
+    assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
+    assert result.issues[0].timestamp == base
+    assert result.issues[0].value == -710
 
 
 def test_touch_and_go_with_bounces(analyzer):
@@ -61,7 +86,7 @@ def test_touch_and_go_with_bounces(analyzer):
     events.append(airborne1)
 
     # Bounce 1
-    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-180, IASKnots=93, Latitude=44.0, Longitude=-3.001, onGround="True")
+    bounce1 = make_event(base + timedelta(seconds=3), LandingVSFpm=-780, IASKnots=93, Latitude=44.0, Longitude=-3.001, onGround="True")
     events.append(bounce1)
 
     # Airborne until bounce
@@ -80,9 +105,13 @@ def test_touch_and_go_with_bounces(analyzer):
 
     expected_distance = round(haversine(44.0, -3.0, 44.0, -3.005))
 
-    assert result["TouchGoVSFpm"] == -250
-    assert result["TouchGoBounces"] == [-180, -220]
-    assert result["TouchGoGroundDistance"] == expected_distance
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == -250
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == [-780, -220]
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == expected_distance
+    assert len(result.issues) == 1
+    assert result.issues[0].code == Issues.ISSUE_HARD_LANDING_FPM
+    assert result.issues[0].timestamp == base + timedelta(seconds=3)
+    assert result.issues[0].value == -780
 
 
 
@@ -92,6 +121,32 @@ def test_no_touchdown_raises(analyzer):
 
     with pytest.raises(RuntimeError, match="Can't find touchdown from touch & go phase"):
         analyzer.analyze(events, events[0].timestamp, events[-1].timestamp)
+
+def test_touch_go_with_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "Off",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITHOUT_ENGINES
+    assert result.issues[0].timestamp == base
+
+def test_touch_go_with_some_engine_off(analyzer):
+    base = datetime(2025, 7, 6, 17, 0, 0)
+
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=100, Latitude=44.0, Longitude=-6.0, **{
+        "Engine 1": "On",
+        "Engine 2": "Off",
+    })
+
+    result = analyzer.analyze([touchdown], touchdown.timestamp, touchdown.timestamp)
+
+    assert result.issues[0].code == Issues.ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED
+    assert result.issues[0].timestamp == base        
 
 @pytest.mark.parametrize(
     "filename, touch_go_start, touch_go_end, touch_go_vs, bounces_str, touch_ground_distance", [
@@ -121,8 +176,9 @@ def test_touch_go_analyzer_from_real_files(filename, touch_go_start, touch_go_en
     events = [FlightEvent.from_json(e) for e in raw_events]
     result = analyzer.analyze(events, parse_timestamp(touch_go_start), parse_timestamp(touch_go_end))
 
-    expected_bounces = bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
+    expected_bounces = [int(x) for x in bounces_str.split("|")] if bounces_str else []    
 
-    assert result["TouchGoVSFpm"] == int(touch_go_vs)
-    assert result["TouchGoBounces"] == expected_bounces
-    assert result["TouchGoGroundDistance"] == int(touch_ground_distance)
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_FPM] == int(touch_go_vs)
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_BOUNCES] == expected_bounces
+    assert result.phase_metrics[TouchAndGoAnalyzer.METRIC_TG_GOUND_DISTANCE] == int(touch_ground_distance)
+    assert len(result.issues) == 0

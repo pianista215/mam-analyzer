@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.location import event_has_location
@@ -16,7 +17,7 @@ class TakeoffAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> Dict[str, Any]:
+    ) -> AnalysisResult:
         """Analyze takeoff phase generating:
            - number of bounces
            - takeoff speed 
@@ -73,23 +74,10 @@ class TakeoffAnalyzer(Analyzer):
         if meters_until_airborne is None or airborne_speed is None:
             raise RuntimeError("Can't get meters and speed for takeoff phase")
 
-        result = {}
+        result = AnalysisResult()
 
-        result["TakeoffBounces"] = bounces_vs
-        result["TakeoffGroundDistance"] = meters_until_airborne
-        result["TakeoffSpeed"] = airborne_speed
+        result.phase_metrics["TakeoffBounces"] = bounces_vs
+        result.phase_metrics["TakeoffGroundDistance"] = meters_until_airborne
+        result.phase_metrics["TakeoffSpeed"] = airborne_speed
 
         return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       

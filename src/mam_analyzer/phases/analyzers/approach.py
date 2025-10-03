@@ -4,6 +4,9 @@ from typing import List, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
+from mam_analyzer.phases.analyzers.issues import Issues
+from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
+from mam_analyzer.utils.altitude import event_has_agl_altitude, get_agl_altitude_as_int
 from mam_analyzer.utils.vertical_speed import event_has_vertical_speed, get_vertical_speed_as_int
 
 class ApproachAnalyzer(Analyzer):
@@ -12,12 +15,17 @@ class ApproachAnalyzer(Analyzer):
         events: List[FlightEvent],
         start_time: datetime,
         end_time: datetime
-    ) -> Dict[str, Any]:
+    ) -> AnalysisResult:
         """Analyze approach phase generating:
            - average vertical speed fpm
            - min vertical speed
            - max vertical speed
+           Issues:
+           - < -2000fpm below 2000AGL
+           - < -1000fpm below 1000AGL
         """
+
+        result = AnalysisResult()
 
         last_min_start = end_time + timedelta(seconds=-60)
 
@@ -38,6 +46,28 @@ class ApproachAnalyzer(Analyzer):
                     if event_has_vertical_speed(e):
                         vs = get_vertical_speed_as_int(e)
 
+                        #Issues
+                        if event_has_agl_altitude(e):
+                            agl = get_agl_altitude_as_int(e)
+
+                            if agl < 1000 and vs < -1000:
+                                result.issues.append(
+                                    AnalysisIssue(
+                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
+                                        timestamp=e.timestamp,
+                                        value=f"{vs}|{agl}"
+                                    )
+                                )
+                            elif agl < 2000 and vs < -2000:
+                                result.issues.append(
+                                    AnalysisIssue(
+                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL,
+                                        timestamp=e.timestamp,
+                                        value=f"{vs}|{agl}"
+                                    )
+                                )
+
+                        #Stats
                         vs_sum += vs
                         vs_found += 1
 
@@ -63,31 +93,17 @@ class ApproachAnalyzer(Analyzer):
 
         if last_minute_vs_found == 0:
             raise RuntimeError("Can't retrieve vertical speed from approach phase last minute")
-
-        result = {}
-        result["MinVSFpm"] = min_vs
-        result["MaxVSFpm"] = max_vs
+        
+        result.phase_metrics["MinVSFpm"] = min_vs
+        result.phase_metrics["MaxVSFpm"] = max_vs
 
         avg = round(vs_sum/vs_found)
-        result["AvgVSFpm"] = avg
+        result.phase_metrics["AvgVSFpm"] = avg
 
-        result["LastMinuteMinVSFpm"] = last_minute_min_vs
-        result["LastMinuteMaxVSFpm"] = last_minute_max_vs
+        result.phase_metrics["LastMinuteMinVSFpm"] = last_minute_min_vs
+        result.phase_metrics["LastMinuteMaxVSFpm"] = last_minute_max_vs
 
         last_min_avg = round(last_minute_vs_sum/last_minute_vs_found)
-        result["LastMinuteAvgVSFpm"] = last_min_avg
+        result.phase_metrics["LastMinuteAvgVSFpm"] = last_min_avg
 
-        return result
-
-
-
-
-
-
-
-
-
-                
-
-
-       
+        return result   
