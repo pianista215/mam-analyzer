@@ -9,7 +9,7 @@ from mam_analyzer.utils.parsing import parse_timestamp
 DATA_DIR = Path("data")
 
 @pytest.mark.parametrize(
-    "filename, expected_metrics",
+    "filename, expected_metrics, expected_issues",
     [
         (
             "UHSH-UHMM-B350.json",
@@ -20,6 +20,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "515"),
                 ("distance_nm", "484")
             ],
+            [],
         ),
         (
             "LEPA-LEPP-737.json",
@@ -30,6 +31,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "3215"),
                 ("distance_nm", "348")
             ],
+            ['AppHighVsBelow1000AGL', 'TaxiOverspeed'],
         ),
         (
             "UHPT-UHMA-SF34.json",
@@ -40,6 +42,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "897"),
                 ("distance_nm", "462")
             ],
+            ['AppHighVsBelow1000AGL'],
         ),
         (
             "PAOM-PANC-B350-fromtaxi.json",
@@ -49,6 +52,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "622"),
                 ("distance_nm", "475")
             ],
+            [],
         ),
         (
             "UHPT-UHMA-B350.json",
@@ -59,6 +63,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "525"),
                 ("distance_nm", "423")
             ],
+            [],
         ),
         (
             "UHMA-PAOM-B350.json",
@@ -69,6 +74,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "638"),
                 ("distance_nm", "478")
             ],
+            [],
         ),
         (
             "LEBB-touchgoLEXJ-LEAS.json",
@@ -78,6 +84,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "72"),
                 ("distance_nm", "139")
             ],
+            ['AppHighVsBelow1000AGL'],
         ),
         (
             "LPMA-Circuits-737.json",
@@ -87,6 +94,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "1300"),
                 ("distance_nm", "77")
             ],
+            ['LandingHardFpm', 'AppHighVsBelow1000AGL'],
         ),
         (
             "LEPP-LEMG-737.json",
@@ -97,6 +105,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "3530"),
                 ("distance_nm", "453")
             ],
+            [],
         ),
         (
             "LEVD-fast-crash.json",
@@ -106,15 +115,18 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "33"), # Fuel refueled
                 ("distance_nm", "3") 
             ],
+            ['LandingHardFpm', 'TaxiOverspeed', 'AppHighVsBelow1000AGL', 'Refueling'],
         ),
     ],
 )
-def test_evaluator(filename, expected_metrics):
+def test_evaluator(filename, expected_metrics, expected_issues):
     file_path = DATA_DIR / filename
     events = load_flight_data(file_path)
     evaluator = FlightEvaluator()
 
-    metrics = evaluator.evaluate(events).global_metrics
+    result = evaluator.evaluate(events)
+
+    metrics = result.global_metrics
 
     assert len(metrics) == len(expected_metrics)
 
@@ -123,3 +135,23 @@ def test_evaluator(filename, expected_metrics):
     for key, expected_value in expected_dict.items():
         assert key in metrics
         assert str(metrics[key]) == expected_value
+
+    def has_issue(phases, code: str) -> bool:
+        return any(
+            issue.code == code
+            for p in phases
+            for issue in p.analysis.issues
+        )        
+
+    detected_issues = {
+        issue.code
+        for p in result.phases
+        for issue in p.analysis.issues
+    }
+
+    expected_set = set(expected_issues)
+
+    assert detected_issues == expected_set, (
+        f"Issues mismatch for {filename}: "
+        f"expected {expected_set}, got {detected_issues}"
+    )
