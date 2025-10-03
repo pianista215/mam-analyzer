@@ -6,6 +6,7 @@ from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisIssue
 from mam_analyzer.flight_report import FlightReport
+from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
@@ -41,6 +42,8 @@ class FlightEvaluator:
         metrics["fuel_consumed_kg"] = round(fuel_consumed + fuel_refueled)
 
         metrics["distance_nm"] = self.calculate_distance(phases)
+
+        self.check_engine_stopped_in_flight(phases)
 
         return metrics
 
@@ -177,6 +180,33 @@ class FlightEvaluator:
                         last_fuel = fuel_event_kg
 
         return fuel_refueled
+
+    def check_engine_stopped_in_flight(self, phases: List[FlightPhase]):
+        single_failure_detected = False
+
+        for phase in phases:
+            if phase.is_airborne_phase():
+                for event in phase.events:
+                    if event.is_full_event() and all_engines_are_off(event):
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_AIRBORNE_ALL_ENGINES_STOPPED,
+                                timestamp=event.timestamp,
+                            )
+                        )
+                        return
+                    elif some_engine_is_off(event) and not single_failure_detected:
+                        phase.analysis.issues.append(
+                            AnalysisIssue(
+                                code=Issues.ISSUE_AIRBORNE_ENGINE_STOPPED,
+                                timestamp=event.timestamp,
+                            )
+                        )
+                        single_failure_detected = True
+
+
+
+
                         
 
 

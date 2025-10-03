@@ -6,3 +6,5 @@ class Issues:
     ISSUE_REFUELING = "Refueling"
     ISSUE_LANDING_WITHOUT_ENGINES = "LandingAllEnginesStopped"
     ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED = "LandingSomeEngineStopped"
+    ISSUE_AIRBORNE_ENGINE_STOPPED = "AirborneEngineStopped"
+    ISSUE_AIRBORNE_ALL_ENGINES_STOPPED = "AirborneAllEnginesStopped"

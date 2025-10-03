@@ -115,7 +115,14 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "33"), # Fuel refueled
                 ("distance_nm", "3") 
             ],
-            ['LandingAllEnginesStopped', 'LandingHardFpm', 'TaxiOverspeed', 'AppHighVsBelow1000AGL', 'Refueling'],
+            [
+                'AirborneAllEnginesStopped',
+                'LandingAllEnginesStopped',
+                'LandingHardFpm',
+                'TaxiOverspeed',
+                'AppHighVsBelow1000AGL',
+                'Refueling'
+            ],
         ),
     ],
 )
