@@ -167,7 +167,7 @@ class FlightEvaluator:
                     fuel_event_kg = get_fuel_kg_as_float(event)
 
                     # In some planes at shutdown some fuel come back to the container
-                    if last_fuel is not None and (fuel_event_kg - last_fuel) > 1.0:
+                    if last_fuel is not None and (fuel_event_kg - last_fuel) > 2.0:
                         refueled_quantity = round(fuel_event_kg - last_fuel)
                         phase.analysis.issues.append(
                             AnalysisIssue(
