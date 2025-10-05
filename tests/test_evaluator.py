@@ -4,6 +4,7 @@ from pathlib import Path
 
 from mam_analyzer.evaluator import FlightEvaluator
 from mam_analyzer.parser import load_flight_data
+from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
 
 DATA_DIR = Path("data")
@@ -162,3 +163,70 @@ def test_evaluator(filename, expected_metrics, expected_issues):
         f"Issues mismatch for {filename}: "
         f"expected {expected_set}, got {detected_issues}"
     )
+
+@pytest.mark.parametrize(
+    "filename, expected_refuel_events",
+    [
+        (
+            "LEVD-fast-crash.json",
+            [
+                {"phase": "takeoff", "timestamp": "2025-09-16T17:21:18.8514859", "value": "32"},
+            ]
+        ),
+        (
+            "UHSH-UHMM-B350.json",
+            []
+        ),
+        (
+            "UHPT-UHMA-B350.json",
+            []
+        ),
+        (
+            "LEBB-touchgoLEXJ-LEAS.json",
+            []
+        ),
+    ]
+)
+def test_refueling_detection(filename, expected_refuel_events):
+    file_path = DATA_DIR / filename
+    events = load_flight_data(file_path)
+    evaluator = FlightEvaluator()
+
+    result = evaluator.evaluate(events)
+
+    refuel_issues = []
+    for phase in result.phases:
+        for issue in phase.analysis.issues:
+            if issue.code == Issues.ISSUE_REFUELING:
+                refuel_issues.append({
+                    "phase": phase.name.lower(),
+                    "timestamp": issue.timestamp,
+                    "value": issue.value,
+                })
+
+    assert len(refuel_issues) == len(expected_refuel_events), (
+        f"{filename}: incorrect number of Refueling events.\n"
+        f"Expected: {expected_refuel_events}\n"
+        f"Detected: {refuel_issues}"
+    )
+
+    for expected, detected in zip(expected_refuel_events, refuel_issues):
+        expected_timestamp = parse_timestamp(expected["timestamp"])
+        expected_value = int(expected["value"])
+        assert expected["phase"] == detected["phase"], (
+            f"{filename}: wrong phase for refueling.\n"
+            f"Expected: {expected['phase']}\n"
+            f"Detected: {detected['phase']}"
+        )
+
+        assert expected_timestamp == detected["timestamp"], (
+            f"{filename}: incorrect refueling timestamp.\n"
+            f"Expected: {expected['timestamp']}\n"
+            f"Detected: {detected['timestamp']}"
+        )
+
+        assert expected_value == int(detected["value"]), (
+            f"{filename}: incorrect refueling value.\n"
+            f"Expected: {expected['value']}\n"
+            f"Detected: {detected['value']}"
+        )
