@@ -185,6 +185,16 @@ def test_evaluator(filename, expected_metrics, expected_issues):
             "LEBB-touchgoLEXJ-LEAS.json",
             []
         ),
+        (
+            "ENRA_ENDU_False_refueling.json",
+            []
+        ),
+        (
+            "CYBL_KEUG_REFUELING.json",
+            [
+                {"phase": "approach", "timestamp": "2025-09-19T01:56:36.3020965", "value": "398"},
+            ]
+        ),
     ]
 )
 def test_refueling_detection(filename, expected_refuel_events):
