@@ -18,6 +18,7 @@ class BacktrackDetector():
     WIDTH_CORRIDOR = 30           # width (meters) of allowed takeoff/landing corridor
     TURN_ZONE_RADIUS = 100                # tolerance near runway threshold
     VECTOR_ANGLE_TOLERANCE_DEGREES = 3   # max angle deviation allowed
+    EXTEND_LINE_METERS = 300
 
     def extend_line(self, p1, p2, length):
         """Extend a line in both directions by 'length' meters."""
@@ -61,7 +62,7 @@ class BacktrackDetector():
         run_end_xy = latlon_to_xy(run_end_event.latitude, run_end_event.longitude)
 
         # 2. Extend runway line for geometric corridor detection
-        takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=200)
+        takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=self.EXTEND_LINE_METERS)
         takeoff_corridor = takeoff_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
         turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
         safe_zone = unary_union([takeoff_corridor, turn_zone])
@@ -136,7 +137,7 @@ class BacktrackDetector():
         landing_end_xy = latlon_to_xy(landing_end_event.latitude, landing_end_event.longitude)
 
         # 2. Extend runway line for geometric corridor detection
-        landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=200)
+        landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=self.EXTEND_LINE_METERS)
         landing_corridor = landing_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
         turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
         safe_zone = unary_union([landing_corridor, turn_zone])

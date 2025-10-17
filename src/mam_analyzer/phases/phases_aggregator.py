@@ -436,8 +436,8 @@ class PhasesAggregator:
                 backtrack_and_taxi = self.__generate_taxi_for_landing(
                     _landing_phase,
                     events, 
-                    _shutdown_start + timedelta(microseconds=-1),
-                    last_timestamp
+                    _landing_end + timedelta(microseconds=1),
+                    _shutdown_start + timedelta(microseconds=-1)
                 )
                 for phase in backtrack_and_taxi:
                     result.append(phase)
