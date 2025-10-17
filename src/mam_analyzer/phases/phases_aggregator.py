@@ -34,6 +34,8 @@ class PhasesAggregator:
         self.taxi_analyzer = TaxiAnalyzer()
         self.approach_analyzer = ApproachAnalyzer()
 
+        # Backtrack is a special case because we need the other phases detected
+
     def __filter_events(
         self,
         events: List[FlightEvent],
