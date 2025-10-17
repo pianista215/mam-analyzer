@@ -12,6 +12,7 @@ from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
 from mam_analyzer.phases.analyzers.taxi import TaxiAnalyzer
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
+from mam_analyzer.phases.detectors.backtrack import BacktrackDetector
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
@@ -35,6 +36,7 @@ class PhasesAggregator:
         self.approach_analyzer = ApproachAnalyzer()
 
         # Backtrack is a special case because we need the other phases detected
+        self.backtrack_detector = BacktrackDetector()
 
     def __filter_events(
         self,
