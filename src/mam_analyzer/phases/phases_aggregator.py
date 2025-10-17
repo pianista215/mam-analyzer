@@ -101,14 +101,15 @@ class PhasesAggregator:
             result.append(final_taxi)
         else:
             backtrack_start, backtrack_end = backtrack_detected
-            final_taxi = self.__generate_phase(
-                events, 
-                "taxi", 
-                start, 
-                backtrack_start + timedelta(microseconds=-1), 
-                self.taxi_analyzer
-            )
-            result.append(final_taxi)
+            if backtrack_start != start:
+                final_taxi = self.__generate_phase(
+                    events, 
+                    "taxi", 
+                    start, 
+                    backtrack_start + timedelta(microseconds=-1), 
+                    self.taxi_analyzer
+                )
+                result.append(final_taxi)
 
             backtrack = self.__generate_phase(
                 events, 
