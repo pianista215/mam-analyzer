@@ -18,7 +18,7 @@ class BacktrackDetector():
     WIDTH_CORRIDOR = 30           # width (meters) of allowed takeoff/landing corridor
     TURN_ZONE_RADIUS = 100                # tolerance near runway threshold
     VECTOR_ANGLE_TOLERANCE_DEGREES = 3   # max angle deviation allowed
-    EXTEND_LINE_METERS = 300
+    EXTEND_LINE_METERS = 2000
 
     def extend_line(self, p1, p2, length):
         """Extend a line in both directions by 'length' meters."""
@@ -90,28 +90,13 @@ class BacktrackDetector():
         if taxi_lines.intersection(takeoff_corridor).length < self.BACKTRACK_THRESHOLD_METERS:
             return None  # no backtrack
 
-        # 5. Walk backwards to find where backtrack starts
-        last_xy, backtrack_start_event = taxi_events_xy[-1]
-
-        for i in reversed(range(len(taxi_events_xy) - 1)):
+        # 5. Get the first event that is inside the backtrack
+        for i in range(len(taxi_events_xy)):
             xy, ev = taxi_events_xy[i]
             point = Point(xy)
-
             if safe_zone.covers(point):
-                # Still within safe region (runway corridor or turning circle)
-                last_xy = xy
                 backtrack_start_event = ev
-            else:
-                # Outside safe area → verify alignment using vector angle
-                movement_vector = (xy[0] - run_start_xy[0], xy[1] - run_start_xy[1])
-                angle = self.angle_between_vectors(takeoff_vector, movement_vector)
-
-                if angle <= self.VECTOR_ANGLE_TOLERANCE_DEGREES:
-                    # Still moving along runway direction
-                    last_xy = xy
-                    backtrack_start_event = ev
-                else:
-                    break  # significant deviation → backtrack begins here
+                break
 
         if backtrack_start_event:
             return backtrack_start_event.timestamp, taxi.end
@@ -165,10 +150,10 @@ class BacktrackDetector():
         if taxi_lines.intersection(landing_corridor).length < self.BACKTRACK_THRESHOLD_METERS:
             return None  # no backtrack
 
-        # 5. Walk to find where backtrack ends
+        # 5. Get the last event that is inside the backtrack
         last_xy, backtrack_end_event = taxi_events_xy[0]
 
-        for i in range(1, len(taxi_events_xy)):
+        for i in range(len(taxi_events_xy)):
             xy, ev = taxi_events_xy[i]
             point = Point(xy)
 
@@ -177,16 +162,7 @@ class BacktrackDetector():
                 last_xy = xy
                 backtrack_end_event = ev
             else:
-                # Outside safe area → verify alignment using vector angle
-                movement_vector = (xy[0] - landing_end_xy[0], xy[1] - landing_end_xy[1])
-                angle = self.angle_between_vectors(landing_vector, movement_vector)
-
-                if angle <= self.VECTOR_ANGLE_TOLERANCE_DEGREES:
-                    # Still moving along runway direction
-                    last_xy = xy
-                    backtrack_end_event = ev
-                else:
-                    break  # significant deviation → backtrack begins here
+                break
 
         if backtrack_end_event:
             return taxi.start, backtrack_end_event.timestamp
