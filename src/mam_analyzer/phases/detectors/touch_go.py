@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.search import find_first_index_forward,find_first_index_forward_starting_from_idx
+from mam_analyzer.utils.ground import is_on_air, is_on_ground
 from mam_analyzer.utils.units import heading_within_range
 
 class TouchAndGoDetector(Detector):
@@ -41,13 +42,10 @@ class TouchAndGoDetector(Detector):
             start_event_idx, _ = found_first_event
 
         # Step 1: look for the event when we touch the ground
-        def onGround(e: FlightEvent) -> bool:
-            return e.on_ground == True
-
         found_touch_event = find_first_index_forward_starting_from_idx(
             events,
             start_event_idx,
-            onGround,
+            is_on_ground,
             from_time,
             to_time
         )
@@ -61,13 +59,11 @@ class TouchAndGoDetector(Detector):
 
 
         # Step 2: check when we leave the ground again
-        def onAirborne(e: FlightEvent) -> bool:
-            return e.on_ground == False
 
         found_airborne = find_first_index_forward_starting_from_idx(
             events,
             touch_idx,
-            onAirborne,
+            is_on_air,
             from_time,
             to_time
         )
@@ -86,7 +82,7 @@ class TouchAndGoDetector(Detector):
             found_bounce = find_first_index_forward_starting_from_idx(
                 events,
                 airborne_idx,
-                onGround,
+                is_on_ground,
                 from_time,
                 limit_bounce
             )
@@ -97,7 +93,7 @@ class TouchAndGoDetector(Detector):
                 found_airborne = find_first_index_forward_starting_from_idx(
                     events,
                     bounce_idx,
-                    onAirborne,
+                    is_on_air,
                     from_time,
                     to_time
                 )

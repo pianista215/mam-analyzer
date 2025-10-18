@@ -12,6 +12,7 @@ from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
 from mam_analyzer.phases.analyzers.taxi import TaxiAnalyzer
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
+from mam_analyzer.phases.detectors.backtrack import BacktrackDetector
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
@@ -33,6 +34,9 @@ class PhasesAggregator:
         # Approach and taxi only have analyzer
         self.taxi_analyzer = TaxiAnalyzer()
         self.approach_analyzer = ApproachAnalyzer()
+
+        # Backtrack is a special case because we need the other phases detected
+        self.backtrack_detector = BacktrackDetector()
 
     def __filter_events(
         self,
@@ -62,6 +66,116 @@ class PhasesAggregator:
         analysis = analyzer.analyze(filtered_events, start, end) if analyzer else AnalysisResult()
 
         return FlightPhase(name, start, end, analysis, filtered_events)
+
+    def __generate_taxi_for_takeoff(
+        self,
+        takeoff_phase: FlightPhase,
+        events: List[FlightEvent],
+        start: datetime,
+        end: datetime
+    ) -> List[FlightPhase]:
+        """Return the taxi with backtrack phase if it's found"""
+        result = []
+        #Without analysis
+        taxi_candidate = self.__generate_phase(
+            events, 
+            "taxi", 
+            start, 
+            end, 
+            None
+        )
+
+        backtrack_detected = self.backtrack_detector.detect_from_takeoff(
+            taxi_candidate,
+            takeoff_phase
+        )
+
+        if backtrack_detected is None:
+            final_taxi = self.__generate_phase(
+                events, 
+                "taxi", 
+                start, 
+                end, 
+                self.taxi_analyzer
+            )
+            result.append(final_taxi)
+        else:
+            backtrack_start, backtrack_end = backtrack_detected
+            if backtrack_start != start:
+                final_taxi = self.__generate_phase(
+                    events, 
+                    "taxi", 
+                    start, 
+                    backtrack_start + timedelta(microseconds=-1), 
+                    self.taxi_analyzer
+                )
+                result.append(final_taxi)
+
+            backtrack = self.__generate_phase(
+                events, 
+                "backtrack", 
+                backtrack_start, 
+                end, 
+                None
+            )
+            result.append(backtrack)
+
+        return result
+
+    def __generate_taxi_for_landing(
+        self,
+        landing_phase: FlightPhase,
+        events: List[FlightEvent],
+        start: datetime,
+        end: datetime
+    ) -> List[FlightPhase]:
+        """Return the taxi with backtrack phase if it's found"""
+        result = []
+        #Without analysis
+        taxi_candidate = self.__generate_phase(
+            events, 
+            "taxi", 
+            start, 
+            end, 
+            None
+        )
+
+        backtrack_detected = self.backtrack_detector.detect_from_landing(
+            taxi_candidate,
+            landing_phase
+        )
+
+        if backtrack_detected is None:
+            final_taxi = self.__generate_phase(
+                events, 
+                "taxi", 
+                start, 
+                end, 
+                self.taxi_analyzer
+            )
+            result.append(final_taxi)
+        else:
+            backtrack_start, backtrack_end = backtrack_detected
+            backtrack = self.__generate_phase(
+                events, 
+                "backtrack", 
+                backtrack_start, 
+                backtrack_end, 
+                None
+            )
+            result.append(backtrack)
+            if backtrack_end != end:
+                final_taxi = self.__generate_phase(
+                    events, 
+                    "taxi", 
+                    backtrack_end + timedelta(microseconds=1), 
+                    end, 
+                    self.taxi_analyzer
+                )
+                result.append(final_taxi)
+
+        return result        
+
 
         
     def __get_touch_go_phases(
@@ -202,15 +316,14 @@ class PhasesAggregator:
             first_timestamp = events[0].timestamp
 
             if first_timestamp != _takeoff_start:
-                result.append(
-                    self.__generate_phase(
-                        events, 
-                        "taxi", 
-                        first_timestamp, 
-                        _takeoff_start + timedelta(microseconds=-1), 
-                        self.taxi_analyzer
-                    )
+                taxi_and_backtrack = self.__generate_taxi_for_takeoff(
+                    _takeoff_phase,
+                    events, 
+                    first_timestamp,
+                    _takeoff_start + timedelta(microseconds=-1)
                 )
+                for phase in taxi_and_backtrack:
+                    result.append(phase)
 
         else:
             _startup_start, _startup_end = _startup
@@ -218,15 +331,14 @@ class PhasesAggregator:
             result.append(_startup_phase)
 
             if _startup_end != _takeoff_start:
-                result.append(
-                    self.__generate_phase(
-                        events, 
-                        "taxi", 
-                        _startup_end + timedelta(microseconds=1), 
-                        _takeoff_start + timedelta(microseconds=-1), 
-                        self.taxi_analyzer
-                    )
+                taxi_and_backtrack = self.__generate_taxi_for_takeoff(
+                    _takeoff_phase,
+                    events, 
+                    _startup_end + timedelta(microseconds=1),
+                    _takeoff_start + timedelta(microseconds=-1)
                 )
+                for phase in taxi_and_backtrack:
+                    result.append(phase)
 
         result.append(_takeoff_phase)
 
@@ -307,30 +419,28 @@ class PhasesAggregator:
         if _shutdown is None:            
 
             if _landing_end != last_timestamp:
-                result.append(
-                    self.__generate_phase(
-                        events, 
-                        "taxi", 
-                        _landing_end + timedelta(microseconds=1), 
-                        last_timestamp, 
-                        self.taxi_analyzer
-                    )
+                backtrack_and_taxi = self.__generate_taxi_for_landing(
+                    _landing_phase,
+                    events, 
+                    _landing_end + timedelta(microseconds=1),
+                    last_timestamp
                 )
+                for phase in backtrack_and_taxi:
+                    result.append(phase)                
 
         else:
             _shutdown_start, _shutdown_end = _shutdown
             _shutdown_phase = self.__generate_phase(events, "shutdown", _shutdown_start, _shutdown_end, None)
 
             if _landing_end != _shutdown_start:
-                result.append(
-                    self.__generate_phase(
-                        events, 
-                        "taxi", 
-                        _landing_end + timedelta(microseconds=1), 
-                        _shutdown_start + timedelta(microseconds=-1), 
-                        self.taxi_analyzer
-                    )
+                backtrack_and_taxi = self.__generate_taxi_for_landing(
+                    _landing_phase,
+                    events, 
+                    _landing_end + timedelta(microseconds=1),
+                    _shutdown_start + timedelta(microseconds=-1)
                 )
+                for phase in backtrack_and_taxi:
+                    result.append(phase)
 
             result.append(_shutdown_phase)
 

@@ -32,7 +32,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "3215"),
                 ("distance_nm", "348")
             ],
-            ['AppHighVsBelow1000AGL', 'TaxiOverspeed'],
+            ['AppHighVsBelow1000AGL'],
         ),
         (
             "UHPT-UHMA-SF34.json",

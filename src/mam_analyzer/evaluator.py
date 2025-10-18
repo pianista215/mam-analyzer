@@ -145,7 +145,7 @@ class FlightEvaluator:
         last_lon = None
 
         for phase in phases:
-            if phase.name != "startup" and phase.name != "taxi" and phase.name != "shutdown":
+            if phase.name != "startup" and phase.name != "taxi" and phase.name != "backtrack" and phase.name != "shutdown":
                 for event in phase.events:
                     if event_has_location(event):
                         if last_lat is not None and last_lon is not None:

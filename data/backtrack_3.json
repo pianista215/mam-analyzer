@@ -1,0 +1,3128 @@
+{
+  "FlightId": 30,
+  "Events": [
+    {
+      "Timestamp": "2025-10-10T09:51:47.5488804",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "235",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4999.420073031987",
+        "Squawk": "1234",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:52:27.5729787",
+      "Changes": {
+        "Squawk": "2000"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:52:47.5593624",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4999.420073031987",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:53:47.5613517",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "16",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4999.420073031987",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:54:49.5600939",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4999.420073031987",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:55:49.5617586",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4999.352420529703",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:56:51.5651622",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4997.962978103482",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:57:51.5695216",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4996.804020754008",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:58:53.5653071",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "234",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "16",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4995.414111758806",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:59:49.5615271",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "206",
+        "QNHSet": "1006"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:59:51.5669698",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "151",
+        "QNHSet": "999"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:59:53.5607054",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "99",
+        "QNHSet": "995"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T09:59:55.5669234",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "83",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "17",
+        "QNHSet": "994",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4994.0251359015665",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:00:11.5609167",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "87",
+        "QNHSet": "995"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:00:57.5646588",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "89",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "995",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4992.631960923496",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:01:59.5527205",
+      "Changes": {
+        "Latitude": "69.72205",
+        "Longitude": "29.88347",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "89",
+        "VSFpm": "0",
+        "Heading": "141",
+        "GSKnots": "0",
+        "IASKnots": "15",
+        "QNHSet": "995",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4991.237852807462",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:02:41.5637184",
+      "Changes": {
+        "Latitude": "69.72249",
+        "Longitude": "29.88288",
+        "Heading": "114"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:02:49.5582157",
+      "Changes": {
+        "Latitude": "69.72253",
+        "Longitude": "29.88275",
+        "Heading": "87",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:02:59.5615269",
+      "Changes": {
+        "Latitude": "69.72254",
+        "Longitude": "29.88253",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "98",
+        "VSFpm": "-9",
+        "Heading": "60",
+        "GSKnots": "1",
+        "IASKnots": "0",
+        "QNHSet": "995",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4988.176227152372",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "Off",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:03:49.5654694",
+      "Changes": {
+        "Engine 1": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:04:01.5504292",
+      "Changes": {
+        "Latitude": "69.72223",
+        "Longitude": "29.88019",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "99",
+        "VSFpm": "0",
+        "Heading": "51",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "995",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "4979.467717116975",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:04:43.5532047",
+      "Changes": {
+        "Latitude": "69.72223",
+        "Longitude": "29.88019",
+        "Flaps": "12"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:04:51.5526557",
+      "Changes": {
+        "Latitude": "69.72223",
+        "Longitude": "29.88019",
+        "Flaps": "25"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:04:55.5670993",
+      "Changes": {
+        "Latitude": "69.72223",
+        "Longitude": "29.88019",
+        "Flaps": "37"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:05:01.5719162",
+      "Changes": {
+        "Latitude": "69.72223",
+        "Longitude": "29.88019",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "99",
+        "VSFpm": "0",
+        "Heading": "51",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4968.479551039096",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:01.5729182",
+      "Changes": {
+        "Latitude": "69.72249",
+        "Longitude": "29.88207",
+        "onGround": "True",
+        "Altitude": "294",
+        "AGLAltitude": "9",
+        "Altimeter": "99",
+        "VSFpm": "0",
+        "Heading": "51",
+        "GSKnots": "8",
+        "IASKnots": "7",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4955.503801101008",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:25.5496574",
+      "Changes": {
+        "Latitude": "69.72303",
+        "Longitude": "29.88498",
+        "Heading": "15"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:27.5593462",
+      "Changes": {
+        "Latitude": "69.72314",
+        "Longitude": "29.8851",
+        "Heading": "359"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:31.5615162",
+      "Changes": {
+        "Latitude": "69.72337",
+        "Longitude": "29.88507",
+        "Heading": "331"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:47.5492931",
+      "Changes": {
+        "Latitude": "69.72442",
+        "Longitude": "29.88429",
+        "Heading": "358"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:49.5509325",
+      "Changes": {
+        "Latitude": "69.72455",
+        "Longitude": "29.8845",
+        "Heading": "19"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:06:55.5541355",
+      "Changes": {
+        "Latitude": "69.72482",
+        "Longitude": "29.88564",
+        "Heading": "45"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:07:03.5654245",
+      "Changes": {
+        "Latitude": "69.72508",
+        "Longitude": "29.88735",
+        "onGround": "True",
+        "Altitude": "293",
+        "AGLAltitude": "8",
+        "Altimeter": "98",
+        "VSFpm": "4",
+        "Heading": "52",
+        "GSKnots": "17",
+        "IASKnots": "17",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4941.153072375119",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:08:05.5714383",
+      "Changes": {
+        "Latitude": "69.72716",
+        "Longitude": "29.90308",
+        "onGround": "True",
+        "Altitude": "293",
+        "AGLAltitude": "8",
+        "Altimeter": "98",
+        "VSFpm": "15",
+        "Heading": "52",
+        "GSKnots": "24",
+        "IASKnots": "23",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4927.682292747904",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:05.55487",
+      "Changes": {
+        "Latitude": "69.72962",
+        "Longitude": "29.92072",
+        "Heading": "103"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:07.5528322",
+      "Changes": {
+        "Latitude": "69.72961",
+        "Longitude": "29.92075",
+        "onGround": "True",
+        "Altitude": "295",
+        "AGLAltitude": "9",
+        "Altimeter": "98",
+        "VSFpm": "1",
+        "Heading": "118",
+        "GSKnots": "2",
+        "IASKnots": "16",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4914.4135374895795",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:15.5721747",
+      "Changes": {
+        "Latitude": "69.72954",
+        "Longitude": "29.92079",
+        "Heading": "155"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:19.5577883",
+      "Changes": {
+        "Latitude": "69.7295",
+        "Longitude": "29.92069",
+        "Heading": "196"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:23.5612855",
+      "Changes": {
+        "Latitude": "69.72947",
+        "Longitude": "29.92053",
+        "Heading": "228"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:09:25.5705422",
+      "Changes": {
+        "Latitude": "69.72947",
+        "Longitude": "29.92051",
+        "GSKnots": "0",
+        "IASKnots": "0"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:07.5532877",
+      "Changes": {
+        "Latitude": "69.72946",
+        "Longitude": "29.92039",
+        "onGround": "True",
+        "Altitude": "295",
+        "AGLAltitude": "8",
+        "Altimeter": "99",
+        "VSFpm": "0",
+        "Heading": "231",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4880.856496649729",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:13.5596253",
+      "Changes": {
+        "Latitude": "69.72941",
+        "Longitude": "29.92008",
+        "GSKnots": "18",
+        "IASKnots": "17"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:17.5468887",
+      "Changes": {
+        "Latitude": "69.7292",
+        "Longitude": "29.91853",
+        "GSKnots": "44",
+        "IASKnots": "43"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:21.5538285",
+      "Changes": {
+        "Latitude": "69.72883",
+        "Longitude": "29.91569",
+        "GSKnots": "69",
+        "IASKnots": "68"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:25.5687507",
+      "Changes": {
+        "Latitude": "69.72828",
+        "Longitude": "29.9116",
+        "GSKnots": "93",
+        "IASKnots": "92"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:29.548137",
+      "Changes": {
+        "Latitude": "69.72759",
+        "Longitude": "29.9064",
+        "GSKnots": "116",
+        "IASKnots": "115"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:33.5485895",
+      "Changes": {
+        "Latitude": "69.72675",
+        "Longitude": "29.90007",
+        "GSKnots": "137",
+        "IASKnots": "136"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:35.5503402",
+      "Changes": {
+        "Latitude": "69.72627",
+        "Longitude": "29.89654",
+        "onGround": "False",
+        "Altitude": "298",
+        "AGLAltitude": "12",
+        "Altimeter": "98",
+        "VSFpm": "113",
+        "Heading": "231",
+        "GSKnots": "147",
+        "IASKnots": "144",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Down",
+        "FuelKg": "4803.134969180864",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:37.5621216",
+      "Changes": {
+        "Latitude": "69.72577",
+        "Longitude": "29.89279",
+        "Altitude": "325",
+        "AGLAltitude": "38",
+        "Altimeter": "103",
+        "VSFpm": "858"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:39.5571095",
+      "Changes": {
+        "Latitude": "69.72524",
+        "Longitude": "29.88893",
+        "Altitude": "377",
+        "AGLAltitude": "90",
+        "Altimeter": "116",
+        "VSFpm": "1564"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:41.5577095",
+      "Changes": {
+        "Latitude": "69.72471",
+        "Longitude": "29.88496",
+        "Altitude": "446",
+        "AGLAltitude": "163",
+        "Altimeter": "132",
+        "VSFpm": "2019",
+        "GSKnots": "161",
+        "IASKnots": "161",
+        "Gear": "Up"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:45.5591248",
+      "Changes": {
+        "Latitude": "69.72361",
+        "Longitude": "29.87673",
+        "onGround": "False",
+        "Altitude": "607",
+        "AGLAltitude": "323",
+        "Altimeter": "181",
+        "VSFpm": "2572",
+        "Heading": "228",
+        "GSKnots": "168",
+        "IASKnots": "168",
+        "QNHSet": "995",
+        "Flaps": "37",
+        "Gear": "Up",
+        "FuelKg": "4767.446641234574",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:49.5542681",
+      "Changes": {
+        "Latitude": "69.72246",
+        "Longitude": "29.86817",
+        "Altitude": "805",
+        "AGLAltitude": "519",
+        "Altimeter": "237",
+        "VSFpm": "3069"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:53.5716468",
+      "Changes": {
+        "Latitude": "69.72127",
+        "Longitude": "29.85934",
+        "Altitude": "1036",
+        "AGLAltitude": "755",
+        "Altimeter": "307",
+        "VSFpm": "3572"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:10:55.5528851",
+      "Changes": {
+        "Latitude": "69.72066",
+        "Longitude": "29.8549",
+        "GSKnots": "181",
+        "IASKnots": "186"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:01.549924",
+      "Changes": {
+        "Latitude": "69.71879",
+        "Longitude": "29.84113",
+        "Altitude": "1543",
+        "AGLAltitude": "1393",
+        "Altimeter": "468",
+        "VSFpm": "4138"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:03.5532268",
+      "Changes": {
+        "Latitude": "69.71815",
+        "Longitude": "29.83658",
+        "Altitude": "1695",
+        "AGLAltitude": "1524",
+        "Altimeter": "516",
+        "VSFpm": "4557"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:05.5492963",
+      "Changes": {
+        "Latitude": "69.71749",
+        "Longitude": "29.83212",
+        "Altitude": "1860",
+        "AGLAltitude": "1564",
+        "Altimeter": "565",
+        "VSFpm": "4964"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:09.5575161",
+      "Changes": {
+        "Latitude": "69.7161",
+        "Longitude": "29.82328",
+        "Altitude": "2164",
+        "AGLAltitude": "1856",
+        "Altimeter": "666",
+        "VSFpm": "4052"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:15.5584226",
+      "Changes": {
+        "Latitude": "69.71381",
+        "Longitude": "29.81019",
+        "Altitude": "2533",
+        "AGLAltitude": "2126",
+        "Altimeter": "785",
+        "VSFpm": "3551"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:17.559054",
+      "Changes": {
+        "Latitude": "69.71299",
+        "Longitude": "29.80592",
+        "Altitude": "2669",
+        "AGLAltitude": "2235",
+        "Altimeter": "827",
+        "VSFpm": "4048"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:21.5604565",
+      "Changes": {
+        "Latitude": "69.71124",
+        "Longitude": "29.79746",
+        "Altitude": "2880",
+        "AGLAltitude": "2308",
+        "Altimeter": "900",
+        "VSFpm": "2580",
+        "GSKnots": "188",
+        "IASKnots": "202"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:23.5716693",
+      "Changes": {
+        "Latitude": "69.71029",
+        "Longitude": "29.79315",
+        "Altitude": "2944",
+        "AGLAltitude": "2476",
+        "Altimeter": "923",
+        "VSFpm": "1942"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:31.5611089",
+      "Changes": {
+        "Latitude": "69.70614",
+        "Longitude": "29.77565",
+        "Altitude": "3199",
+        "AGLAltitude": "2641",
+        "Altimeter": "1000",
+        "VSFpm": "2628",
+        "GSKnots": "203",
+        "IASKnots": "218"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:33.5702123",
+      "Changes": {
+        "Latitude": "69.70506",
+        "Longitude": "29.77121",
+        "Altitude": "3304",
+        "AGLAltitude": "2746",
+        "Altimeter": "1031",
+        "VSFpm": "3112"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:43.5485077",
+      "Changes": {
+        "Latitude": "69.69949",
+        "Longitude": "29.7487",
+        "Flaps": "25"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:47.5508234",
+      "Changes": {
+        "Latitude": "69.69721",
+        "Longitude": "29.73953",
+        "onGround": "False",
+        "Altitude": "4036",
+        "AGLAltitude": "3475",
+        "Altimeter": "1263",
+        "VSFpm": "3234",
+        "Heading": "214",
+        "GSKnots": "212",
+        "IASKnots": "224",
+        "QNHSet": "995",
+        "Flaps": "12",
+        "Gear": "Up",
+        "FuelKg": "4586.911039915186",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:11:55.5583234",
+      "Changes": {
+        "Latitude": "69.6926",
+        "Longitude": "29.721",
+        "Flaps": "0"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:12:03.5704571",
+      "Changes": {
+        "Latitude": "69.68793",
+        "Longitude": "29.70218",
+        "Altitude": "4950",
+        "AGLAltitude": "4477",
+        "Altimeter": "1550",
+        "VSFpm": "3475"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:12:19.5692655",
+      "Changes": {
+        "Latitude": "69.67845",
+        "Longitude": "29.66383",
+        "Altitude": "5814",
+        "AGLAltitude": "5396",
+        "Altimeter": "1827",
+        "VSFpm": "3077"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:12:35.5624781",
+      "Changes": {
+        "Latitude": "69.66875",
+        "Longitude": "29.62433",
+        "Altitude": "6648",
+        "AGLAltitude": "6282",
+        "Altimeter": "2079",
+        "VSFpm": "3518"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:12:47.5572551",
+      "Changes": {
+        "Latitude": "69.66144",
+        "Longitude": "29.59447",
+        "onGround": "False",
+        "Altitude": "7347",
+        "AGLAltitude": "6841",
+        "Altimeter": "2297",
+        "VSFpm": "3406",
+        "Heading": "215",
+        "GSKnots": "229",
+        "IASKnots": "224",
+        "QNHSet": "995",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "4454.380254509642",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:12:55.5592363",
+      "Changes": {
+        "Latitude": "69.65652",
+        "Longitude": "29.57437",
+        "Altitude": "7780",
+        "AGLAltitude": "7224",
+        "Altimeter": "2497",
+        "QNHSet": "1013"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:13:11.552785",
+      "Changes": {
+        "Latitude": "69.64652",
+        "Longitude": "29.53347",
+        "Altitude": "8592",
+        "AGLAltitude": "7896",
+        "Altimeter": "2842",
+        "VSFpm": "3115"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:13:27.5615496",
+      "Changes": {
+        "Latitude": "69.63634",
+        "Longitude": "29.49188",
+        "Altitude": "9455",
+        "AGLAltitude": "9101",
+        "Altimeter": "3116",
+        "VSFpm": "3311"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:13:43.5600605",
+      "Changes": {
+        "Latitude": "69.62608",
+        "Longitude": "29.44994",
+        "Altitude": "10315",
+        "AGLAltitude": "9868",
+        "Altimeter": "3378",
+        "VSFpm": "3108"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:13:49.5521915",
+      "Changes": {
+        "Latitude": "69.6222",
+        "Longitude": "29.43408",
+        "onGround": "False",
+        "Altitude": "10624",
+        "AGLAltitude": "10098",
+        "Altimeter": "3475",
+        "VSFpm": "3085",
+        "Heading": "215",
+        "GSKnots": "243",
+        "IASKnots": "224",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "4336.779209935743",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:14:05.5666646",
+      "Changes": {
+        "Latitude": "69.61176",
+        "Longitude": "29.39142",
+        "Altitude": "11446",
+        "AGLAltitude": "11159",
+        "Altimeter": "3734",
+        "VSFpm": "3102"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:14:21.5608771",
+      "Changes": {
+        "Latitude": "69.6012",
+        "Longitude": "29.34842",
+        "Altitude": "12259",
+        "AGLAltitude": "11933",
+        "Altimeter": "3999",
+        "VSFpm": "2998"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:14:39.5607231",
+      "Changes": {
+        "Latitude": "69.58915",
+        "Longitude": "29.29952",
+        "Altitude": "13158",
+        "AGLAltitude": "12871",
+        "Altimeter": "4287",
+        "VSFpm": "2998"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:14:49.5561551",
+      "Changes": {
+        "Latitude": "69.58241",
+        "Longitude": "29.27221",
+        "onGround": "False",
+        "Altitude": "13675",
+        "AGLAltitude": "13391",
+        "Altimeter": "4442",
+        "VSFpm": "3074",
+        "Heading": "214",
+        "GSKnots": "253",
+        "IASKnots": "223",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "4231.971953397237",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:15:07.5543228",
+      "Changes": {
+        "Latitude": "69.56958",
+        "Longitude": "29.2241",
+        "Altitude": "14574",
+        "AGLAltitude": "14276",
+        "Altimeter": "4717",
+        "VSFpm": "3032"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:15:23.561918",
+      "Changes": {
+        "Latitude": "69.55584",
+        "Longitude": "29.18775",
+        "Altitude": "15409",
+        "AGLAltitude": "15122",
+        "Altimeter": "4980",
+        "VSFpm": "3029"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:15:41.5532479",
+      "Changes": {
+        "Latitude": "69.53977",
+        "Longitude": "29.14871",
+        "Altitude": "16280",
+        "AGLAltitude": "15968",
+        "Altimeter": "5264",
+        "VSFpm": "2886"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:15:49.5592129",
+      "Changes": {
+        "Latitude": "69.53256",
+        "Longitude": "29.1313",
+        "onGround": "False",
+        "Altitude": "16671",
+        "AGLAltitude": "16340",
+        "Altimeter": "5393",
+        "VSFpm": "2951",
+        "Heading": "201",
+        "GSKnots": "254",
+        "IASKnots": "224",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "4135.272732615233",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:07.5567859",
+      "Changes": {
+        "Latitude": "69.51632",
+        "Longitude": "29.09181",
+        "Altitude": "17529",
+        "AGLAltitude": "17202",
+        "Altimeter": "5670",
+        "VSFpm": "2788"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:19.5588591",
+      "Changes": {
+        "Latitude": "69.50543",
+        "Longitude": "29.06514",
+        "Altitude": "18075",
+        "AGLAltitude": "17610",
+        "Altimeter": "5832",
+        "VSFpm": "2386"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:21.5574917",
+      "Changes": {
+        "Latitude": "69.50361",
+        "Longitude": "29.06065",
+        "Altitude": "18136",
+        "AGLAltitude": "17643",
+        "Altimeter": "5854",
+        "VSFpm": "1817"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:23.5720707",
+      "Changes": {
+        "Latitude": "69.50173",
+        "Longitude": "29.05605",
+        "Altitude": "18180",
+        "AGLAltitude": "17677",
+        "Altimeter": "5869",
+        "VSFpm": "1335"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:31.5708991",
+      "Changes": {
+        "Latitude": "69.49424",
+        "Longitude": "29.03762",
+        "Altitude": "18388",
+        "AGLAltitude": "17893",
+        "Altimeter": "5927",
+        "VSFpm": "2233"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:35.5556379",
+      "Changes": {
+        "Latitude": "69.49047",
+        "Longitude": "29.02833",
+        "Altitude": "18561",
+        "AGLAltitude": "18068",
+        "Altimeter": "5978",
+        "VSFpm": "2635"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:16:49.5719414",
+      "Changes": {
+        "Latitude": "69.47718",
+        "Longitude": "28.9955",
+        "onGround": "False",
+        "Altitude": "19174",
+        "AGLAltitude": "18661",
+        "Altimeter": "6167",
+        "VSFpm": "2619",
+        "Heading": "202",
+        "GSKnots": "271",
+        "IASKnots": "234",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "4046.12633050202",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:17:09.5582026",
+      "Changes": {
+        "Latitude": "69.45815",
+        "Longitude": "28.94839",
+        "Altitude": "20057",
+        "AGLAltitude": "19232",
+        "Altimeter": "6446",
+        "VSFpm": "2655"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:17:29.5554305",
+      "Changes": {
+        "Latitude": "69.43901",
+        "Longitude": "28.90099",
+        "Altitude": "20928",
+        "AGLAltitude": "20362",
+        "Altimeter": "6730",
+        "VSFpm": "2515"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:17:49.5614598",
+      "Changes": {
+        "Latitude": "69.41973",
+        "Longitude": "28.8533",
+        "Altitude": "21749",
+        "AGLAltitude": "21147",
+        "Altimeter": "7006",
+        "VSFpm": "2456"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:17:51.5585297",
+      "Changes": {
+        "Latitude": "69.4178",
+        "Longitude": "28.84852",
+        "onGround": "False",
+        "Altitude": "21831",
+        "AGLAltitude": "21219",
+        "Altimeter": "7034",
+        "VSFpm": "2446",
+        "Heading": "201",
+        "GSKnots": "276",
+        "IASKnots": "234",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3961.0292805772465",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:18:09.5497087",
+      "Changes": {
+        "Latitude": "69.40036",
+        "Longitude": "28.80545",
+        "Altitude": "22524",
+        "AGLAltitude": "22061",
+        "Altimeter": "7260",
+        "VSFpm": "1966"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:18:13.5494422",
+      "Changes": {
+        "Latitude": "69.39644",
+        "Longitude": "28.7958",
+        "Altitude": "22613",
+        "AGLAltitude": "22161",
+        "Altimeter": "7290",
+        "VSFpm": "1078"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:18:15.5590532",
+      "Changes": {
+        "Latitude": "69.39445",
+        "Longitude": "28.79091",
+        "Altitude": "22631",
+        "AGLAltitude": "22192",
+        "Altimeter": "7297",
+        "VSFpm": "548"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:18:17.5654372",
+      "Changes": {
+        "Latitude": "69.39248",
+        "Longitude": "28.78607",
+        "Altitude": "22635",
+        "AGLAltitude": "22199",
+        "Altimeter": "7300",
+        "VSFpm": "110"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:18:51.5613664",
+      "Changes": {
+        "Latitude": "69.35914",
+        "Longitude": "28.70421",
+        "onGround": "False",
+        "Altitude": "22673",
+        "AGLAltitude": "22269",
+        "Altimeter": "7314",
+        "VSFpm": "-48",
+        "Heading": "201",
+        "GSKnots": "281",
+        "IASKnots": "235",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3912.312480397985",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:19:53.5490945",
+      "Changes": {
+        "Latitude": "69.29747",
+        "Longitude": "28.55412",
+        "onGround": "False",
+        "Altitude": "22704",
+        "AGLAltitude": "22308",
+        "Altimeter": "7322",
+        "VSFpm": "27",
+        "Heading": "202",
+        "GSKnots": "295",
+        "IASKnots": "244",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3871.333260204098",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:20:13.556165",
+      "Changes": {
+        "Latitude": "69.27589",
+        "Longitude": "28.50196",
+        "GSKnots": "317",
+        "IASKnots": "260"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:20:35.5590438",
+      "Changes": {
+        "Latitude": "69.25048",
+        "Longitude": "28.44063",
+        "GSKnots": "339",
+        "IASKnots": "276"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:20:53.553785",
+      "Changes": {
+        "Latitude": "69.22849",
+        "Longitude": "28.38765",
+        "onGround": "False",
+        "Altitude": "22699",
+        "AGLAltitude": "22304",
+        "Altimeter": "7321",
+        "VSFpm": "-10",
+        "Heading": "202",
+        "GSKnots": "355",
+        "IASKnots": "288",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3802.3160436497988",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:21:21.5596276",
+      "Changes": {
+        "Latitude": "69.19235",
+        "Longitude": "28.30083",
+        "GSKnots": "377",
+        "IASKnots": "304"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:21:55.5550921",
+      "Changes": {
+        "Latitude": "69.14579",
+        "Longitude": "28.18951",
+        "onGround": "False",
+        "Altitude": "22675",
+        "AGLAltitude": "22280",
+        "Altimeter": "7315",
+        "VSFpm": "-78",
+        "Heading": "203",
+        "GSKnots": "397",
+        "IASKnots": "319",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3731.878124547533",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:22:57.5508866",
+      "Changes": {
+        "Latitude": "69.05897",
+        "Longitude": "27.98365",
+        "onGround": "False",
+        "Altitude": "22670",
+        "AGLAltitude": "22256",
+        "Altimeter": "7313",
+        "VSFpm": "29",
+        "Heading": "203",
+        "GSKnots": "395",
+        "IASKnots": "317",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3681.283384218662",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:23:57.5688905",
+      "Changes": {
+        "Latitude": "68.97482",
+        "Longitude": "27.7863",
+        "onGround": "False",
+        "Altitude": "22679",
+        "AGLAltitude": "22286",
+        "Altimeter": "7315",
+        "VSFpm": "45",
+        "Heading": "203",
+        "GSKnots": "396",
+        "IASKnots": "317",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3632.397686068181",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:24:59.5612552",
+      "Changes": {
+        "Latitude": "68.88781",
+        "Longitude": "27.58336",
+        "onGround": "False",
+        "Altitude": "22683",
+        "AGLAltitude": "22291",
+        "Altimeter": "7316",
+        "VSFpm": "-40",
+        "Heading": "203",
+        "GSKnots": "396",
+        "IASKnots": "316",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3582.1309437331424",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:25:59.5617033",
+      "Changes": {
+        "Latitude": "68.80326",
+        "Longitude": "27.38789",
+        "onGround": "False",
+        "Altitude": "22681",
+        "AGLAltitude": "22188",
+        "Altimeter": "7314",
+        "VSFpm": "58",
+        "Heading": "203",
+        "GSKnots": "397",
+        "IASKnots": "315",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3531.719098444929",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:26:59.5623772",
+      "Changes": {
+        "Latitude": "68.71802",
+        "Longitude": "27.19289",
+        "onGround": "False",
+        "Altitude": "22692",
+        "AGLAltitude": "22231",
+        "Altimeter": "7317",
+        "VSFpm": "-86",
+        "Heading": "203",
+        "GSKnots": "400",
+        "IASKnots": "317",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3482.5296638876416",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:28:01.5533537",
+      "Changes": {
+        "Latitude": "68.6295",
+        "Longitude": "26.99244",
+        "onGround": "False",
+        "Altitude": "22673",
+        "AGLAltitude": "21900",
+        "Altimeter": "7311",
+        "VSFpm": "-119",
+        "Heading": "203",
+        "GSKnots": "389",
+        "IASKnots": "308",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3437.0583175420916",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:28:17.5626336",
+      "Changes": {
+        "Latitude": "68.60779",
+        "Longitude": "26.94356",
+        "GSKnots": "369",
+        "IASKnots": "292"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:28:35.5518797",
+      "Changes": {
+        "Latitude": "68.58469",
+        "Longitude": "26.8917",
+        "GSKnots": "348",
+        "IASKnots": "276"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:28:57.5609566",
+      "Changes": {
+        "Latitude": "68.55816",
+        "Longitude": "26.83234",
+        "GSKnots": "325",
+        "IASKnots": "259"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:29:01.5539521",
+      "Changes": {
+        "Latitude": "68.55351",
+        "Longitude": "26.82196",
+        "onGround": "False",
+        "Altitude": "22671",
+        "AGLAltitude": "21618",
+        "Altimeter": "7309",
+        "VSFpm": "3",
+        "Heading": "203",
+        "GSKnots": "322",
+        "IASKnots": "256",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3422.7892383879243",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:29:25.5607993",
+      "Changes": {
+        "Latitude": "68.52677",
+        "Longitude": "26.76236",
+        "GSKnots": "299",
+        "IASKnots": "239"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:29:51.5693686",
+      "Changes": {
+        "Latitude": "68.49985",
+        "Longitude": "26.70258",
+        "GSKnots": "277",
+        "IASKnots": "222"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:01.5593348",
+      "Changes": {
+        "Latitude": "68.49006",
+        "Longitude": "26.68088",
+        "onGround": "False",
+        "Altitude": "22675",
+        "AGLAltitude": "21558",
+        "Altimeter": "7308",
+        "VSFpm": "-16",
+        "Heading": "203",
+        "GSKnots": "268",
+        "IASKnots": "216",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3408.9424041618063",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:27.5696998",
+      "Changes": {
+        "Latitude": "68.46589",
+        "Longitude": "26.62743",
+        "Altitude": "22657",
+        "AGLAltitude": "21657",
+        "Altimeter": "7305",
+        "VSFpm": "-674"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:29.5474713",
+      "Changes": {
+        "Latitude": "68.46411",
+        "Longitude": "26.6235",
+        "Altitude": "22611",
+        "AGLAltitude": "21645",
+        "Altimeter": "7294",
+        "VSFpm": "-1373"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:31.5594478",
+      "Changes": {
+        "Latitude": "68.46231",
+        "Longitude": "26.61951",
+        "Altitude": "22545",
+        "AGLAltitude": "21608",
+        "Altimeter": "7278",
+        "VSFpm": "-1970"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:35.5513155",
+      "Changes": {
+        "Latitude": "68.45866",
+        "Longitude": "26.61146",
+        "Altitude": "22379",
+        "AGLAltitude": "21479",
+        "Altimeter": "7234",
+        "VSFpm": "-2591"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:41.5574635",
+      "Changes": {
+        "Latitude": "68.45308",
+        "Longitude": "26.59917",
+        "Altitude": "22093",
+        "AGLAltitude": "21223",
+        "Altimeter": "7147",
+        "VSFpm": "-2999"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:45.555678",
+      "Changes": {
+        "Latitude": "68.44927",
+        "Longitude": "26.59078",
+        "Altitude": "21868",
+        "AGLAltitude": "21072",
+        "Altimeter": "7073",
+        "VSFpm": "-3518"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:51.5627105",
+      "Changes": {
+        "Latitude": "68.44341",
+        "Longitude": "26.5779",
+        "Altitude": "21526",
+        "AGLAltitude": "20765",
+        "Altimeter": "6953",
+        "VSFpm": "-2982"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:53.5564433",
+      "Changes": {
+        "Latitude": "68.44143",
+        "Longitude": "26.57354",
+        "Altitude": "21450",
+        "AGLAltitude": "20666",
+        "Altimeter": "6923",
+        "VSFpm": "-2282"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:30:55.5550012",
+      "Changes": {
+        "Latitude": "68.43944",
+        "Longitude": "26.56915",
+        "Altitude": "21394",
+        "AGLAltitude": "20618",
+        "Altimeter": "6900",
+        "VSFpm": "-1701"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:31:03.5535104",
+      "Changes": {
+        "Latitude": "68.43145",
+        "Longitude": "26.55158",
+        "onGround": "False",
+        "Altitude": "21193",
+        "AGLAltitude": "20344",
+        "Altimeter": "6835",
+        "VSFpm": "-1803",
+        "Heading": "203",
+        "GSKnots": "279",
+        "IASKnots": "229",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3394.3933836188776",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:31:17.5649428",
+      "Changes": {
+        "Latitude": "68.41714",
+        "Longitude": "26.5201",
+        "Altitude": "20768",
+        "AGLAltitude": "20003",
+        "Altimeter": "6688",
+        "VSFpm": "-1297"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:31:53.5648665",
+      "Changes": {
+        "Latitude": "68.37951",
+        "Longitude": "26.43754",
+        "Altitude": "19951",
+        "AGLAltitude": "19157",
+        "Altimeter": "6424",
+        "VSFpm": "-1327"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:32:03.5618168",
+      "Changes": {
+        "Latitude": "68.36897",
+        "Longitude": "26.41451",
+        "onGround": "False",
+        "Altitude": "19730",
+        "AGLAltitude": "18878",
+        "Altimeter": "6352",
+        "VSFpm": "-1318",
+        "Heading": "204",
+        "GSKnots": "292",
+        "IASKnots": "242",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3380.368786610896",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:32:41.5675824",
+      "Changes": {
+        "Latitude": "68.32882",
+        "Longitude": "26.32715",
+        "Altitude": "18906",
+        "AGLAltitude": "18011",
+        "Altimeter": "6094",
+        "VSFpm": "-1286"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:33:05.5537824",
+      "Changes": {
+        "Latitude": "68.30343",
+        "Longitude": "26.2723",
+        "onGround": "False",
+        "Altitude": "18386",
+        "AGLAltitude": "17467",
+        "Altimeter": "5936",
+        "VSFpm": "-1314",
+        "Heading": "204",
+        "GSKnots": "292",
+        "IASKnots": "244",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3365.786639670297",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:33:43.5724729",
+      "Changes": {
+        "Latitude": "68.26357",
+        "Longitude": "26.1865",
+        "Altitude": "17558",
+        "AGLAltitude": "16659",
+        "Altimeter": "5686",
+        "VSFpm": "-1306"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:34:07.5620978",
+      "Changes": {
+        "Latitude": "68.23868",
+        "Longitude": "26.13309",
+        "onGround": "False",
+        "Altitude": "17037",
+        "AGLAltitude": "16194",
+        "Altimeter": "5527",
+        "VSFpm": "-1301",
+        "Heading": "205",
+        "GSKnots": "285",
+        "IASKnots": "241",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3351.1914287982227",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:34:45.5479884",
+      "Changes": {
+        "Latitude": "68.19968",
+        "Longitude": "26.04966",
+        "Altitude": "16214",
+        "AGLAltitude": "15323",
+        "Altimeter": "5250",
+        "VSFpm": "-1295"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:35:07.5645316",
+      "Changes": {
+        "Latitude": "68.17725",
+        "Longitude": "26.00185",
+        "onGround": "False",
+        "Altitude": "15738",
+        "AGLAltitude": "14880",
+        "Altimeter": "5095",
+        "VSFpm": "-1293",
+        "Heading": "205",
+        "GSKnots": "279",
+        "IASKnots": "240",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3337.0879816324064",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:35:45.5532654",
+      "Changes": {
+        "Latitude": "68.13894",
+        "Longitude": "25.92049",
+        "Altitude": "14918",
+        "AGLAltitude": "14026",
+        "Altimeter": "4832",
+        "VSFpm": "-1294"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:36:07.5724387",
+      "Changes": {
+        "Latitude": "68.1168",
+        "Longitude": "25.87361",
+        "onGround": "False",
+        "Altitude": "14440",
+        "AGLAltitude": "13532",
+        "Altimeter": "4683",
+        "VSFpm": "-1304",
+        "Heading": "205",
+        "GSKnots": "275",
+        "IASKnots": "240",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3322.961206017527",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:36:45.5571322",
+      "Changes": {
+        "Latitude": "68.07897",
+        "Longitude": "25.79379",
+        "Altitude": "13620",
+        "AGLAltitude": "12587",
+        "Altimeter": "4431",
+        "VSFpm": "-1298"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:37:09.5492391",
+      "Changes": {
+        "Latitude": "68.0552",
+        "Longitude": "25.7438",
+        "onGround": "False",
+        "Altitude": "13103",
+        "AGLAltitude": "12126",
+        "Altimeter": "4277",
+        "VSFpm": "-1306",
+        "Heading": "205",
+        "GSKnots": "271",
+        "IASKnots": "241",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3308.33940071352",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:37:47.5642487",
+      "Changes": {
+        "Latitude": "68.01773",
+        "Longitude": "25.66529",
+        "Altitude": "12285",
+        "AGLAltitude": "11394",
+        "Altimeter": "4012",
+        "VSFpm": "-1314"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:38:09.5615519",
+      "Changes": {
+        "Latitude": "67.99615",
+        "Longitude": "25.62022",
+        "onGround": "False",
+        "Altitude": "11808",
+        "AGLAltitude": "10908",
+        "Altimeter": "3857",
+        "VSFpm": "-1303",
+        "Heading": "205",
+        "GSKnots": "267",
+        "IASKnots": "243",
+        "QNHSet": "1013",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3294.191629494483",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:38:37.5533611",
+      "Changes": {
+        "Latitude": "67.96946",
+        "Longitude": "25.56462",
+        "Altitude": "11182",
+        "AGLAltitude": "10351",
+        "Altimeter": "3638",
+        "QNHSet": "993"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:39:11.5600069",
+      "Changes": {
+        "Latitude": "67.93849",
+        "Longitude": "25.50026",
+        "onGround": "False",
+        "Altitude": "10435",
+        "AGLAltitude": "9655",
+        "Altimeter": "3253",
+        "VSFpm": "-1317",
+        "Heading": "204",
+        "GSKnots": "243",
+        "IASKnots": "228",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3279.5632922247387",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:39:51.550303",
+      "Changes": {
+        "Latitude": "67.90366",
+        "Longitude": "25.42825",
+        "Altitude": "9634",
+        "AGLAltitude": "8965",
+        "Altimeter": "3006",
+        "VSFpm": "-1185"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:40:13.5520451",
+      "Changes": {
+        "Latitude": "67.88523",
+        "Longitude": "25.38706",
+        "onGround": "False",
+        "Altitude": "9182",
+        "AGLAltitude": "8516",
+        "Altimeter": "2872",
+        "VSFpm": "-1418",
+        "Heading": "218",
+        "GSKnots": "237",
+        "IASKnots": "226",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3264.9372877999003",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:40:25.5523613",
+      "Changes": {
+        "Latitude": "67.87946",
+        "Longitude": "25.3556",
+        "Altitude": "8947",
+        "AGLAltitude": "8270",
+        "Altimeter": "2795",
+        "VSFpm": "-999"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:40:29.5486081",
+      "Changes": {
+        "Latitude": "67.87854",
+        "Longitude": "25.34411",
+        "Heading": "244"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:41:07.5489808",
+      "Changes": {
+        "Latitude": "67.88542",
+        "Longitude": "25.2317",
+        "Altitude": "8136",
+        "AGLAltitude": "7492",
+        "Altimeter": "2530",
+        "VSFpm": "-1191"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:41:13.5535222",
+      "Changes": {
+        "Latitude": "67.88726",
+        "Longitude": "25.21403",
+        "onGround": "False",
+        "Altitude": "8017",
+        "AGLAltitude": "7381",
+        "Altimeter": "2492",
+        "VSFpm": "-1196",
+        "Heading": "267",
+        "GSKnots": "248",
+        "IASKnots": "229",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Up",
+        "FuelKg": "3250.7857840290135",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:41:49.5508015",
+      "Changes": {
+        "Latitude": "67.89807",
+        "Longitude": "25.10794",
+        "Flaps": "12"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:41:55.5557467",
+      "Changes": {
+        "Latitude": "67.89981",
+        "Longitude": "25.09027",
+        "Altitude": "7196",
+        "AGLAltitude": "6545",
+        "Altimeter": "2230",
+        "VSFpm": "-941"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:41:57.5586215",
+      "Changes": {
+        "Latitude": "67.90038",
+        "Longitude": "25.0844",
+        "Flaps": "25"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:42:13.5623401",
+      "Changes": {
+        "Latitude": "67.90488",
+        "Longitude": "25.03826",
+        "onGround": "False",
+        "Altitude": "6861",
+        "AGLAltitude": "6230",
+        "Altimeter": "2127",
+        "VSFpm": "-1143",
+        "Heading": "266",
+        "GSKnots": "238",
+        "IASKnots": "225",
+        "QNHSet": "993",
+        "Flaps": "25",
+        "Gear": "Up",
+        "FuelKg": "3236.6450113446954",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:42:53.5578906",
+      "Changes": {
+        "Latitude": "67.91289",
+        "Longitude": "24.92856",
+        "Altitude": "6022",
+        "AGLAltitude": "5364",
+        "Altimeter": "1870",
+        "VSFpm": "-1209"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:42:55.5684244",
+      "Changes": {
+        "Latitude": "67.91249",
+        "Longitude": "24.9233",
+        "Heading": "240"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:43:15.5499979",
+      "Changes": {
+        "Latitude": "67.90757",
+        "Longitude": "24.87193",
+        "onGround": "False",
+        "Altitude": "5614",
+        "AGLAltitude": "4953",
+        "Altimeter": "1744",
+        "VSFpm": "-1187",
+        "Heading": "240",
+        "GSKnots": "217",
+        "IASKnots": "217",
+        "QNHSet": "993",
+        "Flaps": "25",
+        "Gear": "Up",
+        "FuelKg": "3220.7289436866467",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:43:55.5540853",
+      "Changes": {
+        "Latitude": "67.89577",
+        "Longitude": "24.77085",
+        "Altitude": "4775",
+        "AGLAltitude": "4119",
+        "Altimeter": "1478",
+        "VSFpm": "-1309",
+        "Heading": "210"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:05.5653605",
+      "Changes": {
+        "Latitude": "67.88743",
+        "Longitude": "24.75811",
+        "Heading": "183"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:17.5511389",
+      "Changes": {
+        "Latitude": "67.87595",
+        "Longitude": "24.75567",
+        "onGround": "False",
+        "Altitude": "4374",
+        "AGLAltitude": "3717",
+        "Altimeter": "1349",
+        "VSFpm": "-1074",
+        "Heading": "171",
+        "GSKnots": "205",
+        "IASKnots": "211",
+        "QNHSet": "993",
+        "Flaps": "25",
+        "Gear": "Up",
+        "FuelKg": "3203.951589689175",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:37.5520455",
+      "Changes": {
+        "Latitude": "67.85722",
+        "Longitude": "24.75406",
+        "Altitude": "3951",
+        "AGLAltitude": "3302",
+        "Altimeter": "1216",
+        "VSFpm": "-1505"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:39.5549711",
+      "Changes": {
+        "Latitude": "67.85536",
+        "Longitude": "24.75437",
+        "Altitude": "3875",
+        "AGLAltitude": "3231",
+        "Altimeter": "1197",
+        "VSFpm": "-2259"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:41.5568539",
+      "Changes": {
+        "Latitude": "67.8535",
+        "Longitude": "24.75478",
+        "Altitude": "3782",
+        "AGLAltitude": "3137",
+        "Altimeter": "1170",
+        "VSFpm": "-2796"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:45.5517511",
+      "Changes": {
+        "Latitude": "67.8497",
+        "Longitude": "24.75592",
+        "Flaps": "37"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:47.5537896",
+      "Changes": {
+        "Latitude": "67.84777",
+        "Longitude": "24.75666",
+        "Flaps": "25"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:49.5524541",
+      "Changes": {
+        "Latitude": "67.84582",
+        "Longitude": "24.7575",
+        "Flaps": "37"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:51.5492845",
+      "Changes": {
+        "Latitude": "67.84387",
+        "Longitude": "24.75844",
+        "Altitude": "3310",
+        "AGLAltitude": "2696",
+        "Altimeter": "1017",
+        "VSFpm": "-2159"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:53.5592492",
+      "Changes": {
+        "Latitude": "67.84189",
+        "Longitude": "24.75946",
+        "Altitude": "3256",
+        "AGLAltitude": "2643",
+        "Altimeter": "996",
+        "VSFpm": "-1617"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:44:57.5590495",
+      "Changes": {
+        "Latitude": "67.83798",
+        "Longitude": "24.76165",
+        "Altitude": "3179",
+        "AGLAltitude": "2568",
+        "Altimeter": "969",
+        "VSFpm": "-1074"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:45:17.5641982",
+      "Changes": {
+        "Latitude": "67.81914",
+        "Longitude": "24.7732",
+        "onGround": "False",
+        "Altitude": "2792",
+        "AGLAltitude": "2182",
+        "Altimeter": "846",
+        "VSFpm": "-1048",
+        "Heading": "158",
+        "GSKnots": "203",
+        "IASKnots": "211",
+        "QNHSet": "993",
+        "Flaps": "50",
+        "Gear": "Up",
+        "FuelKg": "3189.8789360761225",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:45:41.5576591",
+      "Changes": {
+        "Latitude": "67.79796",
+        "Longitude": "24.78615",
+        "GSKnots": "187",
+        "IASKnots": "195"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:45:51.5477904",
+      "Changes": {
+        "Latitude": "67.78969",
+        "Longitude": "24.79109",
+        "Flaps": "62"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:45:55.5474265",
+      "Changes": {
+        "Latitude": "67.78651",
+        "Longitude": "24.79304",
+        "Gear": "Down"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:45:59.5567567",
+      "Changes": {
+        "Latitude": "67.7834",
+        "Longitude": "24.79496",
+        "GSKnots": "170",
+        "IASKnots": "179"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:03.551051",
+      "Changes": {
+        "Latitude": "67.78036",
+        "Longitude": "24.79684",
+        "Flaps": "74"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:07.5514083",
+      "Changes": {
+        "Latitude": "67.77742",
+        "Longitude": "24.79863",
+        "Altitude": "2026",
+        "AGLAltitude": "1368",
+        "Altimeter": "601",
+        "VSFpm": "-466"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:11.5615758",
+      "Changes": {
+        "Latitude": "67.77456",
+        "Longitude": "24.80038",
+        "Altitude": "1978",
+        "AGLAltitude": "1318",
+        "Altimeter": "586",
+        "VSFpm": "-867",
+        "Flaps": "87"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:15.5568141",
+      "Changes": {
+        "Latitude": "67.77179",
+        "Longitude": "24.80206",
+        "GSKnots": "151",
+        "IASKnots": "162"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:19.5569126",
+      "Changes": {
+        "Latitude": "67.76913",
+        "Longitude": "24.80368",
+        "onGround": "False",
+        "Altitude": "1854",
+        "AGLAltitude": "1201",
+        "Altimeter": "545",
+        "VSFpm": "-796",
+        "Heading": "157",
+        "GSKnots": "145",
+        "IASKnots": "157",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3175.448424054436",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:25.5485313",
+      "Changes": {
+        "Latitude": "67.76531",
+        "Longitude": "24.80601",
+        "Altitude": "1809",
+        "AGLAltitude": "1158",
+        "Altimeter": "528",
+        "VSFpm": "-297"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:29.5498863",
+      "Changes": {
+        "Latitude": "67.76292",
+        "Longitude": "24.80746",
+        "Altitude": "1768",
+        "AGLAltitude": "1117",
+        "Altimeter": "517",
+        "VSFpm": "-781"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:37.5506529",
+      "Changes": {
+        "Latitude": "67.75815",
+        "Longitude": "24.81034",
+        "onGround": "False",
+        "Altitude": "1656",
+        "AGLAltitude": "991",
+        "Altimeter": "483",
+        "VSFpm": "-675",
+        "Heading": "157",
+        "GSKnots": "130",
+        "IASKnots": "141",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3164.0501438420206",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:46:49.5567825",
+      "Changes": {
+        "Latitude": "67.75108",
+        "Longitude": "24.81459",
+        "onGround": "False",
+        "Altitude": "1533",
+        "AGLAltitude": "865",
+        "Altimeter": "445",
+        "VSFpm": "-612",
+        "Heading": "156",
+        "GSKnots": "131",
+        "IASKnots": "140",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3150.750595030932",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:01.5523974",
+      "Changes": {
+        "Latitude": "67.74387",
+        "Longitude": "24.81936",
+        "onGround": "False",
+        "Altitude": "1366",
+        "AGLAltitude": "677",
+        "Altimeter": "403",
+        "VSFpm": "-812",
+        "Heading": "153",
+        "GSKnots": "136",
+        "IASKnots": "145",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3136.426460736975",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:11.5562377",
+      "Changes": {
+        "Latitude": "67.73772",
+        "Longitude": "24.824",
+        "onGround": "False",
+        "Altitude": "1226",
+        "AGLAltitude": "556",
+        "Altimeter": "366",
+        "VSFpm": "-841",
+        "Heading": "155",
+        "GSKnots": "139",
+        "IASKnots": "147",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3124.566277233103",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:21.5596521",
+      "Changes": {
+        "Latitude": "67.73138",
+        "Longitude": "24.82794",
+        "onGround": "False",
+        "Altitude": "1094",
+        "AGLAltitude": "441",
+        "Altimeter": "329",
+        "VSFpm": "-682",
+        "Heading": "158",
+        "GSKnots": "141",
+        "IASKnots": "150",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3112.77934505929",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:31.5648835",
+      "Changes": {
+        "Latitude": "67.72492",
+        "Longitude": "24.83168",
+        "onGround": "False",
+        "Altitude": "960",
+        "AGLAltitude": "314",
+        "Altimeter": "294",
+        "VSFpm": "-879",
+        "Heading": "157",
+        "GSKnots": "144",
+        "IASKnots": "153",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3100.9751498331702",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:43.5497128",
+      "Changes": {
+        "Latitude": "67.71701",
+        "Longitude": "24.83662",
+        "onGround": "False",
+        "Altitude": "779",
+        "AGLAltitude": "141",
+        "Altimeter": "243",
+        "VSFpm": "-944",
+        "Heading": "154",
+        "GSKnots": "142",
+        "IASKnots": "150",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3090.0807641205256",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:53.5499248",
+      "Changes": {
+        "Latitude": "67.71097",
+        "Longitude": "24.84049",
+        "onGround": "False",
+        "Altitude": "663",
+        "AGLAltitude": "31",
+        "Altimeter": "206",
+        "VSFpm": "-542",
+        "Heading": "154",
+        "GSKnots": "126",
+        "IASKnots": "135",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3087.7502520590842",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:47:57.5501144",
+      "Changes": {
+        "LandingVSFpm": "-261",
+        "Latitude": "67.70875",
+        "Longitude": "24.84196",
+        "onGround": "True",
+        "Altitude": "642",
+        "AGLAltitude": "11",
+        "Altimeter": "199",
+        "VSFpm": "-256",
+        "Heading": "153",
+        "GSKnots": "119",
+        "IASKnots": "126",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3086.818047234508",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:01.5492041",
+      "Changes": {
+        "Latitude": "67.70673",
+        "Longitude": "24.84323",
+        "GSKnots": "96",
+        "IASKnots": "106"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:03.5495867",
+      "Changes": {
+        "Latitude": "67.70595",
+        "Longitude": "24.84373",
+        "GSKnots": "76",
+        "IASKnots": "85"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:17.5560078",
+      "Changes": {
+        "Latitude": "67.70157",
+        "Longitude": "24.84657",
+        "GSKnots": "63",
+        "IASKnots": "68"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:31.556248",
+      "Changes": {
+        "Latitude": "67.69812",
+        "Longitude": "24.84881",
+        "GSKnots": "44",
+        "IASKnots": "52"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:45.5578131",
+      "Changes": {
+        "Latitude": "67.6958",
+        "Longitude": "24.85032",
+        "GSKnots": "28",
+        "IASKnots": "35"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:51.5701479",
+      "Changes": {
+        "Latitude": "67.69521",
+        "Longitude": "24.85088",
+        "Heading": "124"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:53.5523436",
+      "Changes": {
+        "Latitude": "67.69513",
+        "Longitude": "24.85124",
+        "GSKnots": "17",
+        "IASKnots": "16"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:55.5574446",
+      "Changes": {
+        "Latitude": "67.69509",
+        "Longitude": "24.85165",
+        "Heading": "82"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:48:57.5590902",
+      "Changes": {
+        "Latitude": "67.6951",
+        "Longitude": "24.852",
+        "onGround": "True",
+        "Altitude": "645",
+        "AGLAltitude": "8",
+        "Altimeter": "198",
+        "VSFpm": "1",
+        "Heading": "67",
+        "GSKnots": "13",
+        "IASKnots": "4",
+        "QNHSet": "993",
+        "Flaps": "100",
+        "Gear": "Down",
+        "FuelKg": "3077.0242977486782",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:01.5600585",
+      "Changes": {
+        "Latitude": "67.69516",
+        "Longitude": "24.85262",
+        "Flaps": "62"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:03.5574788",
+      "Changes": {
+        "Latitude": "67.69519",
+        "Longitude": "24.85292",
+        "Flaps": "100"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:07.5591384",
+      "Changes": {
+        "Latitude": "67.69525",
+        "Longitude": "24.85356",
+        "Flaps": "87"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:13.5477051",
+      "Changes": {
+        "Latitude": "67.69533",
+        "Longitude": "24.85441",
+        "Flaps": "74"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:17.559919",
+      "Changes": {
+        "Latitude": "67.69531",
+        "Longitude": "24.8548",
+        "Heading": "95",
+        "Flaps": "62"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:19.5735804",
+      "Changes": {
+        "Latitude": "67.69528",
+        "Longitude": "24.85495",
+        "Flaps": "50"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:23.5471162",
+      "Changes": {
+        "Latitude": "67.69523",
+        "Longitude": "24.85526",
+        "Flaps": "37"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:27.5563328",
+      "Changes": {
+        "Latitude": "67.69518",
+        "Longitude": "24.8556",
+        "Flaps": "25"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:31.557159",
+      "Changes": {
+        "Latitude": "67.69512",
+        "Longitude": "24.85595",
+        "Flaps": "12"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:39.553263",
+      "Changes": {
+        "Latitude": "67.69497",
+        "Longitude": "24.8566",
+        "Flaps": "0"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:49:57.5661515",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "197",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "1",
+        "IASKnots": "1",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3066.3818592859197",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "On"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:50:29.5584232",
+      "Changes": {
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:50:59.5582552",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "197",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3059.8764879800783",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:52:01.5479716",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "197",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3058.538368141797",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:53:01.5614732",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "196",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3057.24223951183",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:54:03.5689903",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "196",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3055.9041196735493",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:55:05.5668621",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "196",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3054.5650666973056",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    },
+    {
+      "Timestamp": "2025-10-10T10:56:07.5588332",
+      "Changes": {
+        "Latitude": "67.69482",
+        "Longitude": "24.85722",
+        "onGround": "True",
+        "Altitude": "638",
+        "AGLAltitude": "8",
+        "Altimeter": "196",
+        "VSFpm": "0",
+        "Heading": "110",
+        "GSKnots": "0",
+        "IASKnots": "0",
+        "QNHSet": "993",
+        "Flaps": "0",
+        "Gear": "Down",
+        "FuelKg": "3053.2283465659684",
+        "Squawk": "2000",
+        "AP": "Off",
+        "Engine 1": "On",
+        "Engine 2": "Off"
+      }
+    }
+  ]
+}

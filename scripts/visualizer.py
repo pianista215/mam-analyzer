@@ -19,6 +19,7 @@ PHASE_COLORS = {
     "touch_go": "purple",
     "shutdown": "#cc00cc",
     "taxi": "yellow",
+    "backtrack": "brown",
     "none": "#888888",
     "approach": "red",
     "cruise": "blue",

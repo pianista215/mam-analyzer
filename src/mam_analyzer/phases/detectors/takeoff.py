@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.detector import Detector
+from mam_analyzer.utils.ground import is_on_air
 from mam_analyzer.utils.search import find_first_index_forward,find_first_index_backward_starting_from_idx,find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import heading_within_range
 
@@ -21,12 +22,9 @@ class TakeoffDetector(Detector):
         flaps_at_takeoff = None
 
         # Step 1: First event on air (onGround=False)
-        def onAirCondition(e: FlightEvent)->bool:
-            return e.on_ground is False
-
         found_airborne = find_first_index_forward(
             events, 
-            onAirCondition, 
+            is_on_air, 
             from_time, 
             to_time
         )
