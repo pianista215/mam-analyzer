@@ -125,6 +125,30 @@ DATA_DIR = Path("data")
                 'Refueling'
             ],
         ),
+        (
+            "zfw.json",
+            [
+                ("airborne_time_minutes", "288"),
+                ("block_time_minutes", "311"),
+                ("distance_nm", "1998"),
+                ("fuel_consumed_kg", "30279"),
+                ("initial_fob_kg", "34995"),
+                ("zfw_kg", "188104")
+            ],
+            [],
+        ),  
+        (
+            "zfw_modified.json",
+            [
+                ("airborne_time_minutes", "288"),
+                ("block_time_minutes", "311"),
+                ("distance_nm", "1998"),
+                ("fuel_consumed_kg", "30279"),
+                ("initial_fob_kg", "34995"),
+                ("zfw_kg", "188104")
+            ],
+            ["ZfwModified"],
+        ), 
     ],
 )
 def test_evaluator(filename, expected_metrics, expected_issues):
