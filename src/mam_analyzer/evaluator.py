@@ -6,7 +6,7 @@ from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisIssue
 from mam_analyzer.flight_report import FlightReport
-from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
+from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off, some_engine_is_on
 from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
@@ -110,11 +110,26 @@ class FlightEvaluator:
     def calculate_initial_fob(self, first_phase: FlightPhase) -> float:
         initial_fob = 0
         if first_phase.name == "startup":
+            # Look for engine start, and allow no more than 2% of change looking back
             for event in first_phase.events:
-                if event_has_fuel(event):
-                    fuel = get_fuel_kg_as_float(event)
-                    if initial_fob < fuel :
-                        initial_fob = fuel
+                engine_start = None
+                if some_engine_is_on(event):
+                    engine_start = event.timestamp
+                    break
+
+            fuel = None
+            max_change_allowed = None            
+            for event in reversed(first_phase.events):
+                if event.timestamp <= engine_start and event_has_fuel(event):
+                    if fuel is None:
+                        fuel = get_fuel_kg_as_float(event)
+                        print(fuel)
+                        max_change_allowed = fuel * 1.002
+                    elif get_fuel_kg_as_float(event) > fuel and get_fuel_kg_as_float(event) <= max_change_allowed:
+                        fuel = get_fuel_kg_as_float(event)
+                    else:
+                        break
+            initial_fob = fuel
         else:
             # First event has always all the data
             initial_fob = get_fuel_kg_as_float(first_phase.events[0])
