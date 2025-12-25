@@ -11,6 +11,7 @@ from mam_analyzer.utils.fuel import event_has_fuel, get_fuel_kg_as_float
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.search import find_first_index_forward
 from mam_analyzer.utils.units import coords_differ, haversine, meters_to_nm
+from mam_analyzer.utils.weight import event_has_zfw, get_zfw_as_int
 
 
 
@@ -35,6 +36,11 @@ class FlightEvaluator:
 
         initial_fob_kg = self.calculate_initial_fob(phases[0])
         metrics["initial_fob_kg"] = round(initial_fob_kg)
+
+        zfw_kg = self.calculate_zfw(phases[0])
+        if zfw_kg is not None:
+            metrics["zfw_kg"] = zfw_kg
+            self.check_zfw_changed(phases)        
 
         fuel_refueled = self.check_refueling(phases)
 
@@ -136,6 +142,27 @@ class FlightEvaluator:
 
         return initial_fob
 
+    def calculate_zfw(self, first_phase: FlightPhase) -> float:
+        zfw = None
+        if first_phase.name == "startup":
+            # Look for engine start and get first zfw before that
+            for event in first_phase.events:
+                engine_start = None
+                if some_engine_is_on(event):
+                    engine_start = event.timestamp
+                    break
+          
+            for event in reversed(first_phase.events):
+                if event.timestamp <= engine_start and event_has_zfw(event):
+                    zfw = get_zfw_as_int(event)
+                    break
+        else:
+            # First event has always all the data but older acars doesn't have zfw
+            if event_has_zfw(first_phase.events[0]):
+                zfw = get_zfw_as_int(first_phase.events[0])
+
+        return zfw        
+
     def calculate_consumed_fuel(self, initial_fob: float, phases: List[FlightPhase]) -> float:
         last_fuel_event_kg = 0
 
@@ -196,6 +223,20 @@ class FlightEvaluator:
                     last_fuel = fuel_event_kg
 
         return fuel_refueled
+
+    def check_zfw_changed(self, phases: List[FlightPhase]) -> int:
+        # Check all phases except first phase and last (shutdown)
+        # Zfw is only logged if there are changes so just look for it
+        for i in range(1, len(phases) - 1):
+            phase = phases[i]
+            for event in phase.events:
+                if event_has_zfw(event):
+                    phase.analysis.issues.append(
+                        AnalysisIssue(
+                            code=Issues.ISSUE_ZFW_MODIFIED,
+                            timestamp=event.timestamp                            
+                        )
+                    )      
 
     def check_engine_stopped_in_flight(self, phases: List[FlightPhase]):
         single_failure_detected = False
