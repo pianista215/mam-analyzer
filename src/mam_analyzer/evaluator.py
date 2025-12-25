@@ -224,17 +224,19 @@ class FlightEvaluator:
 
         return fuel_refueled
 
-    def check_zfw_changed(self, phases: List[FlightPhase]) -> int:
-        # Check all phases except first phase and last (shutdown)
-        # Zfw is only logged if there are changes so just look for it
+    def check_zfw_changed(self, phases: List[FlightPhase], initial_zfw) -> int:
+        # Check all phases except first phase and last (shutdown generally)
+        # Zfw sometimes have small changes depending simulator. Allow 2% variation
+        max_variation = initial_zfw * 0.002
         for i in range(1, len(phases) - 1):
             phase = phases[i]
             for event in phase.events:
-                if event_has_zfw(event):
+                if event_has_zfw(event) and abs(initial_zfw - get_zfw_as_int(event)) > max_variation :
                     phase.analysis.issues.append(
                         AnalysisIssue(
                             code=Issues.ISSUE_ZFW_MODIFIED,
-                            timestamp=event.timestamp                            
+                            timestamp=event.timestamp,
+                            value=get_zfw_as_int(event)                            
                         )
                     )      
 
