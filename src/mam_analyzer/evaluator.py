@@ -40,7 +40,7 @@ class FlightEvaluator:
         zfw_kg = self.calculate_zfw(phases[0])
         if zfw_kg is not None:
             metrics["zfw_kg"] = zfw_kg
-            self.check_zfw_changed(phases)        
+            self.check_zfw_changed(phases, zfw_kg)        
 
         fuel_refueled = self.check_refueling(phases)
 
