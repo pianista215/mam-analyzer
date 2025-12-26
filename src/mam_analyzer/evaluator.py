@@ -129,7 +129,6 @@ class FlightEvaluator:
                 if event.timestamp <= engine_start and event_has_fuel(event):
                     if fuel is None:
                         fuel = get_fuel_kg_as_float(event)
-                        print(fuel)
                         max_change_allowed = fuel * 1.002
                     elif get_fuel_kg_as_float(event) > fuel and get_fuel_kg_as_float(event) <= max_change_allowed:
                         fuel = get_fuel_kg_as_float(event)
