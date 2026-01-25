@@ -8,7 +8,7 @@ from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
 from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
-from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
+from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int, is_hard_landing
 from mam_analyzer.utils.units import haversine
 
 class TouchAndGoAnalyzer(Analyzer):
@@ -47,7 +47,7 @@ class TouchAndGoAnalyzer(Analyzer):
                     if event_has_landing_vs_fpm(e):
                         fpm = get_landing_vs_fpm_as_int(e)
 
-                        if fpm < -700:
+                        if is_hard_landing(e):
                             result.issues.append(
                                 AnalysisIssue(
                                     code=Issues.ISSUE_HARD_LANDING_FPM,
