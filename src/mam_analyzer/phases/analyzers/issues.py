@@ -2,6 +2,7 @@ class Issues:
     ISSUE_HARD_LANDING_FPM = "LandingHardFpm"
     ISSUE_TAXI_OVERSPEED = "TaxiOverspeed"
     ISSUE_APP_HIGH_VS_BELOW_1000AGL = "AppHighVsBelow1000AGL"
+    ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL = "AppHighVsAvgBelow1000AGL"
     ISSUE_APP_HIGH_VS_BELOW_2000AGL = "AppHighVsBelow2000AGL"
     ISSUE_REFUELING = "Refueling"
     ISSUE_LANDING_WITHOUT_ENGINES = "LandingAllEnginesStopped"

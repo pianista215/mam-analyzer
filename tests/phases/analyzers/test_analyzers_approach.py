@@ -145,8 +145,8 @@ def test_issue_low_vs_below_1000agl_by_vs_last3_avg(analyzer):
 
     result = analyzer.analyze(events, start_time, end_time)
 
-    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
-    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
     assert issue.value == "-1200|900"
 
 
@@ -162,6 +162,7 @@ def test_no_issue_when_vs_and_vs_last3_avg_within_limits(analyzer):
     result = analyzer.analyze(events, start_time, end_time)
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
 
 
 def test_issue_low_vs_below_2000agl(analyzer):
@@ -179,19 +180,19 @@ def test_issue_low_vs_below_2000agl(analyzer):
     assert issue.value == "-2500|1500"        
 
 
-@pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, two_thousand_issue", [
-    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", "-1903|999", ""),
-    ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", "", ""),
-    ("UHMA-PAOM-B350.json", "2025-06-16T00:04:26.575323", "2025-06-16T00:07:26.575323", "-994", "-44", "-605", "-994", "-44", "-539", "", ""),
-    ("UHPT-UHMA-B350.json", "2025-06-15T19:58:00.819106", "2025-06-15T20:01:00.819106", "-775", "-279", "-594", "-775", "-279", "-616", "", ""),
-    ("UHPT-UHMA-SF34.json", "2025-06-05T15:02:21.226652", "2025-06-05T15:05:21.226652", "-1355", "-109", "-670", "-1355", "-109", "-720", "", ""),
-    ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", "", ""),
-    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", "-1532|788|-1904|724", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", "-6534|744|-4571|519|-2355|794|-1750|918|-1650|832|-1545|430|-1600|380|-1531|497", "-4140|1136|-2205|1253"),
-    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", "-1644|954|-1397|906|-587|888", "")
+@pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue", [
+    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", "-1903|999", "", ""),
+    ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", "", "", ""),
+    ("UHMA-PAOM-B350.json", "2025-06-16T00:04:26.575323", "2025-06-16T00:07:26.575323", "-994", "-44", "-605", "-994", "-44", "-539", "", "", ""),
+    ("UHPT-UHMA-B350.json", "2025-06-15T19:58:00.819106", "2025-06-15T20:01:00.819106", "-775", "-279", "-594", "-775", "-279", "-616", "", "", ""),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T15:02:21.226652", "2025-06-05T15:05:21.226652", "-1355", "-109", "-670", "-1355", "-109", "-720", "", "", ""),
+    ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", "", "", ""),
+    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", "", "", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", "-1532|788|-1904|724", "", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", "-6534|744|-4571|519|-2355|794|-1750|918|-1650|832|-1545|430|-1600|380|-1531|497", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", "-1644|954", "-1294|906|-1209|888", "")
 ])
-def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, two_thousand_issue, analyzer):
+def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue, analyzer):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -202,15 +203,18 @@ def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs,
 
     assert result.phase_metrics['MinVSFpm'] == int(min_vs)
     assert result.phase_metrics['MaxVSFpm'] == int(max_vs)
-    assert result.phase_metrics['AvgVSFpm'] == int(avg_vs)        
+    assert result.phase_metrics['AvgVSFpm'] == int(avg_vs)
     assert result.phase_metrics['LastMinuteMinVSFpm'] == int(last_min_min_vs)
     assert result.phase_metrics['LastMinuteMaxVSFpm'] == int(last_min_max_vs)
     assert result.phase_metrics['LastMinuteAvgVSFpm'] == int(last_min_avg_vs)
 
     issues_1000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL]
+    issues_1000_avg = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL]
     issues_2000 = [i.value for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL]
 
     issues_1000_str = "|".join(issues_1000)
+    issues_1000_avg_str = "|".join(issues_1000_avg)
     issues_2000_str = "|".join(issues_2000)
     assert issues_1000_str == one_thousand_issue
+    assert issues_1000_avg_str == one_thousand_avg_issue
     assert issues_2000_str == two_thousand_issue
