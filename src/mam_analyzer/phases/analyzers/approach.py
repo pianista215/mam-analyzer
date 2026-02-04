@@ -56,8 +56,7 @@ class ApproachAnalyzer(Analyzer):
                             agl = get_agl_altitude_as_int(e)
 
                             if agl < 1000:
-                                vs_last3_avg = get_vs_last3_avg_as_int(e) if event_has_vs_last3_avg(e) else None
-                                if vs_last3_avg is not None and vs_last3_avg < -1150 or vs < -1500:
+                                if vs < -1500 or (event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < -1150):
                                     result.issues.append(
                                         AnalysisIssue(
                                             code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
