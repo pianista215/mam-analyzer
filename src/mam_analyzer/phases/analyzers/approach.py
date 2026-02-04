@@ -7,7 +7,12 @@ from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
 from mam_analyzer.utils.altitude import event_has_agl_altitude, get_agl_altitude_as_int
-from mam_analyzer.utils.vertical_speed import event_has_vertical_speed, get_vertical_speed_as_int
+from mam_analyzer.utils.vertical_speed import (
+    event_has_vertical_speed,
+    get_vertical_speed_as_int,
+    event_has_vs_last3_avg,
+    get_vs_last3_avg_as_int,
+)
 
 class ApproachAnalyzer(Analyzer):
     def analyze(
@@ -22,7 +27,8 @@ class ApproachAnalyzer(Analyzer):
            - max vertical speed
            Issues:
            - < -2000fpm below 2000AGL
-           - < -1000fpm below 1000AGL
+           - VS < -1500fpm below 1000AGL
+           - VSLast3Avg < -1150fpm below 1000AGL
         """
 
         result = AnalysisResult()
@@ -50,14 +56,23 @@ class ApproachAnalyzer(Analyzer):
                         if event_has_agl_altitude(e):
                             agl = get_agl_altitude_as_int(e)
 
-                            if agl < 1000 and vs < -1000:
-                                result.issues.append(
-                                    AnalysisIssue(
-                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
-                                        timestamp=e.timestamp,
-                                        value=f"{vs}|{agl}"
+                            if agl < 1000:
+                                if vs < -1500:
+                                    result.issues.append(
+                                        AnalysisIssue(
+                                            code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
+                                            timestamp=e.timestamp,
+                                            value=f"{vs}|{agl}"
+                                        )
                                     )
-                                )
+                                elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < -1150:
+                                    result.issues.append(
+                                        AnalysisIssue(
+                                            code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL,
+                                            timestamp=e.timestamp,
+                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl}"
+                                        )
+                                    )
                             elif agl < 2000 and vs < -2000:
                                 result.issues.append(
                                     AnalysisIssue(

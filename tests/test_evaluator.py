@@ -43,7 +43,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "897"),
                 ("distance_nm", "462")
             ],
-            ['AppHighVsBelow1000AGL'],
+            [],
         ),
         (
             "PAOM-PANC-B350-fromtaxi.json",
@@ -148,7 +148,25 @@ DATA_DIR = Path("data")
                 ("zfw_kg", "188104")
             ],
             ["ZfwModified"],
-        ), 
+        ),
+        (
+            "short_flight_vslast3avg.json",
+            [
+                ("airborne_time_minutes", "3"),
+                ("initial_fob_kg", "45"),
+                ("zfw_kg", "914"),
+                ("fuel_consumed_kg", "1"),
+                ("distance_nm", "4")
+            ],
+            [
+                'TaxiOverspeed',
+                'AppHighVsBelow1000AGL',
+                'AppHighVsAvgBelow1000AGL',
+                'AirborneEngineStopped',
+                'AirborneAllEnginesStopped',
+                'LandingAllEnginesStopped'
+            ],
+        ),
     ],
 )
 def test_evaluator(filename, expected_metrics, expected_issues):
