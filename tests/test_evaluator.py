@@ -43,7 +43,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "897"),
                 ("distance_nm", "462")
             ],
-            ['AppHighVsBelow1000AGL'],
+            [],
         ),
         (
             "PAOM-PANC-B350-fromtaxi.json",

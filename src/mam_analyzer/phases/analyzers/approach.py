@@ -7,7 +7,12 @@ from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult, AnalysisIssue
 from mam_analyzer.utils.altitude import event_has_agl_altitude, get_agl_altitude_as_int
-from mam_analyzer.utils.vertical_speed import event_has_vertical_speed, get_vertical_speed_as_int
+from mam_analyzer.utils.vertical_speed import (
+    event_has_vertical_speed,
+    get_vertical_speed_as_int,
+    event_has_vs_last3_avg,
+    get_vs_last3_avg_as_int,
+)
 
 class ApproachAnalyzer(Analyzer):
     def analyze(
@@ -50,14 +55,16 @@ class ApproachAnalyzer(Analyzer):
                         if event_has_agl_altitude(e):
                             agl = get_agl_altitude_as_int(e)
 
-                            if agl < 1000 and vs < -1000:
-                                result.issues.append(
-                                    AnalysisIssue(
-                                        code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
-                                        timestamp=e.timestamp,
-                                        value=f"{vs}|{agl}"
+                            if agl < 1000:
+                                vs_last3_avg = get_vs_last3_avg_as_int(e) if event_has_vs_last3_avg(e) else None
+                                if vs_last3_avg is not None and vs_last3_avg < -1150 or vs < -1500:
+                                    result.issues.append(
+                                        AnalysisIssue(
+                                            code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
+                                            timestamp=e.timestamp,
+                                            value=f"{vs}|{agl}"
+                                        )
                                     )
-                                )
                             elif agl < 2000 and vs < -2000:
                                 result.issues.append(
                                     AnalysisIssue(
