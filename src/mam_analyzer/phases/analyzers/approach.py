@@ -27,7 +27,7 @@ class ApproachAnalyzer(Analyzer):
            - max vertical speed
            Issues:
            - < -2000fpm below 2000AGL
-           - < -1000fpm below 1000AGL
+           - VSLast3Avg < -1150fpm OR VS < -1500fpm below 1000AGL
         """
 
         result = AnalysisResult()
