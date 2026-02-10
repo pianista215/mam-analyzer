@@ -1,6 +1,8 @@
 # Changelog
 
-## [1.1.0] - Upcoming
+## [1.2.0] - Upcoming
+
+## [1.1.0] - 2026-02-04
 - Added ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL (using new attribute VSLast3Avg) which is generated below 1000AGL and less than -1150fpm
 - Modified ISSUE_APP_HIGH_VS_BELOW_1000AGL now generated below 1000AGL and less than -1500fpm
 
