@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.result import AnalysisResult
 
@@ -10,7 +11,8 @@ class Analyzer(ABC):
         self,
         events: List[FlightEvent],
         start_time: datetime,
-        end_time: datetime
+        end_time: datetime,
+        context: Optional[FlightContext] = None,
     ) -> AnalysisResult:
         """
         Analyze the phase of flight that begins at `start_time` and ends at `end_time`,

@@ -11,7 +11,8 @@ class FinalLandingDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect the last landing: from the moment the ground is touched until we leave the runway."""
         touch_idx = None

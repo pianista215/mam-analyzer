@@ -1,7 +1,8 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Optional
 
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.result import AnalysisResult
@@ -16,7 +17,8 @@ class CruiseAnalyzer(Analyzer):
         self,
         events: List[FlightEvent],
         start_time: datetime,
-        end_time: datetime
+        end_time: datetime,
+        context: Optional[FlightContext] = None,
     ) -> AnalysisResult:
         """Analyze cruise phase generating:
            - fuel consumption

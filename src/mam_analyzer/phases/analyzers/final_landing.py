@@ -1,7 +1,8 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
 from mam_analyzer.phases.analyzers.issues import Issues
@@ -21,14 +22,18 @@ class FinalLandingAnalyzer(Analyzer):
         self,
         events: List[FlightEvent],
         start_time: datetime,
-        end_time: datetime
+        end_time: datetime,
+        context: Optional[FlightContext] = None,
     ) -> AnalysisResult:
         """Analyze final landing phase generating:
            - number of bounces
            - meters traveled until brake below 40knots
+           - landing airport issues (if context is provided)
         """
 
         result = AnalysisResult()
+
+        self._check_landing_airport(result, start_time, context)
 
         landing_vs_fpm = None
         bounces_vs = []
@@ -104,3 +109,41 @@ class FinalLandingAnalyzer(Analyzer):
         result.phase_metrics[self.METRIC_BRAKE_DISTANCE] = meters_until_brake
 
         return result
+
+    def _check_landing_airport(
+        self,
+        result: AnalysisResult,
+        start_time: datetime,
+        context: Optional[FlightContext],
+    ):
+        if context is None:
+            return
+
+        landing_icao = context.landing.icao if context.landing else None
+        arrival = context.destination.icao
+        alt1 = context.alternative1.icao if context.alternative1 else None
+        alt2 = context.alternative2.icao if context.alternative2 else None
+
+        issue_code = None
+        value = None
+
+        if landing_icao is None:
+            issue_code = Issues.ISSUE_LANDING_OUT_OF_AIRPORT
+        else:
+            if landing_icao != arrival:
+                value = landing_icao
+                if landing_icao == alt1:
+                    issue_code = Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE
+                elif alt2 is not None and landing_icao == alt2:
+                    issue_code = Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE
+                else:
+                    issue_code = Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED
+
+        if issue_code is not None:
+            result.issues.append(
+                AnalysisIssue(
+                    code=issue_code,
+                    timestamp=start_time,
+                    value=value,
+                )
+            )

@@ -9,4 +9,7 @@ class Issues:
     ISSUE_LANDING_WITH_SOME_ENGINE_STOPPED = "LandingSomeEngineStopped"
     ISSUE_AIRBORNE_ENGINE_STOPPED = "AirborneEngineStopped"
     ISSUE_AIRBORNE_ALL_ENGINES_STOPPED = "AirborneAllEnginesStopped"
-    ISSUE_ZFW_MODIFIED = "ZfwModified"    
+    ISSUE_ZFW_MODIFIED = "ZfwModified"
+    ISSUE_LANDING_OUT_OF_AIRPORT = "LandingOutOfAirport"
+    ISSUE_LANDING_AIRPORT_ALTERNATIVE = "LandingAirportAlternative"
+    ISSUE_LANDING_AIRPORT_NOT_PLANNED = "LandingAirportNotPlanned"

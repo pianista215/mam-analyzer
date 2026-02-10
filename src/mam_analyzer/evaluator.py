@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional
 
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.phases_aggregator import PhasesAggregator
 from mam_analyzer.phases.flight_phase import FlightPhase
@@ -53,8 +54,8 @@ class FlightEvaluator:
 
         return metrics
 
-    def evaluate(self, events: List[FlightEvent]) -> FlightReport:
-        phases: List[FlightPhase] = self.aggregator.identify_phases(events)
+    def evaluate(self, events: List[FlightEvent], context: Optional[FlightContext] = None) -> FlightReport:
+        phases: List[FlightPhase] = self.aggregator.identify_phases(events, context)
         global_metrics = self.calculate_global_metrics(phases)
         return FlightReport(phases=phases, global_metrics=global_metrics)
 
@@ -261,6 +262,7 @@ class FlightEvaluator:
                             )
                         )
                         single_failure_detected = True
+
 
 
 

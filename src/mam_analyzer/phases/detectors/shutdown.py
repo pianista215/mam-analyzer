@@ -12,7 +12,8 @@ class ShutdownDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect shutdown phase: Period with the plane in the position where the shutdown of the engines happens"""
         # In this detector we are not using from_time or to_time

@@ -3,6 +3,7 @@ import json
 import os
 import pytest
 
+from mam_analyzer.models.flight_context import FlightContext, AirportContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.analyzers.issues import Issues
@@ -201,3 +202,88 @@ def test_final_landing_analyzer_from_real_files(filename, landing_start, landing
         assert result.issues[0].value == int(landing_issue)
     else:
         assert len(result.issues) == 0
+
+
+# === Landing airport context tests ===
+
+def _make_context(destination_icao, landing_icao=None, alt1_icao=None, alt2_icao=None):
+    return FlightContext(
+        departure=AirportContext(icao="LEMD"),
+        destination=AirportContext(icao=destination_icao),
+        alternative1=AirportContext(icao=alt1_icao) if alt1_icao else None,
+        alternative2=AirportContext(icao=alt2_icao) if alt2_icao else None,
+        landing=AirportContext(icao=landing_icao) if landing_icao else None,
+    )
+
+
+def _simple_landing_events():
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    touchdown = make_event(base, LandingVSFpm=-200, IASKnots=35, Latitude=40.0, Longitude=-3.0)
+    return [touchdown], base
+
+
+def test_no_context_produces_no_airport_issues(analyzer):
+    events, base = _simple_landing_events()
+    result = analyzer.analyze(events, base, base, context=None)
+    assert all(i.code not in (
+        Issues.ISSUE_LANDING_OUT_OF_AIRPORT,
+        Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE,
+        Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED,
+    ) for i in result.issues)
+
+
+def test_landing_at_destination_no_issue(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao="LEBL")
+    result = analyzer.analyze(events, base, base, context=ctx)
+    assert all(i.code not in (
+        Issues.ISSUE_LANDING_OUT_OF_AIRPORT,
+        Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE,
+        Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED,
+    ) for i in result.issues)
+
+
+def test_landing_out_of_airport(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao=None)
+    result = analyzer.analyze(events, base, base, context=ctx)
+    airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_OUT_OF_AIRPORT]
+    assert len(airport_issues) == 1
+    assert airport_issues[0].timestamp == base
+    assert airport_issues[0].value is None
+
+
+def test_landing_at_alternative1(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao="LEZG", alt1_icao="LEZG")
+    result = analyzer.analyze(events, base, base, context=ctx)
+    airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE]
+    assert len(airport_issues) == 1
+    assert airport_issues[0].value == "LEZG"
+
+
+def test_landing_at_alternative2(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao="LEVC", alt1_icao="LEZG", alt2_icao="LEVC")
+    result = analyzer.analyze(events, base, base, context=ctx)
+    airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_AIRPORT_ALTERNATIVE]
+    assert len(airport_issues) == 1
+    assert airport_issues[0].value == "LEVC"
+
+
+def test_landing_at_unplanned_airport(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao="LPPT", alt1_icao="LEZG")
+    result = analyzer.analyze(events, base, base, context=ctx)
+    airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED]
+    assert len(airport_issues) == 1
+    assert airport_issues[0].value == "LPPT"
+
+
+def test_landing_not_planned_without_alternatives(analyzer):
+    events, base = _simple_landing_events()
+    ctx = _make_context("LEBL", landing_icao="LPPT")
+    result = analyzer.analyze(events, base, base, context=ctx)
+    airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED]
+    assert len(airport_issues) == 1
+    assert airport_issues[0].value == "LPPT"

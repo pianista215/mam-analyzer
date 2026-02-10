@@ -12,7 +12,8 @@ class TakeoffDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect the first takeoff: from the start of takeoff run until flaps 0, gear up or 1 minute."""
         airborne_idx = None
