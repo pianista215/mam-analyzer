@@ -3,6 +3,7 @@ import json
 import os
 import pytest
 
+from mam_analyzer.models.flight_context import AirportContext, FlightContext, Runway, RunwayEnd
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -183,3 +184,86 @@ def test_final_landing_analyzer_from_real_files(filename, takeoff_start, takeoff
     assert result.phase_metrics["TakeoffBounces"] == expected_bounces
     assert result.phase_metrics["TakeoffGroundDistance"] == int(takeoff_distance)
     assert result.phase_metrics["TakeoffSpeed"] == int(takeoff_speed)
+
+
+# === Takeoff runway identification tests ===
+
+def _make_runway(lat1, lon1, heading1, lat2, lon2, heading2, designator1, designator2, width_m=45, length_m=3000):
+    return Runway(
+        designators=f"{designator1}/{designator2}",
+        width_m=width_m,
+        length_m=length_m,
+        ends=[
+            RunwayEnd(designator=designator1, latitude=lat1, longitude=lon1,
+                      true_heading_deg=heading1, displaced_threshold_m=0, stopway_m=0),
+            RunwayEnd(designator=designator2, latitude=lat2, longitude=lon2,
+                      true_heading_deg=heading2, displaced_threshold_m=0, stopway_m=0),
+        ],
+    )
+
+
+def _make_departure_context(runway):
+    return FlightContext(
+        departure=AirportContext(icao="TEST", runways=[runway]),
+        destination=AirportContext(icao="DEST"),
+    )
+
+
+def test_takeoff_runway_identified_with_context(analyzer):
+    base = datetime(2025, 7, 7, 9, 0, 0)
+
+    # Runway heading 90/270, aircraft takes off heading ~90
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.010, heading1=90,
+        lat2=40.0, lon2=-2.980, heading2=270,
+        designator1="09", designator2="27",
+        width_m=45, length_m=2600,
+    )
+    ctx = _make_departure_context(rwy)
+
+    events = [
+        make_event(base, Latitude=40.0, Longitude=-3.008, onGround=True, IASKnots=10, Heading=90),
+        make_event(base + timedelta(seconds=5), Latitude=40.0, Longitude=-3.005, onGround=True, IASKnots=80, Heading=90),
+        make_event(base + timedelta(seconds=10), Latitude=40.0, Longitude=-2.995, onGround=False, IASKnots=135, Heading=90),
+    ]
+
+    result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp, context=ctx)
+
+    assert result.phase_metrics[TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY] == "09"
+    assert TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY_REMAINING_PCT in result.phase_metrics
+    remaining_pct = result.phase_metrics[TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY_REMAINING_PCT]
+    assert 0 <= remaining_pct <= 100
+
+
+def test_takeoff_runway_not_set_without_context(analyzer):
+    base = datetime(2025, 7, 7, 9, 0, 0)
+    events = [
+        make_event(base, Latitude=40.0, Longitude=-3.0, onGround=True, IASKnots=10, Heading=90),
+        make_event(base + timedelta(seconds=10), Latitude=40.0, Longitude=-3.005, onGround=False, IASKnots=135, Heading=90),
+    ]
+
+    result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp, context=None)
+
+    assert TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY not in result.phase_metrics
+    assert TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY_REMAINING_PCT not in result.phase_metrics
+
+
+def test_takeoff_runway_not_set_when_no_match(analyzer):
+    base = datetime(2025, 7, 7, 9, 0, 0)
+
+    # Runway heading 180/360 but takeoff heading is 90
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.0, heading1=180,
+        lat2=39.97, lon2=-3.0, heading2=360,
+        designator1="18", designator2="36",
+    )
+    ctx = _make_departure_context(rwy)
+
+    events = [
+        make_event(base, Latitude=40.0, Longitude=-3.0, onGround=True, IASKnots=10, Heading=90),
+        make_event(base + timedelta(seconds=10), Latitude=40.0, Longitude=-3.005, onGround=False, IASKnots=135, Heading=90),
+    ]
+
+    result = analyzer.analyze(events, events[0].timestamp, events[-1].timestamp, context=ctx)
+
+    assert TakeoffAnalyzer.METRIC_TAKEOFF_RUNWAY not in result.phase_metrics

@@ -9,10 +9,15 @@ from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.location import event_has_location
+from mam_analyzer.utils.runway import match_runway_end
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
 from mam_analyzer.utils.units import haversine
 
 class TakeoffAnalyzer(Analyzer):
+
+    METRIC_TAKEOFF_RUNWAY = "TakeoffRunway"
+    METRIC_TAKEOFF_RUNWAY_REMAINING_PCT = "TakeoffRunwayRemainingPct"
+
     def analyze(
         self,
         events: List[FlightEvent],
@@ -81,5 +86,38 @@ class TakeoffAnalyzer(Analyzer):
         result.phase_metrics["TakeoffBounces"] = bounces_vs
         result.phase_metrics["TakeoffGroundDistance"] = meters_until_airborne
         result.phase_metrics["TakeoffSpeed"] = airborne_speed
+
+        # Runway identification
+        if (
+            context is not None
+            and context.departure is not None
+            and context.departure.runways
+            and airborne_lat is not None
+            and airborne_lon is not None
+        ):
+            airborne_heading = None
+            for e in events:
+                ts = e.timestamp
+                if ts >= start_time and ts <= end_time:
+                    if event_has_on_ground(e) and not is_on_ground(e) and e.heading is not None:
+                        airborne_heading = e.heading
+                        break
+
+            if airborne_heading is not None:
+                rwy_match = match_runway_end(
+                    context.departure, airborne_heading, airborne_lat, airborne_lon
+                )
+                if rwy_match is not None:
+                    rwy, matched_end = rwy_match
+                    result.phase_metrics[self.METRIC_TAKEOFF_RUNWAY] = matched_end.designator
+
+                    # Find the opposite end (the one the aircraft is flying towards)
+                    opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
+                    remaining_m = haversine(
+                        airborne_lat, airborne_lon,
+                        opposite_end.latitude, opposite_end.longitude,
+                    )
+                    remaining_pct = round(remaining_m / rwy.length_m * 100)
+                    result.phase_metrics[self.METRIC_TAKEOFF_RUNWAY_REMAINING_PCT] = remaining_pct
 
         return result

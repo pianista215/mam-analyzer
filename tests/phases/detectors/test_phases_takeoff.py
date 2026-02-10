@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 import pytest
 
+from mam_analyzer.models.flight_context import AirportContext, FlightContext, Runway, RunwayEnd
 from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -96,4 +97,98 @@ def test_detect_takeoff_phase_from_real_files(filename, expected_start, expected
     expected_end_dt = parse_timestamp(expected_end)
 
     assert start == expected_start_dt, f"Incorrect start for takeoff in {filename}"
-    assert end == expected_end_dt, f"Incorrect end for takeoff in {filename}"    
+    assert end == expected_end_dt, f"Incorrect end for takeoff in {filename}"
+
+
+# === Tests with runway context ===
+
+def _make_runway(lat1, lon1, heading1, lat2, lon2, heading2, designator1, designator2, width_m=45, length_m=3000):
+    return Runway(
+        designators=f"{designator1}/{designator2}",
+        width_m=width_m,
+        length_m=length_m,
+        ends=[
+            RunwayEnd(designator=designator1, latitude=lat1, longitude=lon1,
+                      true_heading_deg=heading1, displaced_threshold_m=0, stopway_m=0),
+            RunwayEnd(designator=designator2, latitude=lat2, longitude=lon2,
+                      true_heading_deg=heading2, displaced_threshold_m=0, stopway_m=0),
+        ],
+    )
+
+
+def _make_context_with_departure_runway(runway):
+    return FlightContext(
+        departure=AirportContext(icao="TEST", runways=[runway]),
+        destination=AirportContext(icao="DEST"),
+    )
+
+
+def test_takeoff_with_context_uses_runway_polygon(detector):
+    """When context with runway is provided, takeoff start is determined by runway polygon."""
+    base = datetime(2025, 6, 17, 10, 0, 0)
+
+    # Runway roughly heading 90 (east), from (40.0, -3.010) to (40.0, -2.980)
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.010, heading1=90,
+        lat2=40.0, lon2=-2.980, heading2=270,
+        designator1="09", designator2="27",
+        width_m=45, length_m=2600,
+    )
+    ctx = _make_context_with_departure_runway(rwy)
+
+    events = [
+        # Before runway (off the polygon)
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=90, Latitude=40.001, Longitude=-3.020),
+        # Entering runway
+        make_event(base + timedelta(seconds=5), onGround=True, Heading=90, Latitude=40.0, Longitude=-3.009),
+        make_event(base + timedelta(seconds=10), onGround=True, Heading=90, Latitude=40.0, Longitude=-3.005),
+        # Airborne
+        make_event(base + timedelta(seconds=20), onGround=False, Heading=90, Flaps=5, Gear="Down",
+                   Latitude=40.0, Longitude=-2.995),
+        make_event(base + timedelta(seconds=40), Flaps=0),
+    ]
+
+    start, end = detector.detect(events, None, None, context=ctx)
+
+    # Start should be the first event inside the runway polygon (index 1)
+    assert start == base + timedelta(seconds=5)
+
+
+def test_takeoff_without_context_uses_heading_fallback(detector):
+    """Without context, the heading-based fallback is used (existing behavior)."""
+    base = datetime(2025, 6, 17, 10, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=40),
+        make_event(base + timedelta(seconds=5), onGround=True, Heading=50),
+        make_event(base + timedelta(seconds=10), onGround=True, Heading=51),
+        make_event(base + timedelta(seconds=20), onGround=False, Heading=52, Flaps=5, Gear="Down"),
+        make_event(base + timedelta(seconds=40), Flaps=0),
+    ]
+    start, end = detector.detect(events, None, None, context=None)
+    assert start == base + timedelta(seconds=5)
+    assert end == base + timedelta(seconds=40)
+
+
+def test_takeoff_with_context_no_matching_runway_falls_back(detector):
+    """If context has runways but none match heading, heading fallback is used."""
+    base = datetime(2025, 6, 17, 10, 0, 0)
+
+    # Runway heading 180/360 but takeoff heading is ~52
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.0, heading1=180,
+        lat2=39.97, lon2=-3.0, heading2=360,
+        designator1="18", designator2="36",
+    )
+    ctx = _make_context_with_departure_runway(rwy)
+
+    events = [
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=40),
+        make_event(base + timedelta(seconds=5), onGround=True, Heading=50),
+        make_event(base + timedelta(seconds=10), onGround=True, Heading=51),
+        make_event(base + timedelta(seconds=20), onGround=False, Heading=52, Flaps=5, Gear="Down",
+                   Latitude=40.0, Longitude=-3.0),
+        make_event(base + timedelta(seconds=40), Flaps=0),
+    ]
+    start, end = detector.detect(events, None, None, context=ctx)
+    # Falls back to heading logic
+    assert start == base + timedelta(seconds=5)

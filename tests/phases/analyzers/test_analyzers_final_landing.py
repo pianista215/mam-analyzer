@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 
-from mam_analyzer.models.flight_context import FlightContext, AirportContext
+from mam_analyzer.models.flight_context import FlightContext, AirportContext, Runway, RunwayEnd
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.analyzers.issues import Issues
@@ -287,3 +287,83 @@ def test_landing_not_planned_without_alternatives(analyzer):
     airport_issues = [i for i in result.issues if i.code == Issues.ISSUE_LANDING_AIRPORT_NOT_PLANNED]
     assert len(airport_issues) == 1
     assert airport_issues[0].value == "LPPT"
+
+
+# === Landing runway identification tests ===
+
+def _make_runway(lat1, lon1, heading1, lat2, lon2, heading2, designator1, designator2, width_m=45, length_m=3000):
+    return Runway(
+        designators=f"{designator1}/{designator2}",
+        width_m=width_m,
+        length_m=length_m,
+        ends=[
+            RunwayEnd(designator=designator1, latitude=lat1, longitude=lon1,
+                      true_heading_deg=heading1, displaced_threshold_m=0, stopway_m=0),
+            RunwayEnd(designator=designator2, latitude=lat2, longitude=lon2,
+                      true_heading_deg=heading2, displaced_threshold_m=0, stopway_m=0),
+        ],
+    )
+
+
+def _make_landing_context(runway, landing_icao="DEST"):
+    return FlightContext(
+        departure=AirportContext(icao="ORIG"),
+        destination=AirportContext(icao="DEST"),
+        landing=AirportContext(icao=landing_icao, runways=[runway]),
+    )
+
+
+def test_landing_runway_identified_with_context(analyzer):
+    base = datetime(2025, 7, 6, 12, 0, 0)
+
+    # Runway heading 90/270
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.010, heading1=90,
+        lat2=40.0, lon2=-2.980, heading2=270,
+        designator1="09", designator2="27",
+        width_m=45, length_m=2600,
+    )
+    ctx = _make_landing_context(rwy)
+
+    # Touchdown near the 09 threshold, heading 90
+    touchdown = make_event(base, LandingVSFpm=-250, IASKnots=120,
+                           Latitude=40.0, Longitude=-3.005, Heading=90)
+    brake = make_event(base + timedelta(seconds=20), IASKnots=30,
+                       Latitude=40.0, Longitude=-2.990)
+
+    result = analyzer.analyze([touchdown, brake], base, brake.timestamp, context=ctx)
+
+    assert result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_RUNWAY] == "09"
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT in result.phase_metrics
+    touchdown_pct = result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT]
+    assert 0 <= touchdown_pct <= 100
+
+
+def test_landing_runway_not_set_without_context(analyzer):
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    touchdown = make_event(base, LandingVSFpm=-250, IASKnots=35,
+                           Latitude=40.0, Longitude=-3.0, Heading=90)
+
+    result = analyzer.analyze([touchdown], base, base, context=None)
+
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY not in result.phase_metrics
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT not in result.phase_metrics
+
+
+def test_landing_runway_not_set_when_no_match(analyzer):
+    base = datetime(2025, 7, 6, 12, 0, 0)
+
+    # Runway heading 180/360 but landing heading is 90
+    rwy = _make_runway(
+        lat1=40.0, lon1=-3.0, heading1=180,
+        lat2=39.97, lon2=-3.0, heading2=360,
+        designator1="18", designator2="36",
+    )
+    ctx = _make_landing_context(rwy)
+
+    touchdown = make_event(base, LandingVSFpm=-250, IASKnots=35,
+                           Latitude=40.0, Longitude=-3.0, Heading=90)
+
+    result = analyzer.analyze([touchdown], base, base, context=ctx)
+
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY not in result.phase_metrics

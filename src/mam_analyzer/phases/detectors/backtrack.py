@@ -4,10 +4,12 @@ from shapely.geometry import LineString, MultiLineString, Point
 from shapely.ops import unary_union
 from typing import Optional, Tuple
 
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.utils.ground import is_on_air
 from mam_analyzer.utils.location import event_has_location
+from mam_analyzer.utils.runway import build_runway_polygon, build_runway_safe_zone, match_runway_end
 from mam_analyzer.utils.search import find_first_index_forward, find_first_index_backward
 from mam_analyzer.utils.units import latlon_to_xy
 
@@ -47,6 +49,7 @@ class BacktrackDetector():
         self,
         taxi: FlightPhase,
         takeoff: FlightPhase,
+        context: Optional[FlightContext] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detects backtrack before takeoff using geometric analysis."""
 
@@ -61,11 +64,34 @@ class BacktrackDetector():
         run_start_xy = latlon_to_xy(run_start_event.latitude, run_start_event.longitude)
         run_end_xy = latlon_to_xy(run_end_event.latitude, run_end_event.longitude)
 
-        # 2. Extend runway line for geometric corridor detection
-        takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=self.EXTEND_LINE_METERS)
-        takeoff_corridor = takeoff_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
-        turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
-        safe_zone = unary_union([takeoff_corridor, turn_zone])
+        # 2. Build safe zone from real runway geometry or estimated corridor
+        safe_zone = None
+        takeoff_corridor = None
+
+        if (
+            context is not None
+            and context.departure is not None
+            and context.departure.runways
+            and run_end_event.heading is not None
+        ):
+            rwy_match = match_runway_end(
+                context.departure,
+                run_end_event.heading,
+                run_end_event.latitude,
+                run_end_event.longitude,
+            )
+            if rwy_match is not None:
+                rwy, _ = rwy_match
+                safe_zone = build_runway_safe_zone(
+                    rwy, margin_width_m=15, turn_zone_radius_m=self.TURN_ZONE_RADIUS
+                )
+                takeoff_corridor = build_runway_polygon(rwy, margin_width_m=15)
+
+        if safe_zone is None:
+            takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=self.EXTEND_LINE_METERS)
+            takeoff_corridor = takeoff_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
+            turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([takeoff_corridor, turn_zone])
 
         # Reference vector (true takeoff direction)
         takeoff_vector = (
@@ -107,6 +133,7 @@ class BacktrackDetector():
         self,
         taxi: FlightPhase,
         landing: FlightPhase,
+        context: Optional[FlightContext] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detects backtrack after landing using geometric analysis."""
 
@@ -121,11 +148,34 @@ class BacktrackDetector():
         landing_start_xy = latlon_to_xy(landing_start_event.latitude, landing_start_event.longitude)
         landing_end_xy = latlon_to_xy(landing_end_event.latitude, landing_end_event.longitude)
 
-        # 2. Extend runway line for geometric corridor detection
-        landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=self.EXTEND_LINE_METERS)
-        landing_corridor = landing_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
-        turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
-        safe_zone = unary_union([landing_corridor, turn_zone])
+        # 2. Build safe zone from real runway geometry or estimated corridor
+        safe_zone = None
+        landing_corridor = None
+
+        if (
+            context is not None
+            and context.landing is not None
+            and context.landing.runways
+            and landing_start_event.heading is not None
+        ):
+            rwy_match = match_runway_end(
+                context.landing,
+                landing_start_event.heading,
+                landing_start_event.latitude,
+                landing_start_event.longitude,
+            )
+            if rwy_match is not None:
+                rwy, _ = rwy_match
+                safe_zone = build_runway_safe_zone(
+                    rwy, margin_width_m=15, turn_zone_radius_m=self.TURN_ZONE_RADIUS
+                )
+                landing_corridor = build_runway_polygon(rwy, margin_width_m=15)
+
+        if safe_zone is None:
+            landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=self.EXTEND_LINE_METERS)
+            landing_corridor = landing_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
+            turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([landing_corridor, turn_zone])
 
         # Reference vector (true landing direction)
         landing_vector = (
