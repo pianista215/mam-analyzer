@@ -4,6 +4,7 @@ import os
 import pytest
 
 from mam_analyzer.models.flight_context import FlightContext, AirportContext, Runway, RunwayEnd
+from runway_data import make_flight_context
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.analyzers.issues import Issues
@@ -367,3 +368,61 @@ def test_landing_runway_not_set_when_no_match(analyzer):
     result = analyzer.analyze([touchdown], base, base, context=ctx)
 
     assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY not in result.phase_metrics
+
+
+# === Real file tests: context WITHOUT runways (no runway metrics) ===
+
+@pytest.mark.parametrize("filename, departure, landing_icao, landing_start, landing_end", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
+])
+def test_landing_analyzer_no_runways_no_runway_metrics(filename, departure, landing_icao, landing_start, landing_end, analyzer):
+    """Context without runways should not produce runway metrics."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing_icao, with_runways=False)
+    result = analyzer.analyze(events, parse_timestamp(landing_start), parse_timestamp(landing_end), context=ctx)
+
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY not in result.phase_metrics
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT not in result.phase_metrics
+
+
+# === Real file tests: context WITH runways (runway identification) ===
+# Expected runways based on touchdown heading and position:
+#   LEPP h327 -> 33, LEMG h132 -> 13, LPMA h47 -> 05, PAOM h280 -> 28,
+#   UHMA(B350) h18 -> 01, UHMA(SF34) h193 -> 19, UHMM h103 -> 10, PANC h150 -> 15
+
+@pytest.mark.parametrize("filename, departure, landing_icao, landing_start, landing_end, expected_runway", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681", "33"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811", "13"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146", "05"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254", "28"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667", "01"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155", "19"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305", "10"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404", "15"),
+])
+def test_landing_analyzer_runway_identification(filename, departure, landing_icao, landing_start, landing_end, expected_runway, analyzer):
+    """Verify the correct runway is identified for each real flight."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing_icao, with_runways=True)
+    result = analyzer.analyze(events, parse_timestamp(landing_start), parse_timestamp(landing_end), context=ctx)
+
+    assert result.phase_metrics.get(FinalLandingAnalyzer.METRIC_LANDING_RUNWAY) == expected_runway, \
+        f"Expected runway {expected_runway} in {filename}"
+    assert FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT in result.phase_metrics
+    touchdown_pct = result.phase_metrics[FinalLandingAnalyzer.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT]
+    assert 0 <= touchdown_pct <= 100, f"Touchdown pct {touchdown_pct} out of range in {filename}"

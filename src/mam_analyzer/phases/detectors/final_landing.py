@@ -6,7 +6,7 @@ from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.runway import build_runway_polygon, match_runway_end, point_inside_runway
 from mam_analyzer.utils.search import find_first_index_backward,find_first_index_forward_starting_from_idx,find_first_index_backward_starting_from_idx
-from mam_analyzer.utils.units import heading_within_range
+from mam_analyzer.utils.units import haversine, heading_within_range
 
 class FinalLandingDetector(Detector):
     def detect(
@@ -95,17 +95,35 @@ class FinalLandingDetector(Detector):
             )
 
         if runway_match is not None:
-            rwy, _ = runway_match
+            rwy, matched_end = runway_match
+            # Opposite threshold: if we land on 01, aim for the 19 end
+            opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
             rwy_polygon = build_runway_polygon(rwy)
 
-            # Walk forward: find first event OUTSIDE the runway polygon
+            min_distance = haversine(
+                landing_event.latitude, landing_event.longitude,
+                opposite_end.latitude, opposite_end.longitude,
+            )
             landing_end = events[-1].timestamp
+
             for idx in range(touch_idx + 1, len(events)):
                 e = events[idx]
-                if event_has_location(e) and not point_inside_runway(e.latitude, e.longitude, rwy_polygon):
-                    if idx > 0:
+                if event_has_location(e):
+                    # Left the runway polygon → landing over
+                    if not point_inside_runway(e.latitude, e.longitude, rwy_polygon):
                         landing_end = events[idx - 1].timestamp
-                    break
+                        break
+
+                    # Distance to opposite threshold increasing → landing over
+                    curr_distance = haversine(
+                        e.latitude, e.longitude,
+                        opposite_end.latitude, opposite_end.longitude,
+                    )
+                    if curr_distance > min_distance:
+                        landing_end = events[idx - 1].timestamp
+                        break
+                    else:
+                        min_distance = curr_distance
         else:
             def headingOutOfRange(e: FlightEvent) -> bool:
                 return (

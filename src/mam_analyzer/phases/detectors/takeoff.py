@@ -60,11 +60,13 @@ class TakeoffDetector(Detector):
             rwy, _ = runway_match
             rwy_polygon = build_runway_polygon(rwy)
 
-            # Walk backward: find last event OUTSIDE the runway polygon
+            # Walk backward: find last event OUTSIDE the runway polygon or with heading change
             takeoff_start = events[0].timestamp
             for idx in range(airborne_idx - 1, -1, -1):
                 e = events[idx]
-                if event_has_location(e) and not point_inside_runway(e.latitude, e.longitude, rwy_polygon):
+                outside_polygon = event_has_location(e) and not point_inside_runway(e.latitude, e.longitude, rwy_polygon)
+                heading_changed = e.heading is not None and not heading_within_range(e.heading, airborne_heading)
+                if outside_polygon or heading_changed:
                     takeoff_start = events[idx + 1].timestamp
                     break
         else:

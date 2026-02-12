@@ -7,6 +7,7 @@ from mam_analyzer.models.flight_context import AirportContext, FlightContext, Ru
 from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.parsing import parse_timestamp
+from runway_data import make_flight_context
 
 def make_event(timestamp, **changes):
     event_dict = {
@@ -192,3 +193,61 @@ def test_takeoff_with_context_no_matching_runway_falls_back(detector):
     start, end = detector.detect(events, None, None, context=ctx)
     # Falls back to heading logic
     assert start == base + timedelta(seconds=5)
+
+
+# === Real file tests: context WITHOUT runways (same expected values) ===
+
+@pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T17:17:35.879139", "2025-06-14T17:19:23.8899645"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9812455"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T21:47:57.7378043", "2025-06-02T21:49:51.7385484"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T18:17:20.8170341", "2025-06-15T18:18:16.828107"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458"),
+])
+def test_detect_takeoff_with_context_no_runways(filename, departure, landing, expected_start, expected_end, detector):
+    """Context without runways should produce identical results to no context."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing, with_runways=False)
+    result = detector.detect(events, None, None, context=ctx)
+
+    assert result is not None, f"Takeoff not detected in {filename}"
+    start, end = result
+    assert start == parse_timestamp(expected_start), f"Incorrect start for takeoff in {filename}"
+    assert end == parse_timestamp(expected_end), f"Incorrect end for takeoff in {filename}"
+
+
+# === Real file tests: context WITH runways (start may differ due to polygon detection) ===
+
+@pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T17:17:35.879139", "2025-06-14T17:19:23.8899645"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9812455"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T21:47:57.7378043", "2025-06-02T21:49:51.7385484"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T18:17:20.8170341", "2025-06-15T18:18:16.828107"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458"),
+])
+def test_detect_takeoff_with_context_and_runways(filename, departure, landing, expected_start, expected_end, detector):
+    """Context with real runways - start may differ from heading-based detection."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing, with_runways=True)
+    result = detector.detect(events, None, None, context=ctx)
+
+    assert result is not None, f"Takeoff not detected in {filename}"
+    start, end = result
+    assert start == parse_timestamp(expected_start), f"Incorrect start for takeoff in {filename}"
+    assert end == parse_timestamp(expected_end), f"Incorrect end for takeoff in {filename}"

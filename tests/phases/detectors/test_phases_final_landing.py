@@ -7,6 +7,7 @@ from mam_analyzer.models.flight_context import AirportContext, FlightContext, Ru
 from mam_analyzer.phases.detectors.final_landing import FinalLandingDetector
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.utils.parsing import parse_timestamp
+from runway_data import make_flight_context
 
 BASE_CHANGES_FULL_EVENT_WITHOUT_HEADING_ONGROUND = {
     "Latitude": "32,69286",
@@ -252,3 +253,67 @@ def test_landing_with_context_no_matching_runway_falls_back(detector):
     assert start == base + timedelta(seconds=10)
     # Falls back to heading logic
     assert end == base + timedelta(seconds=15)
+
+
+# === Real file tests: context WITHOUT runways (same expected values) ===
+
+@pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T23:44:13.3164862", "2025-07-04T23:44:13.3164862"),
+])
+def test_landing_with_context_no_runways(filename, departure, landing, expected_start, expected_end, detector):
+    """Context without runways should produce identical results to no context."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing, with_runways=False)
+    result = detector.detect(events, None, None, context=ctx)
+
+    if expected_start != 'None' and expected_end != 'None':
+        assert result is not None, f"Final landing not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Incorrect start in {filename}"
+        assert end == parse_timestamp(expected_end), f"Incorrect end in {filename}"
+    else:
+        assert result is None
+
+
+# === Real file tests: context WITH runways (end may differ due to polygon detection) ===
+
+@pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T23:44:13.3164862", "2025-07-04T23:44:13.3164862"),
+])
+def test_landing_with_context_and_runways(filename, departure, landing, expected_start, expected_end, detector):
+    """Context with real runways - end may differ from heading-based detection."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    events = [FlightEvent.from_json(e) for e in data["Events"]]
+    ctx = make_flight_context(departure, landing, with_runways=True)
+    result = detector.detect(events, None, None, context=ctx)
+
+    if expected_start != 'None' and expected_end != 'None':
+        assert result is not None, f"Final landing not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Incorrect start in {filename}"
+        assert end == parse_timestamp(expected_end), f"Incorrect end in {filename}"
+    else:
+        assert result is None
