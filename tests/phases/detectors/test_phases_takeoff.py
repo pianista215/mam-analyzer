@@ -227,15 +227,15 @@ def test_detect_takeoff_with_context_no_runways(filename, departure, landing, ex
 # === Real file tests: context WITH runways (start may differ due to polygon detection) ===
 
 @pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
-    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T17:17:35.879139", "2025-06-14T17:19:23.8899645"),
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T17:17:33.8824175", "2025-06-14T17:19:23.8899645"),
     ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-14T23:49:32.9580634", "2025-06-14T23:51:02.9812455"),
-    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T21:47:57.7378043", "2025-06-02T21:49:51.7385484"),
-    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-15T22:19:44.5829755", "2025-06-15T22:20:50.5779508"),
-    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T18:17:20.8170341", "2025-06-15T18:18:16.828107"),
-    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T13:07:59.2245609", "2025-06-05T13:09:09.2296981"),
-    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
-    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209"),
-    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458"),
+    ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T21:47:47.7389537", "2025-06-02T21:49:51.7385484"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-15T22:19:38.5785148", "2025-06-15T22:20:50.5779508"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T18:16:50.8061561", "2025-06-15T18:18:16.828107"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T13:07:37.2196823", "2025-06-05T13:09:09.2296981"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T17:56:51.2531363", "2025-05-17T17:57:09.2445871"), #Takeoff old runway
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-22T22:24:30.5619993", "2025-06-22T22:26:42.5590209"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T22:46:35.311081", "2025-07-04T22:48:17.3083458"),
 ])
 def test_detect_takeoff_with_context_and_runways(filename, departure, landing, expected_start, expected_end, detector):
     """Context with real runways - start may differ from heading-based detection."""

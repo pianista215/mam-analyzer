@@ -9,15 +9,23 @@ from mam_analyzer.models.flight_context import AirportContext, Runway, RunwayEnd
 from mam_analyzer.utils.units import haversine, heading_within_range, latlon_to_xy
 
 
+def _runway_utm_zone(runway: Runway) -> int:
+    """Compute a single UTM zone from the runway midpoint to avoid zone-boundary issues."""
+    mid_lon = (runway.ends[0].longitude + runway.ends[1].longitude) / 2
+    return int((mid_lon + 180) // 6) + 1
+
+
 def build_runway_polygon(runway: Runway, margin_width_m: float = 0, extend_m: float = 0):
     """Build a Shapely polygon representing the runway footprint in UTM coordinates.
 
     Uses both RunwayEnd positions to create a buffered rectangle.
     If extend_m > 0, the centreline is extended in both directions.
+    Returns (polygon, utm_zone) so callers can project points in the same zone.
     """
+    utm_zone = _runway_utm_zone(runway)
     e1, e2 = runway.ends[0], runway.ends[1]
-    p1 = latlon_to_xy(e1.latitude, e1.longitude)
-    p2 = latlon_to_xy(e2.latitude, e2.longitude)
+    p1 = latlon_to_xy(e1.latitude, e1.longitude, utm_zone)
+    p2 = latlon_to_xy(e2.latitude, e2.longitude, utm_zone)
 
     line = LineString([p1, p2])
 
@@ -33,7 +41,7 @@ def build_runway_polygon(runway: Runway, margin_width_m: float = 0, extend_m: fl
             line = LineString([p1_ext, p2_ext])
 
     half_width = runway.width_m / 2 + margin_width_m
-    return line.buffer(half_width, cap_style=2)
+    return line.buffer(half_width, cap_style=2), utm_zone
 
 
 def build_runway_safe_zone(
@@ -42,11 +50,11 @@ def build_runway_safe_zone(
     turn_zone_radius_m: float = 100,
 ) -> BaseGeometry:
     """Build a safe zone that includes the runway polygon plus turn circles at each end."""
-    polygon = build_runway_polygon(runway, margin_width_m)
+    polygon, utm_zone = build_runway_polygon(runway, margin_width_m)
 
     e1, e2 = runway.ends[0], runway.ends[1]
-    p1 = latlon_to_xy(e1.latitude, e1.longitude)
-    p2 = latlon_to_xy(e2.latitude, e2.longitude)
+    p1 = latlon_to_xy(e1.latitude, e1.longitude, utm_zone)
+    p2 = latlon_to_xy(e2.latitude, e2.longitude, utm_zone)
 
     turn1 = Point(p1).buffer(turn_zone_radius_m)
     turn2 = Point(p2).buffer(turn_zone_radius_m)
@@ -80,7 +88,7 @@ def match_runway_end(
     return best
 
 
-def point_inside_runway(lat: float, lon: float, polygon) -> bool:
+def point_inside_runway(lat: float, lon: float, polygon, utm_zone=None) -> bool:
     """Check whether a lat/lon point falls inside a runway polygon (UTM)."""
-    x, y = latlon_to_xy(lat, lon)
+    x, y = latlon_to_xy(lat, lon, utm_zone)
     return polygon.covers(Point(x, y))

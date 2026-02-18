@@ -82,12 +82,13 @@ class BacktrackDetector():
                 run_start_event.longitude,
             )
 
+        utm_zone = None
         if runway_match is not None:
             rwy, matched_end = runway_match
             opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
-            takeoff_corridor = build_runway_polygon(rwy)
-            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude)
-            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude)
+            takeoff_corridor, utm_zone = build_runway_polygon(rwy)
+            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude, utm_zone)
+            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude, utm_zone)
             turn_zone_1 = Point(matched_end_xy).buffer(self.TURN_ZONE_RADIUS)
             turn_zone_2 = Point(opposite_end_xy).buffer(self.TURN_ZONE_RADIUS)
             safe_zone = unary_union([takeoff_corridor, turn_zone_1, turn_zone_2])
@@ -108,7 +109,7 @@ class BacktrackDetector():
         taxi_events_xy = []
         for ev in taxi.events:
             if event_has_location(ev):
-                xy = latlon_to_xy(ev.latitude, ev.longitude)
+                xy = latlon_to_xy(ev.latitude, ev.longitude, utm_zone)
                 taxi_coords.append(xy)
                 taxi_events_xy.append((xy, ev))
 
@@ -171,12 +172,13 @@ class BacktrackDetector():
                 landing_start_event.longitude,
             )
 
+        utm_zone = None
         if runway_match is not None:
             rwy, matched_end = runway_match
             opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
-            landing_corridor = build_runway_polygon(rwy)
-            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude)
-            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude)
+            landing_corridor, utm_zone = build_runway_polygon(rwy)
+            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude, utm_zone)
+            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude, utm_zone)
             turn_zone_1 = Point(matched_end_xy).buffer(self.TURN_ZONE_RADIUS)
             turn_zone_2 = Point(opposite_end_xy).buffer(self.TURN_ZONE_RADIUS)
             safe_zone = unary_union([landing_corridor, turn_zone_1, turn_zone_2])
@@ -197,7 +199,7 @@ class BacktrackDetector():
         taxi_events_xy = []
         for ev in taxi.events:
             if event_has_location(ev):
-                xy = latlon_to_xy(ev.latitude, ev.longitude)
+                xy = latlon_to_xy(ev.latitude, ev.longitude, utm_zone)
                 taxi_coords.append(xy)
                 taxi_events_xy.append((xy, ev))
 

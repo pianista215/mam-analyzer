@@ -29,8 +29,9 @@ def haversine(lat1, lon1, lat2, lon2):
 def meters_to_nm(meters: float) -> float:
     return meters / 1852
 
-def latlon_to_xy(lat, lon):
-    utm_zone = int((lon + 180) // 6) + 1
+def latlon_to_xy(lat, lon, utm_zone=None):
+    if utm_zone is None:
+        utm_zone = int((lon + 180) // 6) + 1
     hemisphere = "north" if lat >= 0 else "south"
 
     crs_utm = CRS.from_proj4(f"+proj=utm +zone={utm_zone} +{hemisphere} +datum=WGS84 +units=m +no_defs")

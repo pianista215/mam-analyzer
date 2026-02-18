@@ -45,41 +45,41 @@ def _make_runway(
 class TestBuildRunwayPolygon:
     def test_polygon_contains_both_ends(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy)
+        poly, utm_zone = build_runway_polygon(rwy)
 
-        p1 = Point(latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude))
-        p2 = Point(latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude))
+        p1 = Point(latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude, utm_zone))
+        p2 = Point(latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude, utm_zone))
 
         assert poly.covers(p1)
         assert poly.covers(p2)
 
     def test_point_far_away_is_outside(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy)
+        poly, utm_zone = build_runway_polygon(rwy)
 
-        far_point = Point(latlon_to_xy(40.0, 3.0))
+        far_point = Point(latlon_to_xy(40.0, 3.0, utm_zone))
         assert not poly.covers(far_point)
 
     def test_margin_makes_polygon_bigger(self):
         rwy = _make_runway()
-        poly_no_margin = build_runway_polygon(rwy, margin_width_m=0)
-        poly_with_margin = build_runway_polygon(rwy, margin_width_m=20)
+        poly_no_margin, _ = build_runway_polygon(rwy, margin_width_m=0)
+        poly_with_margin, _ = build_runway_polygon(rwy, margin_width_m=20)
 
         assert poly_with_margin.area > poly_no_margin.area
 
     def test_extend_makes_polygon_longer(self):
         rwy = _make_runway()
-        poly_no_extend = build_runway_polygon(rwy, extend_m=0)
-        poly_with_extend = build_runway_polygon(rwy, extend_m=500)
+        poly_no_extend, _ = build_runway_polygon(rwy, extend_m=0)
+        poly_with_extend, _ = build_runway_polygon(rwy, extend_m=500)
 
         assert poly_with_extend.area > poly_no_extend.area
 
     def test_polygon_width_is_correct(self):
         rwy = _make_runway(width_m=60)
-        poly = build_runway_polygon(rwy, margin_width_m=0, extend_m=0)
+        poly, utm_zone = build_runway_polygon(rwy, margin_width_m=0, extend_m=0)
 
-        p1 = latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude)
-        p2 = latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude)
+        p1 = latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude, utm_zone)
+        p2 = latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude, utm_zone)
         centreline = Point((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
 
         # Centre should be inside
@@ -91,7 +91,7 @@ class TestBuildRunwayPolygon:
 class TestBuildRunwaySafeZone:
     def test_safe_zone_is_bigger_than_polygon(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy, margin_width_m=15)
+        poly, _ = build_runway_polygon(rwy, margin_width_m=15)
         safe = build_runway_safe_zone(rwy, margin_width_m=15, turn_zone_radius_m=100)
 
         assert safe.area > poly.area
@@ -100,8 +100,9 @@ class TestBuildRunwaySafeZone:
         rwy = _make_runway()
         safe = build_runway_safe_zone(rwy)
 
-        p1 = Point(latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude))
-        p2 = Point(latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude))
+        _, utm_zone = build_runway_polygon(rwy)
+        p1 = Point(latlon_to_xy(rwy.ends[0].latitude, rwy.ends[0].longitude, utm_zone))
+        p2 = Point(latlon_to_xy(rwy.ends[1].latitude, rwy.ends[1].longitude, utm_zone))
 
         assert safe.covers(p1)
         assert safe.covers(p2)
@@ -177,23 +178,23 @@ class TestMatchRunwayEnd:
 class TestPointInsideRunway:
     def test_point_on_runway_is_inside(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy)
+        poly, utm_zone = build_runway_polygon(rwy)
 
         # Midpoint of the runway
         mid_lat = (rwy.ends[0].latitude + rwy.ends[1].latitude) / 2
         mid_lon = (rwy.ends[0].longitude + rwy.ends[1].longitude) / 2
 
-        assert point_inside_runway(mid_lat, mid_lon, poly) is True
+        assert point_inside_runway(mid_lat, mid_lon, poly, utm_zone) is True
 
     def test_point_far_away_is_outside(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy)
+        poly, utm_zone = build_runway_polygon(rwy)
 
-        assert point_inside_runway(40.0, 3.0, poly) is False
+        assert point_inside_runway(40.0, 3.0, poly, utm_zone) is False
 
     def test_end_points_are_inside(self):
         rwy = _make_runway()
-        poly = build_runway_polygon(rwy)
+        poly, utm_zone = build_runway_polygon(rwy)
 
-        assert point_inside_runway(rwy.ends[0].latitude, rwy.ends[0].longitude, poly) is True
-        assert point_inside_runway(rwy.ends[1].latitude, rwy.ends[1].longitude, poly) is True
+        assert point_inside_runway(rwy.ends[0].latitude, rwy.ends[0].longitude, poly, utm_zone) is True
+        assert point_inside_runway(rwy.ends[1].latitude, rwy.ends[1].longitude, poly, utm_zone) is True

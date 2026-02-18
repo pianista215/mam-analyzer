@@ -58,7 +58,7 @@ class TakeoffDetector(Detector):
 
         if runway_match is not None:
             rwy, matched_end = runway_match
-            rwy_polygon = build_runway_polygon(rwy)
+            rwy_polygon, utm_zone = build_runway_polygon(rwy)
 
             min_distance = haversine(
                 airborne_event.latitude, airborne_event.longitude,
@@ -69,7 +69,7 @@ class TakeoffDetector(Detector):
             for idx in range(airborne_idx - 1, -1, -1):
                 e = events[idx]
                 if event_has_location(e):
-                    if not point_inside_runway(e.latitude, e.longitude, rwy_polygon):
+                    if not point_inside_runway(e.latitude, e.longitude, rwy_polygon, utm_zone):
                         takeoff_start = events[idx + 1].timestamp
                         break
 

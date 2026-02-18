@@ -98,7 +98,7 @@ class FinalLandingDetector(Detector):
             rwy, matched_end = runway_match
             # Opposite threshold: if we land on 01, aim for the 19 end
             opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
-            rwy_polygon = build_runway_polygon(rwy)
+            rwy_polygon, utm_zone = build_runway_polygon(rwy)
 
             min_distance = haversine(
                 landing_event.latitude, landing_event.longitude,
@@ -110,7 +110,7 @@ class FinalLandingDetector(Detector):
                 e = events[idx]
                 if event_has_location(e):
                     # Left the runway polygon → landing over
-                    if not point_inside_runway(e.latitude, e.longitude, rwy_polygon):
+                    if not point_inside_runway(e.latitude, e.longitude, rwy_polygon, utm_zone):
                         landing_end = events[idx - 1].timestamp
                         break
 
