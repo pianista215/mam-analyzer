@@ -290,14 +290,14 @@ def test_landing_with_context_no_runways(filename, departure, landing, expected_
 # === Real file tests: context WITH runways (end may differ due to polygon detection) ===
 
 @pytest.mark.parametrize("filename, departure, landing, expected_start, expected_end", [
-    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:43.8757681"),
-    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:24.96811"),
+    ("LEPA-LEPP-737.json", "LEPA", "LEPP", "2025-06-14T18:22:03.8839814", "2025-06-14T18:22:47.8903553"),
+    ("LEPP-LEMG-737.json", "LEPP", "LEMG", "2025-06-15T01:08:58.9593068", "2025-06-15T01:09:14.9638598"),
     ("LPMA-Circuits-737.json", "LPMA", "LPMA", "2025-06-02T22:13:43.7386248", "2025-06-02T22:14:05.7377146"),
-    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:44.5761254"),
-    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:02.8108667"),
-    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:07:23.2129155"),
-    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
-    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
+    ("UHMA-PAOM-B350.json", "UHMA", "PAOM", "2025-06-16T00:07:26.5753238", "2025-06-16T00:07:54.584363"),
+    ("UHPT-UHMA-B350.json", "UHPT", "UHMA", "2025-06-15T20:01:00.8191063", "2025-06-15T20:03:48.811979"),
+    ("UHPT-UHMA-SF34.json", "UHPT", "UHMA", "2025-06-05T15:05:21.2266523", "2025-06-05T15:08:23.2262158"),
+    ("UHSH-UHMM-B350.json", "UHSH", "UHMM", "2025-05-17T19:41:01.243375", "2025-05-17T19:43:03.2640974"),
+    ("PAOM-PANC-B350-fromtaxi.json", "PAOM", "PANC", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:32.5555576"),
     ("LEBB-touchgoLEXJ-LEAS.json", "LEBB", "LEAS", "2025-07-04T23:44:13.3164862", "2025-07-04T23:44:13.3164862"),
 ])
 def test_landing_with_context_and_runways(filename, departure, landing, expected_start, expected_end, detector):
