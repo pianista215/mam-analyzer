@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict, Any
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 
 class Detector(ABC):
@@ -11,7 +12,8 @@ class Detector(ABC):
         self,
         events: List[FlightEvent],
         start_time: datetime,
-        end_time: datetime
+        end_time: datetime,
+        context: Optional[FlightContext] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect phase between `start_time` and `end_time` from `events`.
         Return (start, end) or None if phase is not detected."""

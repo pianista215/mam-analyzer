@@ -12,7 +12,8 @@ class TouchAndGoDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect a touch&go: 
             From the moment the ground is touched (consider bounces) 

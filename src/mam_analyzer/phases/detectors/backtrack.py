@@ -4,10 +4,12 @@ from shapely.geometry import LineString, MultiLineString, Point
 from shapely.ops import unary_union
 from typing import Optional, Tuple
 
+from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.utils.ground import is_on_air
 from mam_analyzer.utils.location import event_has_location
+from mam_analyzer.utils.runway import build_runway_polygon, match_runway_end
 from mam_analyzer.utils.search import find_first_index_forward, find_first_index_backward
 from mam_analyzer.utils.units import latlon_to_xy
 
@@ -15,6 +17,7 @@ from mam_analyzer.utils.units import latlon_to_xy
 class BacktrackDetector():
 
     BACKTRACK_THRESHOLD_METERS = 150      # min length required inside corridor to consider backtrack
+    BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS = 60  # lower threshold when using real runway polygon
     WIDTH_CORRIDOR = 30           # width (meters) of allowed takeoff/landing corridor
     TURN_ZONE_RADIUS = 100                # tolerance near runway threshold
     VECTOR_ANGLE_TOLERANCE_DEGREES = 3   # max angle deviation allowed
@@ -47,6 +50,7 @@ class BacktrackDetector():
         self,
         taxi: FlightPhase,
         takeoff: FlightPhase,
+        context: Optional[FlightContext] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detects backtrack before takeoff using geometric analysis."""
 
@@ -61,11 +65,38 @@ class BacktrackDetector():
         run_start_xy = latlon_to_xy(run_start_event.latitude, run_start_event.longitude)
         run_end_xy = latlon_to_xy(run_end_event.latitude, run_end_event.longitude)
 
-        # 2. Extend runway line for geometric corridor detection
-        takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=self.EXTEND_LINE_METERS)
-        takeoff_corridor = takeoff_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
-        turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
-        safe_zone = unary_union([takeoff_corridor, turn_zone])
+        # 2. Build corridor and safe zone
+        runway_match = None
+        if (
+            context is not None
+            and context.departure is not None
+            and context.departure.runways
+            and run_end_event.heading is not None
+            and run_start_event.latitude is not None
+            and run_start_event.longitude is not None
+        ):
+            runway_match = match_runway_end(
+                context.departure,
+                run_end_event.heading,
+                run_start_event.latitude,
+                run_start_event.longitude,
+            )
+
+        utm_zone = None
+        if runway_match is not None:
+            rwy, matched_end = runway_match
+            opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
+            takeoff_corridor, utm_zone = build_runway_polygon(rwy)
+            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude, utm_zone)
+            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude, utm_zone)
+            turn_zone_1 = Point(matched_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            turn_zone_2 = Point(opposite_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([takeoff_corridor, turn_zone_1, turn_zone_2])
+        else:
+            takeoff_line = self.extend_line(run_start_xy, run_end_xy, length=self.EXTEND_LINE_METERS)
+            takeoff_corridor = takeoff_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
+            turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([takeoff_corridor, turn_zone])
 
         # Reference vector (true takeoff direction)
         takeoff_vector = (
@@ -78,7 +109,7 @@ class BacktrackDetector():
         taxi_events_xy = []
         for ev in taxi.events:
             if event_has_location(ev):
-                xy = latlon_to_xy(ev.latitude, ev.longitude)
+                xy = latlon_to_xy(ev.latitude, ev.longitude, utm_zone)
                 taxi_coords.append(xy)
                 taxi_events_xy.append((xy, ev))
 
@@ -87,10 +118,12 @@ class BacktrackDetector():
         )
 
         # 4. Check how much taxi is on top of the runway
-        if taxi_lines.intersection(takeoff_corridor).length < self.BACKTRACK_THRESHOLD_METERS:
+        threshold = self.BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS if runway_match is not None else self.BACKTRACK_THRESHOLD_METERS
+        if taxi_lines.intersection(takeoff_corridor).length < threshold:
             return None  # no backtrack
 
         # 5. Get the first event that is inside the backtrack
+        backtrack_start_event = None
         for i in range(len(taxi_events_xy)):
             xy, ev = taxi_events_xy[i]
             point = Point(xy)
@@ -107,6 +140,7 @@ class BacktrackDetector():
         self,
         taxi: FlightPhase,
         landing: FlightPhase,
+        context: Optional[FlightContext] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detects backtrack after landing using geometric analysis."""
 
@@ -121,11 +155,38 @@ class BacktrackDetector():
         landing_start_xy = latlon_to_xy(landing_start_event.latitude, landing_start_event.longitude)
         landing_end_xy = latlon_to_xy(landing_end_event.latitude, landing_end_event.longitude)
 
-        # 2. Extend runway line for geometric corridor detection
-        landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=self.EXTEND_LINE_METERS)
-        landing_corridor = landing_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
-        turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
-        safe_zone = unary_union([landing_corridor, turn_zone])
+        # 2. Build corridor and safe zone
+        runway_match = None
+        if (
+            context is not None
+            and context.landing is not None
+            and context.landing.runways
+            and landing_start_event.heading is not None
+            and landing_start_event.latitude is not None
+            and landing_start_event.longitude is not None
+        ):
+            runway_match = match_runway_end(
+                context.landing,
+                landing_start_event.heading,
+                landing_start_event.latitude,
+                landing_start_event.longitude,
+            )
+
+        utm_zone = None
+        if runway_match is not None:
+            rwy, matched_end = runway_match
+            opposite_end = rwy.ends[1] if matched_end is rwy.ends[0] else rwy.ends[0]
+            landing_corridor, utm_zone = build_runway_polygon(rwy)
+            matched_end_xy = latlon_to_xy(matched_end.latitude, matched_end.longitude, utm_zone)
+            opposite_end_xy = latlon_to_xy(opposite_end.latitude, opposite_end.longitude, utm_zone)
+            turn_zone_1 = Point(matched_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            turn_zone_2 = Point(opposite_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([landing_corridor, turn_zone_1, turn_zone_2])
+        else:
+            landing_line = self.extend_line(landing_start_xy, landing_end_xy, length=self.EXTEND_LINE_METERS)
+            landing_corridor = landing_line.buffer(self.WIDTH_CORRIDOR, cap_style=2)
+            turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
+            safe_zone = unary_union([landing_corridor, turn_zone])
 
         # Reference vector (true landing direction)
         landing_vector = (
@@ -138,7 +199,7 @@ class BacktrackDetector():
         taxi_events_xy = []
         for ev in taxi.events:
             if event_has_location(ev):
-                xy = latlon_to_xy(ev.latitude, ev.longitude)
+                xy = latlon_to_xy(ev.latitude, ev.longitude, utm_zone)
                 taxi_coords.append(xy)
                 taxi_events_xy.append((xy, ev))
 
@@ -147,7 +208,8 @@ class BacktrackDetector():
         )
 
         # 4. Check how much taxi is on top of the runway
-        if taxi_lines.intersection(landing_corridor).length < self.BACKTRACK_THRESHOLD_METERS:
+        threshold = self.BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS if runway_match is not None else self.BACKTRACK_THRESHOLD_METERS
+        if taxi_lines.intersection(landing_corridor).length < threshold:
             return None  # no backtrack
 
         # 5. Get the last event that is inside the backtrack
@@ -167,4 +229,4 @@ class BacktrackDetector():
         if backtrack_end_event:
             return taxi.start, backtrack_end_event.timestamp
 
-        return None        
+        return None

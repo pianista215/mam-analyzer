@@ -1,4 +1,4 @@
-from math import isclose, radians, sin, cos, atan2, sqrt
+from math import degrees, isclose, radians, sin, cos, atan2, sqrt
 from pyproj import CRS, Transformer
 
 def heading_within_range(h1: int, h2: int, tolerance: int = 6) -> bool:
@@ -26,11 +26,21 @@ def haversine(lat1, lon1, lat2, lon2):
     
     return R * c
 
+def compute_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Compute the initial true bearing (degrees, 0-360) from point 1 to point 2."""
+    phi1, phi2 = radians(lat1), radians(lat2)
+    dlambda = radians(lon2 - lon1)
+    y = sin(dlambda) * cos(phi2)
+    x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(dlambda)
+    return (degrees(atan2(y, x)) + 360) % 360
+
+
 def meters_to_nm(meters: float) -> float:
     return meters / 1852
 
-def latlon_to_xy(lat, lon):
-    utm_zone = int((lon + 180) // 6) + 1
+def latlon_to_xy(lat, lon, utm_zone=None):
+    if utm_zone is None:
+        utm_zone = int((lon + 180) // 6) + 1
     hemisphere = "north" if lat >= 0 else "south"
 
     crs_utm = CRS.from_proj4(f"+proj=utm +zone={utm_zone} +{hemisphere} +datum=WGS84 +units=m +no_defs")

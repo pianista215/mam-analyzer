@@ -12,7 +12,8 @@ class StartupDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect startup phase: from first event (if engines are off) until location changes after engines are on."""
         # In this detector we are not using from_time or to_time

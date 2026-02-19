@@ -11,7 +11,8 @@ class CruiseDetector(Detector):
         self,
         events: List[FlightEvent],
         from_time: Optional[datetime],
-        to_time: Optional[datetime]
+        to_time: Optional[datetime],
+        context: Optional["FlightContext"] = None,
     ) -> Optional[Tuple[datetime, datetime]]:
         """Detect the cruise_phase: period the plane stays in the same altitude 
             with a range of variation allowed, but should be maintained along time
