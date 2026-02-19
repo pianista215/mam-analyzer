@@ -144,11 +144,13 @@ class FinalLandingAnalyzer(Analyzer):
                 rwy, matched_end = rwy_match
                 result.phase_metrics[self.METRIC_LANDING_RUNWAY] = matched_end.designator
 
-                distance_from_threshold_m = haversine(
+                distance_from_physical_end_m = haversine(
                     matched_end.latitude, matched_end.longitude,
                     touch_lat, touch_lon,
                 )
-                touchdown_pct = round(distance_from_threshold_m / rwy.length_m * 100)
+                displaced_m = matched_end.displaced_threshold_m
+                lda_m = rwy.length_m - displaced_m
+                touchdown_pct = round((distance_from_physical_end_m - displaced_m) / lda_m * 100)
                 result.phase_metrics[self.METRIC_LANDING_RUNWAY_TOUCHDOWN_PCT] = touchdown_pct
 
         return result
