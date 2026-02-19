@@ -263,6 +263,8 @@ def extract_segmented_coordinates(events: List[FlightEvent], phases: List[Flight
     last_phase = None
     current_segment = []
 
+    # TODO: Review segments because the union points some times are weird and not corresponding to the real phase
+
     for e in events:
         lat = e.latitude
         lon = e.longitude
