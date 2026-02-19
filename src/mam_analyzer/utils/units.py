@@ -1,4 +1,4 @@
-from math import isclose, radians, sin, cos, atan2, sqrt
+from math import degrees, isclose, radians, sin, cos, atan2, sqrt
 from pyproj import CRS, Transformer
 
 def heading_within_range(h1: int, h2: int, tolerance: int = 6) -> bool:
@@ -25,6 +25,15 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     
     return R * c
+
+def compute_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Compute the initial true bearing (degrees, 0-360) from point 1 to point 2."""
+    phi1, phi2 = radians(lat1), radians(lat2)
+    dlambda = radians(lon2 - lon1)
+    y = sin(dlambda) * cos(phi2)
+    x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(dlambda)
+    return (degrees(atan2(y, x)) + 360) % 360
+
 
 def meters_to_nm(meters: float) -> float:
     return meters / 1852
