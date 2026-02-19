@@ -15,6 +15,9 @@ from mam_analyzer.utils.units import haversine
 
 class TakeoffAnalyzer(Analyzer):
 
+    METRIC_TAKEOFF_BOUNCES = "TakeoffBounces"
+    METRIC_TAKEOFF_GROUND_DISTANCE = "TakeoffGroundDistance"
+    METRIC_TAKEOFF_SPEED = "TakeoffSpeed"
     METRIC_TAKEOFF_RUNWAY = "TakeoffRunway"
     METRIC_TAKEOFF_RUNWAY_REMAINING_PCT = "TakeoffRunwayRemainingPct"
 
@@ -83,9 +86,9 @@ class TakeoffAnalyzer(Analyzer):
 
         result = AnalysisResult()
 
-        result.phase_metrics["TakeoffBounces"] = bounces_vs
-        result.phase_metrics["TakeoffGroundDistance"] = meters_until_airborne
-        result.phase_metrics["TakeoffSpeed"] = airborne_speed
+        result.phase_metrics[self.METRIC_TAKEOFF_BOUNCES] = bounces_vs
+        result.phase_metrics[self.METRIC_TAKEOFF_GROUND_DISTANCE] = meters_until_airborne
+        result.phase_metrics[self.METRIC_TAKEOFF_SPEED] = airborne_speed
 
         # Runway identification
         if (
