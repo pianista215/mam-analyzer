@@ -9,9 +9,9 @@ from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.utils.ground import event_has_on_ground, is_on_ground
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int
 from mam_analyzer.utils.location import event_has_location
-from mam_analyzer.utils.runway import match_runway_end
+from mam_analyzer.utils.runway import match_runway_for_takeoff
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
-from mam_analyzer.utils.units import compute_bearing, haversine
+from mam_analyzer.utils.units import haversine
 
 class TakeoffAnalyzer(Analyzer):
 
@@ -42,8 +42,10 @@ class TakeoffAnalyzer(Analyzer):
         run_start_lon = None
         meters_until_airborne = None
         airborne_speed = None
+        airborne_idx = None
+        airborne_event_ref = None
 
-        for e in events:
+        for i, e in enumerate(events):
             ts = e.timestamp
             if ts >= start_time:
                 if ts <= end_time:
@@ -69,6 +71,8 @@ class TakeoffAnalyzer(Analyzer):
                     ):
                         airborne_lat = e.latitude
                         airborne_lon = e.longitude
+                        airborne_idx = i
+                        airborne_event_ref = e
                         meters_until_airborne = round(
                             haversine(run_start_lat, run_start_lon, airborne_lat, airborne_lon)
                         )
@@ -95,14 +99,14 @@ class TakeoffAnalyzer(Analyzer):
             context is not None
             and context.departure is not None
             and context.departure.runways
-            and airborne_lat is not None
-            and airborne_lon is not None
+            and airborne_event_ref is not None
         ):
-            roll_bearing = compute_bearing(
-                run_start_lat, run_start_lon, airborne_lat, airborne_lon
-            )
-            rwy_match = match_runway_end(
-                context.departure, roll_bearing, airborne_lat, airborne_lon
+            rwy_match = match_runway_for_takeoff(
+                context.departure,
+                events,
+                airborne_idx,
+                airborne_event_ref,
+                airborne_event_ref.heading,
             )
             if rwy_match is not None:
                 rwy, matched_end = rwy_match

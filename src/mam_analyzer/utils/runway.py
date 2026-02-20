@@ -1,12 +1,13 @@
 from math import sqrt
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from shapely.geometry import LineString, Point
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
 
 from mam_analyzer.models.flight_context import AirportContext, Runway, RunwayEnd
-from mam_analyzer.utils.units import haversine, heading_within_range, latlon_to_xy
+from mam_analyzer.models.flight_events import FlightEvent
+from mam_analyzer.utils.units import compute_bearing, haversine, heading_within_range, latlon_to_xy
 
 
 def _runway_utm_zone(runway: Runway) -> int:
@@ -86,6 +87,91 @@ def match_runway_end(
                     best = (runway, end)
 
     return best
+
+
+def match_runway_by_track(
+    airport: AirportContext,
+    track_points: List[Tuple[float, float]],
+    heading_tolerance: int = 30,
+) -> Optional[Tuple[Runway, RunwayEnd]]:
+    """Find the runway whose polygon is intersected by the ground track line.
+
+    track_points is a list of (lat, lon) in chronological order (at least 2 points).
+    The track bearing is computed from the first to the last point and used to select
+    the correct runway end (direction). Returns (Runway, RunwayEnd) or None.
+    """
+    if len(track_points) < 2:
+        return None
+
+    track_bearing = compute_bearing(
+        track_points[0][0], track_points[0][1],
+        track_points[-1][0], track_points[-1][1],
+    )
+
+    for runway in airport.runways:
+        utm_zone = _runway_utm_zone(runway)
+        rwy_polygon, _ = build_runway_polygon(runway)
+        xy_points = [latlon_to_xy(lat, lon, utm_zone) for lat, lon in track_points]
+        track_line = LineString(xy_points)
+
+        if rwy_polygon.intersects(track_line):
+            for end in runway.ends:
+                if heading_within_range(track_bearing, end.true_heading_deg, heading_tolerance):
+                    return runway, end
+
+    return None
+
+
+def match_runway_for_takeoff(
+    airport: AirportContext,
+    events: List[FlightEvent],
+    airborne_idx: int,
+    airborne_event: FlightEvent,
+    fallback_heading: int,
+) -> Optional[Tuple[Runway, RunwayEnd]]:
+    """Identify the runway used for takeoff.
+
+    Builds a ground track from the last 2 location events before airborne plus the
+    airborne event itself, then intersects it with runway polygons. Falls back to
+    heading+distance matching if no intersection is found.
+    """
+    from mam_analyzer.utils.location import collect_location_events_before
+
+    prev_events = collect_location_events_before(events, airborne_idx, 2)
+    if prev_events:
+        track_points = [(e.latitude, e.longitude) for e in prev_events]
+        track_points.append((airborne_event.latitude, airborne_event.longitude))
+        result = match_runway_by_track(airport, track_points)
+        if result is not None:
+            return result
+
+    return match_runway_end(airport, fallback_heading, airborne_event.latitude, airborne_event.longitude)
+
+
+def match_runway_for_landing(
+    airport: AirportContext,
+    events: List[FlightEvent],
+    touch_idx: int,
+    touch_event: FlightEvent,
+    fallback_heading: int,
+) -> Optional[Tuple[Runway, RunwayEnd]]:
+    """Identify the runway used for landing.
+
+    Builds a ground track from the touch event plus the next 2 location events,
+    then intersects it with runway polygons. Falls back to heading+distance matching
+    if no intersection is found.
+    """
+    from mam_analyzer.utils.location import collect_location_events_after
+
+    next_events = collect_location_events_after(events, touch_idx, 2)
+    if next_events:
+        track_points = [(touch_event.latitude, touch_event.longitude)]
+        track_points.extend([(e.latitude, e.longitude) for e in next_events])
+        result = match_runway_by_track(airport, track_points)
+        if result is not None:
+            return result
+
+    return match_runway_end(airport, fallback_heading, touch_event.latitude, touch_event.longitude)
 
 
 def point_inside_runway(lat: float, lon: float, polygon, utm_zone=None) -> bool:

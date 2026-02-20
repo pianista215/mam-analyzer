@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.detector import Detector
 from mam_analyzer.utils.location import event_has_location
-from mam_analyzer.utils.runway import build_runway_polygon, match_runway_end, point_inside_runway
+from mam_analyzer.utils.runway import build_runway_polygon, match_runway_for_landing, point_inside_runway
 from mam_analyzer.utils.search import find_first_index_backward,find_first_index_forward_starting_from_idx,find_first_index_backward_starting_from_idx
 from mam_analyzer.utils.units import haversine, heading_within_range
 
@@ -87,11 +87,12 @@ class FinalLandingDetector(Detector):
             and landing_event.latitude is not None
             and landing_event.longitude is not None
         ):
-            runway_match = match_runway_end(
+            runway_match = match_runway_for_landing(
                 context.landing,
+                events,
+                touch_idx,
+                landing_event,
                 touch_heading,
-                landing_event.latitude,
-                landing_event.longitude,
             )
 
         if runway_match is not None:
