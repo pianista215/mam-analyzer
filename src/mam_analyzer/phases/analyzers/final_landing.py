@@ -9,10 +9,9 @@ from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.phases.analyzers.result import AnalysisResult,AnalysisIssue
 from mam_analyzer.utils.engines import all_engines_are_off, some_engine_is_off
 from mam_analyzer.utils.landing import event_has_landing_vs_fpm, get_landing_vs_fpm_as_int, is_hard_landing
-from mam_analyzer.utils.location import event_has_location
-from mam_analyzer.utils.runway import match_runway_end
+from mam_analyzer.utils.runway import match_runway_for_landing
 from mam_analyzer.utils.speed import event_has_ias, get_ias_as_int
-from mam_analyzer.utils.units import compute_bearing, haversine
+from mam_analyzer.utils.units import haversine
 
 class FinalLandingAnalyzer(Analyzer):
 
@@ -47,9 +46,11 @@ class FinalLandingAnalyzer(Analyzer):
         touch_lat = None
         touch_lon = None
         touch_time = None
+        touch_idx = None
+        touch_event_ref = None
         meters_until_brake = None
 
-        for e in events:
+        for i, e in enumerate(events):
             ts = e.timestamp
             if ts >= start_time:
                 if ts <= end_time:
@@ -71,6 +72,8 @@ class FinalLandingAnalyzer(Analyzer):
                             touch_lat = e.latitude
                             touch_lon = e.longitude
                             touch_time = e.timestamp
+                            touch_idx = i
+                            touch_event_ref = e
                             #Check only in main touchdown for engine failures
                             if all_engines_are_off(e):
                                 result.issues.append(
@@ -119,27 +122,15 @@ class FinalLandingAnalyzer(Analyzer):
             context is not None
             and context.landing is not None
             and context.landing.runways
-            and touch_lat is not None
-            and touch_lon is not None
-            and touch_time is not None
+            and touch_event_ref is not None
         ):
-            rollout_lat = None
-            rollout_lon = None
-            for e in events:
-                if e.timestamp > touch_time and e.timestamp <= end_time:
-                    if event_has_location(e):
-                        rollout_lat = e.latitude
-                        rollout_lon = e.longitude
-                        break
-
-            rwy_match = None
-            if rollout_lat is not None and rollout_lon is not None:
-                touch_bearing = compute_bearing(
-                    touch_lat, touch_lon, rollout_lat, rollout_lon
-                )
-                rwy_match = match_runway_end(
-                    context.landing, touch_bearing, touch_lat, touch_lon
-                )
+            rwy_match = match_runway_for_landing(
+                context.landing,
+                events,
+                touch_idx,
+                touch_event_ref,
+                touch_event_ref.heading,
+            )
             if rwy_match is not None:
                 rwy, matched_end = rwy_match
                 result.phase_metrics[self.METRIC_LANDING_RUNWAY] = matched_end.designator
