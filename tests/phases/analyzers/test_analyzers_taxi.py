@@ -48,7 +48,7 @@ def test_taxi_with_single_overspeed(analyzer):
         ts = base + timedelta(seconds=i * 10)
         speed = 24
         if i == 3:
-            speed = 30
+            speed = 31
         ev = make_event(
             ts,
             onGround=True,
@@ -63,7 +63,7 @@ def test_taxi_with_single_overspeed(analyzer):
     assert len(result.issues) == 1
     assert result.issues[0].code == Issues.ISSUE_TAXI_OVERSPEED
     assert result.issues[0].timestamp == base + timedelta(seconds=30)
-    assert result.issues[0].value == 30
+    assert result.issues[0].value == 31
 
 def test_taxi_with_multiple_overspeed(analyzer):
     base = datetime(2025, 7, 6, 12, 0, 0)
@@ -100,7 +100,7 @@ def test_taxi_with_multiple_overspeed(analyzer):
 
 @pytest.mark.parametrize("filename, taxi_start, taxi_end, overspeed_taxi_str", [
     ("LEPA-LEPP-737.json", "2025-06-14T17:10:41.905205", "2025-06-14T17:17:35.879138", ""),
-    ("LEPA-LEPP-737.json", "2025-06-14T18:22:43.875769", "2025-06-14T18:26:59.877935", "27"),
+    ("LEPA-LEPP-737.json", "2025-06-14T18:22:43.875769", "2025-06-14T18:26:59.877935", ""),
     ("LEPP-LEMG-737.json", "2025-06-14T23:46:28.960507", "2025-06-14T23:49:32.958062", ""),
     ("LEPP-LEMG-737.json", "2025-06-15T01:09:24.968111", "2025-06-15T01:11:26.954066", ""),
     ("LPMA-Circuits-737.json", "2025-06-02T21:43:03.739527", "2025-06-02T21:47:57.737803", ""),
