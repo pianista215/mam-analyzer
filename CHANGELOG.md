@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0] - upcoming
+## [1.3.0] - 2026-03-17
 
 - Increased taxi overspeed threshold from 25 to 30 knots
 
