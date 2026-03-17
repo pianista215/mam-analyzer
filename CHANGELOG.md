@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - upcoming
+
+- Increased taxi overspeed threshold from 25 to 30 knots
+
 ## [1.2.1] - 2026-02-20
 
 - Fixed takeoff and landing runway identification: replaced heading+distance matching with ground track intersection against runway polygons, correctly handling parallel runways and crosswind (crabbing) scenarios

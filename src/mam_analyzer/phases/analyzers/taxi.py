@@ -30,7 +30,7 @@ class TaxiAnalyzer(Analyzer):
                     if event_has_gs(e):
                         ias = get_gs_as_int(e)
 
-                        if ias > 25:
+                        if ias > 30:
                             result.issues.append(
                                 AnalysisIssue(
                                     code=Issues.ISSUE_TAXI_OVERSPEED,
