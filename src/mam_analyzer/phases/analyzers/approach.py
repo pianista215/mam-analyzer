@@ -80,7 +80,7 @@ class ApproachAnalyzer(Analyzer):
                                         AnalysisIssue(
                                             code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
                                             timestamp=e.timestamp,
-                                            value=f"{vs}|{agl},{threshold_instant}"
+                                            value=f"{vs}|{agl}|{threshold_instant}"
                                         )
                                     )
                                 elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < threshold_avg:
@@ -88,7 +88,7 @@ class ApproachAnalyzer(Analyzer):
                                         AnalysisIssue(
                                             code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL,
                                             timestamp=e.timestamp,
-                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl},{threshold_avg}"
+                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl}|{threshold_avg}"
                                         )
                                     )
                             elif agl < 2000 and vs < -2000:

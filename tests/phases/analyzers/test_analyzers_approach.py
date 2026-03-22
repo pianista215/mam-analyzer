@@ -131,7 +131,7 @@ def test_issue_low_vs_below_1000agl_by_vs(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-1600|900,-1500"
+    assert issue.value == "-1600|900|-1500"
 
 
 def test_issue_low_vs_below_1000agl_by_vs_last3_avg(analyzer):
@@ -147,7 +147,7 @@ def test_issue_low_vs_below_1000agl_by_vs_last3_avg(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
-    assert issue.value == "-1200|900,-1150"
+    assert issue.value == "-1200|900|-1150"
 
 
 def test_no_issue_when_vs_and_vs_last3_avg_within_limits(analyzer):
@@ -207,7 +207,7 @@ def test_issue_vs_below_1000agl_glideslope_4deg_still_triggers(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-1800|900,-1785"
+    assert issue.value == "-1800|900|-1785"
 
 
 def test_issue_vs_avg_below_1000agl_glideslope_4deg(analyzer):
@@ -223,7 +223,7 @@ def test_issue_vs_avg_below_1000agl_glideslope_4deg(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
-    assert issue.value == "-1450|900,-1435"
+    assert issue.value == "-1450|900|-1435"
 
 
 def test_glideslope_at_exactly_3deg_uses_standard_thresholds(analyzer):
@@ -239,7 +239,7 @@ def test_glideslope_at_exactly_3deg_uses_standard_thresholds(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-1600|900,-1500"
+    assert issue.value == "-1600|900|-1500"
 
 
 # --- 5° glideslope: 200 intervals × 2.85 = 570 fpm margin → -2070 / -1720 ---
@@ -257,7 +257,7 @@ def test_glideslope_5deg_instant_below_threshold_triggers(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-2100|800,-2070"
+    assert issue.value == "-2100|800|-2070"
 
 
 def test_glideslope_5deg_instant_above_threshold_no_issue(analyzer):
@@ -287,7 +287,7 @@ def test_glideslope_5deg_avg_below_threshold_triggers(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
-    assert issue.value == "-1750|800,-1720"
+    assert issue.value == "-1750|800|-1720"
 
 
 def test_glideslope_5deg_avg_above_threshold_no_issue(analyzer):
@@ -319,7 +319,7 @@ def test_glideslope_6_5deg_instant_below_threshold_triggers(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-2500|700,-2498"
+    assert issue.value == "-2500|700|-2498"
 
 
 def test_glideslope_6_5deg_instant_above_threshold_no_issue(analyzer):
@@ -349,7 +349,7 @@ def test_glideslope_6_5deg_avg_below_threshold_triggers(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
-    assert issue.value == "-2200|700,-2148"
+    assert issue.value == "-2200|700|-2148"
 
 
 def test_glideslope_6_5deg_avg_above_threshold_no_issue(analyzer):
@@ -381,21 +381,21 @@ def test_glideslope_6_5deg_rounding_boundary(analyzer):
 
 
 @pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue", [
-    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", None, "-1903|999,-1500", "", ""),
+    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", None, "-1903|999|-1500", "", ""),
     ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", None, "", "", ""),
     ("UHMA-PAOM-B350.json", "2025-06-16T00:04:26.575323", "2025-06-16T00:07:26.575323", "-994", "-44", "-605", "-994", "-44", "-539", None, "", "", ""),
     ("UHPT-UHMA-B350.json", "2025-06-15T19:58:00.819106", "2025-06-15T20:01:00.819106", "-775", "-279", "-594", "-775", "-279", "-616", None, "", "", ""),
     ("UHPT-UHMA-SF34.json", "2025-06-05T15:02:21.226652", "2025-06-05T15:05:21.226652", "-1355", "-109", "-670", "-1355", "-109", "-720", None, "", "", ""),
     ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", None, "", "", ""),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", None, "", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", None, "-1532|788,-1500|-1904|724,-1500", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", None, "-6534|744,-1500|-4571|519,-1500|-2355|794,-1500|-1750|918,-1500|-1650|832,-1500|-1545|430,-1500|-1600|380,-1500|-1531|497,-1500", "", "-4140|1136|-2205|1253"),
-    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", None, "-1644|954,-1500", "-1294|906,-1150|-1209|888,-1150", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", None, "-1532|788|-1500|-1904|724|-1500", "", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", None, "-6534|744|-1500|-4571|519|-1500|-2355|794|-1500|-1750|918|-1500|-1650|832|-1500|-1545|430|-1500|-1600|380|-1500|-1531|497|-1500", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", None, "-1644|954|-1500", "-1294|906|-1150|-1209|888|-1150", ""),
     # glideslope 3.5° (threshold_instant=-1642, threshold_avg=-1292)
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 3.5, "-6534|744,-1642|-4571|519,-1642|-2355|794,-1642|-1750|918,-1642|-1650|832,-1642", "", "-4140|1136|-2205|1253"),
-    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 3.5, "-1644|954,-1642", "-1294|906,-1292", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 3.5, "-6534|744|-1642|-4571|519|-1642|-2355|794|-1642|-1750|918|-1642|-1650|832|-1642", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 3.5, "-1644|954|-1642", "-1294|906|-1292", ""),
     # glideslope 4.0° (threshold_instant=-1785, threshold_avg=-1435)
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 4.0, "-6534|744,-1785|-4571|519,-1785|-2355|794,-1785", "", "-4140|1136|-2205|1253"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 4.0, "-6534|744|-1785|-4571|519|-1785|-2355|794|-1785", "", "-4140|1136|-2205|1253"),
     ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 4.0, "", "", ""),
 ])
 def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue, analyzer):
