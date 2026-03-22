@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.flight_phase import FlightPhase
 from mam_analyzer.phases.analyzers.analyzer import Analyzer
-from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
+from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer, PARAM_GLIDESLOPE_DEG
 from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.analyzers.result import AnalysisResult
@@ -21,6 +21,24 @@ from mam_analyzer.phases.detectors.shutdown import ShutdownDetector
 from mam_analyzer.phases.detectors.startup import StartupDetector
 from mam_analyzer.phases.detectors.takeoff import TakeoffDetector
 from mam_analyzer.phases.detectors.touch_go import TouchAndGoDetector
+
+def _get_landing_glideslope(
+    landing_phase: "FlightPhase",
+    context: Optional[FlightContext],
+) -> Optional[float]:
+    """Return max_glideslope_deg for the runway end used during landing, or None."""
+    designator = landing_phase.analysis.phase_metrics.get("LandingRunway")
+    if not designator or not context:
+        return None
+    airport = context.landing or context.destination
+    if not airport:
+        return None
+    for rwy in airport.runways:
+        for end in rwy.ends:
+            if end.designator == designator:
+                return end.max_glideslope_deg
+    return None
+
 
 class PhasesAggregator:
     def __init__(self) -> None:
@@ -62,10 +80,11 @@ class PhasesAggregator:
         end: datetime,
         analyzer: Optional[Analyzer],
         context: Optional[FlightContext] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     ) -> FlightPhase:
         filtered_events = self.__filter_events(events, start, end)
 
-        analysis = analyzer.analyze(filtered_events, start, end, context) if analyzer else AnalysisResult()
+        analysis = analyzer.analyze(filtered_events, start, end, context, phase_params) if analyzer else AnalysisResult()
 
         return FlightPhase(name, start, end, analysis, filtered_events)
 
@@ -214,10 +233,11 @@ class PhasesAggregator:
         return result
 
     def _generate_approach(
-        self, 
-        events: List[FlightEvent], 
+        self,
+        events: List[FlightEvent],
         touch_phase: FlightPhase,
         prev_phase: Optional[FlightPhase] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     )-> FlightPhase:
         if touch_phase.name not in {"final_landing", "touch_go"}:
             raise RuntimeError("Final landing or touch_go expected to generate approach")
@@ -233,7 +253,7 @@ class PhasesAggregator:
 
         app_end = touch_phase.start +timedelta(microseconds=-1)
 
-        app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer)
+        app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer, phase_params=phase_params)
         return app_phase
 
     def __fill_gaps_with_unknown(
@@ -313,7 +333,10 @@ class PhasesAggregator:
 
         # TODO: Rename in all the code final_landing for landing?
         _landing_phase = self.__generate_phase(events, "final_landing",_landing_start, _landing_end, landing_analyzer, context)
-        
+
+        _landing_glideslope = _get_landing_glideslope(_landing_phase, context)
+        _landing_phase_params = {PARAM_GLIDESLOPE_DEG: _landing_glideslope} if _landing_glideslope is not None else None
+
         # === Startup / Taxi before takeoff ===
         startup_detector, _ = self.detectors["startup"]
         _startup = startup_detector.detect(events, None, None)
@@ -361,7 +384,7 @@ class PhasesAggregator:
         )
 
         # Generate last approach for final_landing
-        _last_landing_app = self._generate_approach(events, _landing_phase, result[-1] if result else None)
+        _last_landing_app = self._generate_approach(events, _landing_phase, result[-1] if result else None, phase_params=_landing_phase_params)
 
         cruise_detector, cruise_analyzer = self.detectors["cruise"]
         

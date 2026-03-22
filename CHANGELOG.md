@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-03-22
+
+- Added `max_glideslope_deg` field to `RunwayEnd` (loaded from `context.json`)
+- Approach analyzer now adjusts the 1000 AGL vertical speed thresholds for steep-approach runways: for each 0.01° above 3°, 2.85 fpm of margin is added to both the instantaneous limit (-1500 fpm) and the rolling-average limit (-1150 fpm). With no glideslope data, the standard 3° thresholds are used unchanged
+- Added `glideslope_deg` parameter to the `Analyzer.analyze()` interface (standard pattern for passing runway data to analyzers)
+- Issue values for `ISSUE_APP_HIGH_VS_BELOW_1000AGL` and `ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL` now include the applied reference threshold at the end: `{vs}|{agl},{threshold}`
+
 ## [1.3.0] - 2026-03-17
 
 - Increased taxi overspeed threshold from 25 to 30 knots

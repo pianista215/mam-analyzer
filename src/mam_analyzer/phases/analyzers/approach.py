@@ -15,6 +15,21 @@ from mam_analyzer.utils.vertical_speed import (
     get_vs_last3_avg_as_int,
 )
 
+PARAM_GLIDESLOPE_DEG = "glideslope_deg"
+
+_BASE_INSTANT = -1500
+_BASE_AVG = -1150
+_GLIDESLOPE_BASE_DEG = 3.0
+_FPM_PER_HUNDREDTH_DEG = 2.85  # fpm added per 0.01° above _GLIDESLOPE_BASE_DEG
+
+
+def _get_thresholds(glideslope_deg: Optional[float]):
+    margin = 0
+    if glideslope_deg is not None and glideslope_deg > _GLIDESLOPE_BASE_DEG:
+        margin = round((glideslope_deg - _GLIDESLOPE_BASE_DEG) * 100 * _FPM_PER_HUNDREDTH_DEG)
+    return _BASE_INSTANT - margin, _BASE_AVG - margin
+
+
 class ApproachAnalyzer(Analyzer):
     def analyze(
         self,
@@ -22,6 +37,7 @@ class ApproachAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     ) -> AnalysisResult:
         """Analyze approach phase generating:
            - average vertical speed fpm
@@ -29,11 +45,14 @@ class ApproachAnalyzer(Analyzer):
            - max vertical speed
            Issues:
            - < -2000fpm below 2000AGL
-           - VS < -1500fpm below 1000AGL
-           - VSLast3Avg < -1150fpm below 1000AGL
+           - VS < threshold_instant fpm below 1000AGL (default -1500, relaxed for steep approaches)
+           - VSLast3Avg < threshold_avg fpm below 1000AGL (default -1150, relaxed for steep approaches)
         """
 
         result = AnalysisResult()
+
+        glideslope_deg = (phase_params or {}).get(PARAM_GLIDESLOPE_DEG)
+        threshold_instant, threshold_avg = _get_thresholds(glideslope_deg)
 
         last_min_start = end_time + timedelta(seconds=-60)
 
@@ -59,20 +78,20 @@ class ApproachAnalyzer(Analyzer):
                             agl = get_agl_altitude_as_int(e)
 
                             if agl < 1000:
-                                if vs < -1500:
+                                if vs < threshold_instant:
                                     result.issues.append(
                                         AnalysisIssue(
                                             code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
                                             timestamp=e.timestamp,
-                                            value=f"{vs}|{agl}"
+                                            value=f"{vs}|{agl}|{threshold_instant}"
                                         )
                                     )
-                                elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < -1150:
+                                elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < threshold_avg:
                                     result.issues.append(
                                         AnalysisIssue(
                                             code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL,
                                             timestamp=e.timestamp,
-                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl}"
+                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl}|{threshold_avg}"
                                         )
                                     )
                             elif agl < 2000 and vs < -2000:
@@ -104,13 +123,13 @@ class ApproachAnalyzer(Analyzer):
 
                 else:
                     break
-            
+
         if vs_found == 0:
             raise RuntimeError("Can't retrieve vertical speed from approach phase")
 
         if last_minute_vs_found == 0:
             raise RuntimeError("Can't retrieve vertical speed from approach phase last minute")
-        
+
         result.phase_metrics["MinVSFpm"] = min_vs
         result.phase_metrics["MaxVSFpm"] = max_vs
 
@@ -123,4 +142,4 @@ class ApproachAnalyzer(Analyzer):
         last_min_avg = round(last_minute_vs_sum/last_minute_vs_found)
         result.phase_metrics["LastMinuteAvgVSFpm"] = last_min_avg
 
-        return result   
+        return result

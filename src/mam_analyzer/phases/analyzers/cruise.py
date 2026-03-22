@@ -19,6 +19,7 @@ class CruiseAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     ) -> AnalysisResult:
         """Analyze cruise phase generating:
            - fuel consumption

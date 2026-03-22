@@ -4,7 +4,7 @@ import os
 import pytest
 
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
+from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer, PARAM_GLIDESLOPE_DEG, PARAM_GLIDESLOPE_DEG
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
 
@@ -105,7 +105,7 @@ def test_analyze_raises_if_no_vertical_speed(analyzer):
 
     with pytest.raises(RuntimeError, match="Can't retrieve vertical speed"):
         analyzer.analyze(events, start_time, end_time)
-        
+
 def test_analyze_raises_if_no_vertical_speed_last_minute(analyzer):
     start_time = datetime(2025, 1, 1, 12, 0, 0)
     end_time = start_time + timedelta(minutes=2)
@@ -131,7 +131,7 @@ def test_issue_low_vs_below_1000agl_by_vs(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
-    assert issue.value == "-1600|900"
+    assert issue.value == "-1600|900|-1500"
 
 
 def test_issue_low_vs_below_1000agl_by_vs_last3_avg(analyzer):
@@ -147,7 +147,7 @@ def test_issue_low_vs_below_1000agl_by_vs_last3_avg(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
-    assert issue.value == "-1200|900"
+    assert issue.value == "-1200|900|-1150"
 
 
 def test_no_issue_when_vs_and_vs_last3_avg_within_limits(analyzer):
@@ -177,29 +177,235 @@ def test_issue_low_vs_below_2000agl(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL)
-    assert issue.value == "-2500|1500"        
+    assert issue.value == "-2500|1500"
 
 
-@pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue", [
-    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", "-1903|999", "", ""),
-    ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", "", "", ""),
-    ("UHMA-PAOM-B350.json", "2025-06-16T00:04:26.575323", "2025-06-16T00:07:26.575323", "-994", "-44", "-605", "-994", "-44", "-539", "", "", ""),
-    ("UHPT-UHMA-B350.json", "2025-06-15T19:58:00.819106", "2025-06-15T20:01:00.819106", "-775", "-279", "-594", "-775", "-279", "-616", "", "", ""),
-    ("UHPT-UHMA-SF34.json", "2025-06-05T15:02:21.226652", "2025-06-05T15:05:21.226652", "-1355", "-109", "-670", "-1355", "-109", "-720", "", "", ""),
-    ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", "", "", ""),
-    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", "", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", "-1532|788|-1904|724", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", "-6534|744|-4571|519|-2355|794|-1750|918|-1650|832|-1545|430|-1600|380|-1531|497", "", "-4140|1136|-2205|1253"),
-    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", "-1644|954", "-1294|906|-1209|888", "")
+def test_issue_vs_below_1000agl_glideslope_4deg_relaxed_threshold(analyzer):
+    """With 4° glideslope, threshold relaxed to -1785: VS of -1600 no longer triggers"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1600, AGLAltitude=900),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+
+
+def test_issue_vs_below_1000agl_glideslope_4deg_still_triggers(analyzer):
+    """With 4° glideslope, VS of -1800 still triggers with threshold -1785"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1800, AGLAltitude=900),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
+    assert issue.value == "-1800|900|-1785"
+
+
+def test_issue_vs_avg_below_1000agl_glideslope_4deg(analyzer):
+    """With 4° glideslope, avg threshold relaxed to -1435"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1200, AGLAltitude=900, VSLast3Avg=-1450),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
+    assert issue.value == "-1450|900|-1435"
+
+
+def test_glideslope_at_exactly_3deg_uses_standard_thresholds(analyzer):
+    """Glideslope exactly 3° applies no margin (threshold stays -1500)"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1600, AGLAltitude=900),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 3.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
+    assert issue.value == "-1600|900|-1500"
+
+
+# --- 5° glideslope: 200 intervals × 2.85 = 570 fpm margin → -2070 / -1720 ---
+
+def test_glideslope_5deg_instant_below_threshold_triggers(analyzer):
+    """5° glideslope: VS -2100 < -2070 triggers with threshold -2070"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2100, AGLAltitude=800),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
+    assert issue.value == "-2100|800|-2070"
+
+
+def test_glideslope_5deg_instant_above_threshold_no_issue(analyzer):
+    """5° glideslope: VS -1800 > -2070 does not trigger"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1800, AGLAltitude=800),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+
+
+def test_glideslope_5deg_avg_below_threshold_triggers(analyzer):
+    """5° glideslope: VSLast3Avg -1750 < -1720 triggers with threshold -1720"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=800, VSLast3Avg=-1750),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
+    assert issue.value == "-1750|800|-1720"
+
+
+def test_glideslope_5deg_avg_above_threshold_no_issue(analyzer):
+    """5° glideslope: VSLast3Avg -1600 > -1720 does not trigger"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=800, VSLast3Avg=-1600),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+
+
+# --- 6.5° glideslope: 350 intervals × 2.85 = 997.5 → round → 998 fpm margin → -2498 / -2148 ---
+
+def test_glideslope_6_5deg_instant_below_threshold_triggers(analyzer):
+    """6.5° glideslope: VS -2500 < -2498 triggers with threshold -2498"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2500, AGLAltitude=700),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
+    assert issue.value == "-2500|700|-2498"
+
+
+def test_glideslope_6_5deg_instant_above_threshold_no_issue(analyzer):
+    """6.5° glideslope: VS -2000 > -2498 does not trigger"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2000, AGLAltitude=700),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+
+
+def test_glideslope_6_5deg_avg_below_threshold_triggers(analyzer):
+    """6.5° glideslope: VSLast3Avg -2200 < -2148 triggers with threshold -2148"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=700, VSLast3Avg=-2200),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
+    assert issue.value == "-2200|700|-2148"
+
+
+def test_glideslope_6_5deg_avg_above_threshold_no_issue(analyzer):
+    """6.5° glideslope: VSLast3Avg -2000 > -2148 does not trigger"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=700, VSLast3Avg=-2000),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
+
+
+def test_glideslope_6_5deg_rounding_boundary(analyzer):
+    """6.5°: margin=round(997.5)=998, confirm VS exactly at threshold -2498 does NOT trigger"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2498, AGLAltitude=700),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
+
+
+@pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue", [
+    ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", None, "-1903|999|-1500", "", ""),
+    ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", None, "", "", ""),
+    ("UHMA-PAOM-B350.json", "2025-06-16T00:04:26.575323", "2025-06-16T00:07:26.575323", "-994", "-44", "-605", "-994", "-44", "-539", None, "", "", ""),
+    ("UHPT-UHMA-B350.json", "2025-06-15T19:58:00.819106", "2025-06-15T20:01:00.819106", "-775", "-279", "-594", "-775", "-279", "-616", None, "", "", ""),
+    ("UHPT-UHMA-SF34.json", "2025-06-05T15:02:21.226652", "2025-06-05T15:05:21.226652", "-1355", "-109", "-670", "-1355", "-109", "-720", None, "", "", ""),
+    ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", None, "", "", ""),
+    ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", None, "", "", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", None, "-1532|788|-1500|-1904|724|-1500", "", ""),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", None, "-6534|744|-1500|-4571|519|-1500|-2355|794|-1500|-1750|918|-1500|-1650|832|-1500|-1545|430|-1500|-1600|380|-1500|-1531|497|-1500", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", None, "-1644|954|-1500", "-1294|906|-1150|-1209|888|-1150", ""),
+    # glideslope 3.5° (threshold_instant=-1642, threshold_avg=-1292)
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 3.5, "-6534|744|-1642|-4571|519|-1642|-2355|794|-1642|-1750|918|-1642|-1650|832|-1642", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 3.5, "-1644|954|-1642", "-1294|906|-1292", ""),
+    # glideslope 4.0° (threshold_instant=-1785, threshold_avg=-1435)
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 4.0, "-6534|744|-1785|-4571|519|-1785|-2355|794|-1785", "", "-4140|1136|-2205|1253"),
+    ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 4.0, "", "", ""),
 ])
-def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue, analyzer):
+def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue, analyzer):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
-    result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end))
+    result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end), phase_params={PARAM_GLIDESLOPE_DEG: glideslope_deg} if glideslope_deg is not None else None)
 
     assert result.phase_metrics['MinVSFpm'] == int(min_vs)
     assert result.phase_metrics['MaxVSFpm'] == int(max_vs)
