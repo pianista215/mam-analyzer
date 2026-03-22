@@ -27,7 +27,7 @@ class FinalLandingAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
-        glideslope_deg: Optional[float] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     ) -> AnalysisResult:
         """Analyze final landing phase generating:
            - number of bounces

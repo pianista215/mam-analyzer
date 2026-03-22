@@ -4,7 +4,7 @@ import os
 import pytest
 
 from mam_analyzer.models.flight_events import FlightEvent
-from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer
+from mam_analyzer.phases.analyzers.approach import ApproachAnalyzer, PARAM_GLIDESLOPE_DEG, PARAM_GLIDESLOPE_DEG
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
 
@@ -189,7 +189,7 @@ def test_issue_vs_below_1000agl_glideslope_4deg_relaxed_threshold(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1600, AGLAltitude=900),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=4.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
 
@@ -203,7 +203,7 @@ def test_issue_vs_below_1000agl_glideslope_4deg_still_triggers(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1800, AGLAltitude=900),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=4.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
@@ -219,7 +219,7 @@ def test_issue_vs_avg_below_1000agl_glideslope_4deg(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1200, AGLAltitude=900, VSLast3Avg=-1450),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=4.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 4.0})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
@@ -235,7 +235,7 @@ def test_glideslope_at_exactly_3deg_uses_standard_thresholds(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1600, AGLAltitude=900),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=3.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 3.0})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
@@ -253,7 +253,7 @@ def test_glideslope_5deg_instant_below_threshold_triggers(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-2100, AGLAltitude=800),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=5.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
@@ -269,7 +269,7 @@ def test_glideslope_5deg_instant_above_threshold_no_issue(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1800, AGLAltitude=800),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=5.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
 
@@ -283,7 +283,7 @@ def test_glideslope_5deg_avg_below_threshold_triggers(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=800, VSLast3Avg=-1750),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=5.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
@@ -299,7 +299,7 @@ def test_glideslope_5deg_avg_above_threshold_no_issue(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=800, VSLast3Avg=-1600),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=5.0)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
 
@@ -315,7 +315,7 @@ def test_glideslope_6_5deg_instant_below_threshold_triggers(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-2500, AGLAltitude=700),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=6.5)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL)
@@ -331,7 +331,7 @@ def test_glideslope_6_5deg_instant_above_threshold_no_issue(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-2000, AGLAltitude=700),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=6.5)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
 
@@ -345,7 +345,7 @@ def test_glideslope_6_5deg_avg_below_threshold_triggers(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=700, VSLast3Avg=-2200),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=6.5)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL)
@@ -361,7 +361,7 @@ def test_glideslope_6_5deg_avg_above_threshold_no_issue(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-1500, AGLAltitude=700, VSLast3Avg=-2000),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=6.5)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL for i in result.issues)
 
@@ -375,7 +375,7 @@ def test_glideslope_6_5deg_rounding_boundary(analyzer):
         make_event(start_time + timedelta(seconds=10), VSFpm=-2498, AGLAltitude=700),
     ]
 
-    result = analyzer.analyze(events, start_time, end_time, glideslope_deg=6.5)
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
 
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
 
@@ -405,7 +405,7 @@ def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs,
 
     raw_events = data["Events"]
     events = [FlightEvent.from_json(e) for e in raw_events]
-    result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end), glideslope_deg=glideslope_deg)
+    result = analyzer.analyze(events, parse_timestamp(app_start), parse_timestamp(app_end), phase_params={PARAM_GLIDESLOPE_DEG: glideslope_deg} if glideslope_deg is not None else None)
 
     assert result.phase_metrics['MinVSFpm'] == int(min_vs)
     assert result.phase_metrics['MaxVSFpm'] == int(max_vs)

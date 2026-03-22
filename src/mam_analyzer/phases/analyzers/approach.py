@@ -15,6 +15,8 @@ from mam_analyzer.utils.vertical_speed import (
     get_vs_last3_avg_as_int,
 )
 
+PARAM_GLIDESLOPE_DEG = "glideslope_deg"
+
 _BASE_INSTANT = -1500
 _BASE_AVG = -1150
 _GLIDESLOPE_BASE_DEG = 3.0
@@ -35,7 +37,7 @@ class ApproachAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
-        glideslope_deg: Optional[float] = None,
+        phase_params: Optional[Dict[str, Any]] = None,
     ) -> AnalysisResult:
         """Analyze approach phase generating:
            - average vertical speed fpm
@@ -49,6 +51,7 @@ class ApproachAnalyzer(Analyzer):
 
         result = AnalysisResult()
 
+        glideslope_deg = (phase_params or {}).get(PARAM_GLIDESLOPE_DEG)
         threshold_instant, threshold_avg = _get_thresholds(glideslope_deg)
 
         last_min_start = end_time + timedelta(seconds=-60)
