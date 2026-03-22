@@ -24,6 +24,7 @@ class TouchAndGoAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        glideslope_deg: Optional[float] = None,
     ) -> AnalysisResult:
         """Analyze touch phase generating:
            - number of bounces

@@ -19,6 +19,7 @@ class CruiseAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        glideslope_deg: Optional[float] = None,
     ) -> AnalysisResult:
         """Analyze cruise phase generating:
            - fuel consumption

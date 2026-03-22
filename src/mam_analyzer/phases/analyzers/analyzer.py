@@ -13,6 +13,7 @@ class Analyzer(ABC):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        glideslope_deg: Optional[float] = None,
     ) -> AnalysisResult:
         """
         Analyze the phase of flight that begins at `start_time` and ends at `end_time`,

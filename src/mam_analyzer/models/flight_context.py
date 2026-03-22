@@ -10,6 +10,7 @@ class RunwayEnd:
     true_heading_deg: float
     displaced_threshold_m: float
     stopway_m: float
+    max_glideslope_deg: Optional[float] = None
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "RunwayEnd":
@@ -20,6 +21,7 @@ class RunwayEnd:
             true_heading_deg=data["true_heading_deg"],
             displaced_threshold_m=data.get("displaced_threshold_m", 0.0),
             stopway_m=data.get("stopway_m", 0.0),
+            max_glideslope_deg=data.get("max_glideslope_deg"),
         )
 
 

@@ -27,6 +27,7 @@ class TakeoffAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        glideslope_deg: Optional[float] = None,
     ) -> AnalysisResult:
         """Analyze takeoff phase generating:
            - number of bounces

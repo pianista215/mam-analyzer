@@ -16,6 +16,7 @@ class TaxiAnalyzer(Analyzer):
         start_time: datetime,
         end_time: datetime,
         context: Optional[FlightContext] = None,
+        glideslope_deg: Optional[float] = None,
     ) -> AnalysisResult:
         """Analyze taxi phase generating:
            - Overspeed taxi issue
