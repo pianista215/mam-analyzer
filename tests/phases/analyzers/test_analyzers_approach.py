@@ -177,7 +177,7 @@ def test_issue_low_vs_below_2000agl(analyzer):
 
     assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
     issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL)
-    assert issue.value == "-2500|1500"
+    assert issue.value == "-2500|1500|-2000"
 
 
 def test_issue_vs_below_1000agl_glideslope_4deg_relaxed_threshold(analyzer):
@@ -380,6 +380,71 @@ def test_glideslope_6_5deg_rounding_boundary(analyzer):
     assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL for i in result.issues)
 
 
+# --- 2000 AGL issue: same margin applied to -2000 base threshold ---
+
+def test_issue_2000agl_standard_threshold(analyzer):
+    """No glideslope: threshold stays at -2000"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2100, AGLAltitude=1500),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time)
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL)
+    assert issue.value == "-2100|1500|-2000"
+
+
+def test_issue_2000agl_glideslope_5deg_relaxed_threshold(analyzer):
+    """5° glideslope: threshold relaxed to -2570; VS -2100 no longer triggers"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2100, AGLAltitude=1500),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert not any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
+
+
+def test_issue_2000agl_glideslope_5deg_still_triggers(analyzer):
+    """5° glideslope: VS -2600 < -2570 still triggers"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2600, AGLAltitude=1500),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 5.0})
+
+    assert any(i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL for i in result.issues)
+    issue = next(i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL)
+    assert issue.value == "-2600|1500|-2570"
+
+
+def test_issue_2000agl_glideslope_6_5deg(analyzer):
+    """6.5° glideslope: threshold -2998; VS -2500 does not trigger, -3000 does"""
+    start_time = datetime(2025, 1, 1, 12, 0, 0)
+    end_time = start_time + timedelta(minutes=1)
+
+    events = [
+        make_event(start_time + timedelta(seconds=10), VSFpm=-2500, AGLAltitude=1500),
+        make_event(start_time + timedelta(seconds=20), VSFpm=-3000, AGLAltitude=1400),
+    ]
+
+    result = analyzer.analyze(events, start_time, end_time, phase_params={PARAM_GLIDESLOPE_DEG: 6.5})
+
+    issues_2000 = [i for i in result.issues if i.code == Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL]
+    assert len(issues_2000) == 1
+    assert issues_2000[0].value == "-3000|1400|-2998"
+
+
 @pytest.mark.parametrize("filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue", [
     ("LEPA-LEPP-737.json", "2025-06-14T18:19:03.883981", "2025-06-14T18:22:03.883981", "-1903", "322", "-789", "-906", "-121", "-610", None, "-1903|999|-1500", "", ""),
     ("LEPP-LEMG-737.json", "2025-06-15T01:05:58.959306", "2025-06-15T01:08:58.959306", "-1045", "-219", "-791", "-976", "-219", "-626", None, "", "", ""),
@@ -389,14 +454,18 @@ def test_glideslope_6_5deg_rounding_boundary(analyzer):
     ("UHSH-UHMM-B350.json", "2025-05-17T19:38:01.243375", "2025-05-17T19:41:01.24337", "-911", "-15", "-640", "-911", "-15", "-611", None, "", "", ""),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:12:48.552044", "2025-06-23T00:15:48.552044", "-708", "59", "-479", "-658", "59", "-394", None, "", "", ""),
     ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:04:23.315419", "2025-07-04T23:07:23.315419", "-1904", "795", "-402", "-899", "-256", "-537", None, "-1532|788|-1500|-1904|724|-1500", "", ""),
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", None, "-6534|744|-1500|-4571|519|-1500|-2355|794|-1500|-1750|918|-1500|-1650|832|-1500|-1545|430|-1500|-1600|380|-1500|-1531|497|-1500", "", "-4140|1136|-2205|1253"),
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", None, "-6534|744|-1500|-4571|519|-1500|-2355|794|-1500|-1750|918|-1500|-1650|832|-1500|-1545|430|-1500|-1600|380|-1500|-1531|497|-1500", "", "-4140|1136|-2000|-2205|1253|-2000"),
     ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", None, "-1644|954|-1500", "-1294|906|-1150|-1209|888|-1150", ""),
-    # glideslope 3.5° (threshold_instant=-1642, threshold_avg=-1292)
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 3.5, "-6534|744|-1642|-4571|519|-1642|-2355|794|-1642|-1750|918|-1642|-1650|832|-1642", "", "-4140|1136|-2205|1253"),
+    # glideslope 3.5° (threshold_instant=-1642, threshold_avg=-1292, threshold_2000=-2142)
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 3.5, "-6534|744|-1642|-4571|519|-1642|-2355|794|-1642|-1750|918|-1642|-1650|832|-1642", "", "-4140|1136|-2142|-2205|1253|-2142"),
     ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 3.5, "-1644|954|-1642", "-1294|906|-1292", ""),
-    # glideslope 4.0° (threshold_instant=-1785, threshold_avg=-1435)
-    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 4.0, "-6534|744|-1785|-4571|519|-1785|-2355|794|-1785", "", "-4140|1136|-2205|1253"),
+    # glideslope 4.0° (threshold_instant=-1785, threshold_avg=-1435, threshold_2000=-2285): -2205 no longer triggers 2000AGL
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 4.0, "-6534|744|-1785|-4571|519|-1785|-2355|794|-1785", "", "-4140|1136|-2285"),
     ("short_flight_vslast3avg.json", "2026-02-04T08:33:54.5625775", "2026-02-04T08:36:54.5625775", "-1644", "1317", "-122", "-1076", "-269", "-748", 4.0, "", "", ""),
+    # glideslope 5.0° (threshold_instant=-2070, threshold_2000=-2570): fewer 1000AGL triggers
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 5.0, "-6534|744|-2070|-4571|519|-2070|-2355|794|-2070", "", "-4140|1136|-2570"),
+    # glideslope 6.5° (threshold_instant=-2498, threshold_2000=-2998): only most extreme events remain
+    ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:11:49.3157458", "2025-07-04T23:44:13.316486", "-6534", "2898", "-208", "-1531", "-442", "-965", 6.5, "-6534|744|-2498|-4571|519|-2498", "", "-4140|1136|-2998"),
 ])
 def test_approach_analyzer_from_real_files(filename, app_start, app_end, min_vs, max_vs, avg_vs, last_min_min_vs, last_min_max_vs, last_min_avg_vs, glideslope_deg, one_thousand_issue, one_thousand_avg_issue, two_thousand_issue, analyzer):
     path = os.path.join("data", filename)
