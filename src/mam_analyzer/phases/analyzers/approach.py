@@ -19,6 +19,7 @@ PARAM_GLIDESLOPE_DEG = "glideslope_deg"
 
 _BASE_INSTANT = -1500
 _BASE_AVG = -1150
+_BASE_2000 = -2000
 _GLIDESLOPE_BASE_DEG = 3.0
 _FPM_PER_HUNDREDTH_DEG = 2.85  # fpm added per 0.01° above _GLIDESLOPE_BASE_DEG
 
@@ -27,7 +28,7 @@ def _get_thresholds(glideslope_deg: Optional[float]):
     margin = 0
     if glideslope_deg is not None and glideslope_deg > _GLIDESLOPE_BASE_DEG:
         margin = round((glideslope_deg - _GLIDESLOPE_BASE_DEG) * 100 * _FPM_PER_HUNDREDTH_DEG)
-    return _BASE_INSTANT - margin, _BASE_AVG - margin
+    return _BASE_INSTANT - margin, _BASE_AVG - margin, _BASE_2000 - margin
 
 
 class ApproachAnalyzer(Analyzer):
@@ -44,7 +45,7 @@ class ApproachAnalyzer(Analyzer):
            - min vertical speed
            - max vertical speed
            Issues:
-           - < -2000fpm below 2000AGL
+           - VS < threshold_2000 fpm below 2000AGL (default -2000, relaxed for steep approaches)
            - VS < threshold_instant fpm below 1000AGL (default -1500, relaxed for steep approaches)
            - VSLast3Avg < threshold_avg fpm below 1000AGL (default -1150, relaxed for steep approaches)
         """
@@ -52,7 +53,7 @@ class ApproachAnalyzer(Analyzer):
         result = AnalysisResult()
 
         glideslope_deg = (phase_params or {}).get(PARAM_GLIDESLOPE_DEG)
-        threshold_instant, threshold_avg = _get_thresholds(glideslope_deg)
+        threshold_instant, threshold_avg, threshold_2000 = _get_thresholds(glideslope_deg)
 
         last_min_start = end_time + timedelta(seconds=-60)
 
@@ -94,12 +95,12 @@ class ApproachAnalyzer(Analyzer):
                                             value=f"{get_vs_last3_avg_as_int(e)}|{agl}|{threshold_avg}"
                                         )
                                     )
-                            elif agl < 2000 and vs < -2000:
+                            elif agl < 2000 and vs < threshold_2000:
                                 result.issues.append(
                                     AnalysisIssue(
                                         code=Issues.ISSUE_APP_HIGH_VS_BELOW_2000AGL,
                                         timestamp=e.timestamp,
-                                        value=f"{vs}|{agl}"
+                                        value=f"{vs}|{agl}|{threshold_2000}"
                                     )
                                 )
 

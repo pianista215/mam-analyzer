@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2026-03-24
+
+- Extended glideslope-based threshold relaxation to `ISSUE_APP_HIGH_VS_BELOW_2000AGL`: the same margin (2.85 fpm per 0.01° above 3°) now applies to the -2000 fpm limit between 1000–2000 ft AGL
+- Issue values for `ISSUE_APP_HIGH_VS_BELOW_2000AGL` now include the applied reference threshold: `{vs}|{agl}|{threshold}`
+
 ## [1.4.0] - 2026-03-22
 
 - Added `max_glideslope_deg` field to `RunwayEnd` (loaded from `context.json`)
