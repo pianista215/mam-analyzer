@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0] - 2026-04-06
+
+- Added two-band vertical speed monitoring below 1000 ft AGL during approach:
+  - **500–1000 ft AGL** (issues `AppHighVsBelow1000AGL` / `AppHighVsAvgBelow1000AGL`): instantaneous VS limit -2000 fpm, rolling-average limit -1650 fpm (both relaxed by the existing glideslope margin when applicable)
+  - **Below 500 ft AGL** (new issues `AppHighVsBelow500AGL` / `AppHighVsAvgBelow500AGL`): instantaneous VS limit -1500 fpm, rolling-average limit -1150 fpm (same thresholds previously applied below 1000 ft, relaxed by glideslope margin when applicable)
+- `AppHighVsBelow1000AGL` and `AppHighVsAvgBelow1000AGL` now cover the 500–999 ft AGL band with the stricter -2000 / -1650 fpm base limits instead of the former -1500 / -1150 fpm limits
+
 ## [1.5.0] - 2026-03-24
 
 - Extended glideslope-based threshold relaxation to `ISSUE_APP_HIGH_VS_BELOW_2000AGL`: the same margin (2.85 fpm per 0.01° above 3°) now applies to the -2000 fpm limit between 1000–2000 ft AGL

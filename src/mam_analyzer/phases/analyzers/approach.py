@@ -20,6 +20,7 @@ PARAM_GLIDESLOPE_DEG = "glideslope_deg"
 _BASE_INSTANT = -1500
 _BASE_AVG = -1150
 _BASE_2000 = -2000
+_BASE_1000_AVG = -1650
 _GLIDESLOPE_BASE_DEG = 3.0
 _FPM_PER_HUNDREDTH_DEG = 2.85  # fpm added per 0.01° above _GLIDESLOPE_BASE_DEG
 
@@ -28,7 +29,7 @@ def _get_thresholds(glideslope_deg: Optional[float]):
     margin = 0
     if glideslope_deg is not None and glideslope_deg > _GLIDESLOPE_BASE_DEG:
         margin = round((glideslope_deg - _GLIDESLOPE_BASE_DEG) * 100 * _FPM_PER_HUNDREDTH_DEG)
-    return _BASE_INSTANT - margin, _BASE_AVG - margin, _BASE_2000 - margin
+    return _BASE_INSTANT - margin, _BASE_AVG - margin, _BASE_2000 - margin, _BASE_1000_AVG - margin
 
 
 class ApproachAnalyzer(Analyzer):
@@ -53,7 +54,7 @@ class ApproachAnalyzer(Analyzer):
         result = AnalysisResult()
 
         glideslope_deg = (phase_params or {}).get(PARAM_GLIDESLOPE_DEG)
-        threshold_instant, threshold_avg, threshold_2000 = _get_thresholds(glideslope_deg)
+        threshold_instant, threshold_avg, threshold_2000, threshold_1000_avg = _get_thresholds(glideslope_deg)
 
         last_min_start = end_time + timedelta(seconds=-60)
 
@@ -78,11 +79,11 @@ class ApproachAnalyzer(Analyzer):
                         if event_has_agl_altitude(e):
                             agl = get_agl_altitude_as_int(e)
 
-                            if agl < 1000:
+                            if agl < 500:
                                 if vs < threshold_instant:
                                     result.issues.append(
                                         AnalysisIssue(
-                                            code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
+                                            code=Issues.ISSUE_APP_HIGH_VS_BELOW_500AGL,
                                             timestamp=e.timestamp,
                                             value=f"{vs}|{agl}|{threshold_instant}"
                                         )
@@ -90,9 +91,26 @@ class ApproachAnalyzer(Analyzer):
                                 elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < threshold_avg:
                                     result.issues.append(
                                         AnalysisIssue(
-                                            code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL,
+                                            code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_500AGL,
                                             timestamp=e.timestamp,
                                             value=f"{get_vs_last3_avg_as_int(e)}|{agl}|{threshold_avg}"
+                                        )
+                                    )
+                            elif agl < 1000:
+                                if vs < threshold_2000:
+                                    result.issues.append(
+                                        AnalysisIssue(
+                                            code=Issues.ISSUE_APP_HIGH_VS_BELOW_1000AGL,
+                                            timestamp=e.timestamp,
+                                            value=f"{vs}|{agl}|{threshold_2000}"
+                                        )
+                                    )
+                                elif event_has_vs_last3_avg(e) and get_vs_last3_avg_as_int(e) < threshold_1000_avg:
+                                    result.issues.append(
+                                        AnalysisIssue(
+                                            code=Issues.ISSUE_APP_HIGH_VS_AVG_BELOW_1000AGL,
+                                            timestamp=e.timestamp,
+                                            value=f"{get_vs_last3_avg_as_int(e)}|{agl}|{threshold_1000_avg}"
                                         )
                                     )
                             elif agl < 2000 and vs < threshold_2000:

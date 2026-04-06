@@ -32,7 +32,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "3215"),
                 ("distance_nm", "348")
             ],
-            ['AppHighVsBelow1000AGL'],
+            [],
         ),
         (
             "UHPT-UHMA-SF34.json",
@@ -85,7 +85,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "72"),
                 ("distance_nm", "139")
             ],
-            ['AppHighVsBelow1000AGL'],
+            ['AppHighVsBelow500AGL'],
         ),
         (
             "LPMA-Circuits-737.json",
@@ -95,7 +95,7 @@ DATA_DIR = Path("data")
                 ("fuel_consumed_kg", "1300"),
                 ("distance_nm", "77")
             ],
-            ['LandingHardFpm', 'AppHighVsBelow1000AGL'],
+            ['LandingHardFpm', 'AppHighVsBelow500AGL'],
         ),
         (
             "LEPP-LEMG-737.json",
@@ -122,6 +122,7 @@ DATA_DIR = Path("data")
                 'LandingHardFpm',
                 'TaxiOverspeed',
                 'AppHighVsBelow1000AGL',
+                'AppHighVsBelow500AGL',
                 'Refueling'
             ],
         ),
@@ -160,8 +161,6 @@ DATA_DIR = Path("data")
             ],
             [
                 'TaxiOverspeed',
-                'AppHighVsBelow1000AGL',
-                'AppHighVsAvgBelow1000AGL',
                 'AirborneEngineStopped',
                 'AirborneAllEnginesStopped',
                 'LandingAllEnginesStopped'
