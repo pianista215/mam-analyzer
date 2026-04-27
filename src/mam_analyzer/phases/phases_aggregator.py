@@ -238,7 +238,7 @@ class PhasesAggregator:
         touch_phase: FlightPhase,
         prev_phase: Optional[FlightPhase] = None,
         phase_params: Optional[Dict[str, Any]] = None,
-    )-> FlightPhase:
+    ) -> Optional[FlightPhase]:
         if touch_phase.name not in {"final_landing", "touch_go"}:
             raise RuntimeError("Final landing or touch_go expected to generate approach")
 
@@ -251,7 +251,10 @@ class PhasesAggregator:
         else:
             app_start = proposed_start
 
-        app_end = touch_phase.start +timedelta(microseconds=-1)
+        app_end = touch_phase.start + timedelta(microseconds=-1)
+
+        if (app_end - app_start).total_seconds() < 30:
+            return None
 
         app_phase = self.__generate_phase(events, "approach", app_start, app_end, self.approach_analyzer, phase_params=phase_params)
         return app_phase
@@ -388,8 +391,8 @@ class PhasesAggregator:
 
         cruise_detector, cruise_analyzer = self.detectors["cruise"]
         
-        if len(_touch_go_phases) == 0:   
-            
+        if len(_touch_go_phases) == 0:
+
             found_cruise = cruise_detector.detect(
                 events,
                 _takeoff_end + timedelta(microseconds=1),
@@ -407,18 +410,20 @@ class PhasesAggregator:
             for _touch_go in _touch_go_phases:
 
                 _touch_go_app = self._generate_approach(events, _touch_go, result[-1] if result else None)
-                
+
+                cruise_end_limit = _touch_go_app.start if _touch_go_app else _touch_go.start
                 found_cruise = cruise_detector.detect(
                     events,
                     look_for_cruise_start,
-                    _touch_go_app.start + timedelta(microseconds=-1)
+                    cruise_end_limit + timedelta(microseconds=-1)
                 )
                 if found_cruise is not None:
                     cruise_start, cruise_end = found_cruise
                     cruise_phase = self.__generate_phase(events, "cruise", cruise_start, cruise_end, cruise_analyzer)
                     result.append(cruise_phase)
 
-                result.append(_touch_go_app)
+                if _touch_go_app is not None:
+                    result.append(_touch_go_app)
                 result.append(_touch_go)
                 look_for_cruise_start = _touch_go.end + timedelta(microseconds=1)
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2026-04-27
+
+- Fixed crash when a touch-and-go approach window is less than 30 seconds (caused by consecutive touch-and-goes with no time between them): the approach phase is now silently skipped in that case
+
 ## [1.6.0] - 2026-04-06
 
 - Added two-band vertical speed monitoring below 1000 ft AGL during approach:
