@@ -3,6 +3,7 @@ import json
 import os
 import pytest
 
+from mam_analyzer.models.flight_context import AirportContext, FlightContext, Runway, RunwayEnd
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.analyzers.taxi import (
     TaxiAnalyzer,
@@ -12,6 +13,7 @@ from mam_analyzer.phases.analyzers.taxi import (
 )
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
+from tests.runway_data import make_flight_context
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -365,6 +367,266 @@ def test_post_landing_no_location_data_overspeed_reported(analyzer):
 
 
 # ---------------------------------------------------------------------------
+# Runway-polygon exemption (context-based)
+# ---------------------------------------------------------------------------
+#
+# Test runway: N/S, from (40.0, -3.0) [south end "01"] to (40.01, -3.0) [north
+# end "19"], 45 m wide, ~1111 m long.
+#
+# Positions used:
+#   ON_RUNWAY  = (40.005, -3.0)    → centreline midpoint, always inside
+#   OFF_RUNWAY = (40.005, -3.005)  → ~400 m from centreline, always outside
+#
+# A second parallel runway (E/W, "10/28") is placed well away so the two
+# footprints never overlap.
+
+_RWY_NS = Runway(
+    designators="01/19",
+    width_m=45,
+    length_m=1111,
+    ends=[
+        RunwayEnd(designator="01", latitude=40.0,  longitude=-3.0,
+                  true_heading_deg=0,   displaced_threshold_m=0, stopway_m=0),
+        RunwayEnd(designator="19", latitude=40.01, longitude=-3.0,
+                  true_heading_deg=180, displaced_threshold_m=0, stopway_m=0),
+    ],
+)
+
+_RWY_EW = Runway(
+    designators="10/28",
+    width_m=45,
+    length_m=900,
+    ends=[
+        RunwayEnd(designator="10", latitude=40.02, longitude=-3.01,
+                  true_heading_deg=90,  displaced_threshold_m=0, stopway_m=0),
+        RunwayEnd(designator="28", latitude=40.02, longitude=-3.002,
+                  true_heading_deg=270, displaced_threshold_m=0, stopway_m=0),
+    ],
+)
+
+_LAT_ON_RUNWAY  = 40.005   # centreline midpoint of _RWY_NS
+_LON_ON_RUNWAY  = -3.0
+_LAT_OFF_RUNWAY = 40.005   # same latitude, well off to the side
+_LON_OFF_RUNWAY = -3.005
+
+
+def _make_airport(runways):
+    return AirportContext(icao="TEST", runways=runways)
+
+
+def _make_context(departure_runways=None, landing_runways=None):
+    dep = _make_airport(departure_runways or [])
+    land = _make_airport(landing_runways or [])
+    return FlightContext(departure=dep, destination=land, landing=land)
+
+
+def test_runway_polygon_pre_takeoff_on_runway_not_reported(analyzer):
+    """Overspeed while physically on the departure runway → exempt."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),   # on runway, GS > 30
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    ctx = _make_context(departure_runways=[_RWY_NS])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 0
+
+
+def test_runway_polygon_pre_takeoff_off_runway_reported(analyzer):
+    """Overspeed off any runway at the departure airport → reported."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_ON_RUNWAY, Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),  # off runway, GS > 30
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_ON_RUNWAY, Longitude=_LON_ON_RUNWAY),
+    ]
+    ctx = _make_context(departure_runways=[_RWY_NS])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 1
+    assert result.issues[0].code == Issues.ISSUE_TAXI_OVERSPEED
+    assert result.issues[0].value == 35
+
+
+def test_runway_polygon_pre_takeoff_no_context_reported(analyzer):
+    """Without context there is no runway data → overspeed on the runway position is reported."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=None,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 1
+    assert result.issues[0].value == 35
+
+
+def test_runway_polygon_pre_takeoff_second_runway_exempt(analyzer):
+    """Overspeed on a parallel runway (not the active one) → also exempt."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    # Midpoint of _RWY_EW
+    lat_rwy2 = (_RWY_EW.ends[0].latitude  + _RWY_EW.ends[1].latitude)  / 2
+    lon_rwy2 = (_RWY_EW.ends[0].longitude + _RWY_EW.ends[1].longitude) / 2
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=lat_rwy2, Longitude=lon_rwy2),  # on second runway
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    ctx = _make_context(departure_runways=[_RWY_NS, _RWY_EW])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 0
+
+
+def test_runway_polygon_pre_takeoff_uses_departure_not_landing(analyzer):
+    """The pre-takeoff check uses the departure airport runways, not the landing airport."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    # _RWY_NS is only at the landing airport, departure has no runways
+    ctx = _make_context(departure_runways=[], landing_runways=[_RWY_NS])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 1
+
+
+def test_runway_polygon_post_landing_on_runway_not_reported(analyzer):
+    """Overspeed while physically on the landing runway → exempt."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    ctx = _make_context(landing_runways=[_RWY_NS])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
+    )
+
+    assert len(result.issues) == 0
+
+
+def test_runway_polygon_post_landing_uses_landing_not_departure(analyzer):
+    """The post-landing check uses the landing airport runways, not the departure airport."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    # _RWY_NS only at departure, landing has no runways
+    ctx = _make_context(departure_runways=[_RWY_NS], landing_runways=[])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
+    )
+
+    assert len(result.issues) == 1
+
+
+def test_runway_polygon_post_landing_uses_destination_when_no_landing(analyzer):
+    """When context.landing is None, the destination airport is used instead."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35,
+                   Latitude=_LAT_ON_RUNWAY,  Longitude=_LON_ON_RUNWAY),
+        make_event(base + timedelta(seconds=20), onGround=True, GSKnots=20,
+                   Latitude=_LAT_OFF_RUNWAY, Longitude=_LON_OFF_RUNWAY),
+    ]
+    dep = _make_airport([])
+    dest = _make_airport([_RWY_NS])
+    ctx = FlightContext(departure=dep, destination=dest, landing=None)
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
+    )
+
+    assert len(result.issues) == 0
+
+
+def test_runway_polygon_event_without_location_not_exempt(analyzer):
+    """An event with GS > 30 but no lat/lon cannot be checked against the runway polygon
+    and is only exempt if it falls within the distance-based zone."""
+    base = datetime(2025, 7, 6, 12, 0, 0)
+    # Single event: overspeed, no position → not in distance-based zone either
+    # (distance zone needs at least 2 location events to be computed)
+    events = [
+        make_event(base,                       onGround=True, GSKnots=35),
+        make_event(base + timedelta(seconds=10), onGround=True, GSKnots=35),
+    ]
+    ctx = _make_context(departure_runways=[_RWY_NS])
+
+    result = analyzer.analyze(
+        events, events[0].timestamp, events[-1].timestamp,
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
+    )
+
+    assert len(result.issues) == 2
+
+
+# ---------------------------------------------------------------------------
 # Integration-style tests against real flight data files
 # ---------------------------------------------------------------------------
 
@@ -433,3 +695,48 @@ def test_final_landing_analyzer_from_real_files(filename, taxi_start, taxi_end, 
     for i in range(len(expected_overspeed_taxi)):
         assert result.issues[i].code == Issues.ISSUE_TAXI_OVERSPEED
         assert result.issues[i].value == expected_overspeed_taxi[i]
+
+
+# ---------------------------------------------------------------------------
+# Integration tests: runway-polygon exemption against real flight data files
+# These cases require airport runway context to suppress the false positive.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("filename, taxi_start, taxi_end, taxi_position, departure_icao, landing_icao", [
+    # Bad-backtrack on the same runway: aircraft taxied on the runway after landing
+    # at FZAA; without runway-polygon exemption a spurious TAXI_OVERSPEED would fire.
+    (
+        "bad_backtrack_same_runway.json",
+        "2026-04-29T20:44:46.015966", "2026-04-29T20:48:30.018146",
+        TAXI_POST_LANDING, "HKJK", "FZAA",
+    ),
+    (
+        "taxi_other_runway.json",
+        "2026-05-03T14:32:47.252341", "2026-05-03T14:39:17.261637",
+        TAXI_POST_LANDING, "HUEN", "HAAB",
+    ),
+])
+def test_runway_polygon_suppresses_overspeed_real_files(
+    filename, taxi_start, taxi_end, taxi_position, departure_icao, landing_icao, analyzer
+):
+    """Overspeed while taxiing on a runway must not be reported when runway context is available."""
+    path = os.path.join("data", filename)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    raw_events = data["Events"]
+    events = [FlightEvent.from_json(e) for e in raw_events]
+    ctx = make_flight_context(departure_icao, landing_icao)
+
+    result = analyzer.analyze(
+        events,
+        parse_timestamp(taxi_start),
+        parse_timestamp(taxi_end),
+        context=ctx,
+        phase_params={PARAM_TAXI_POSITION: taxi_position},
+    )
+
+    assert len(result.issues) == 0, (
+        f"Expected no overspeed issues for {filename} ({taxi_position}), "
+        f"got {len(result.issues)}: {[(i.value, i.timestamp) for i in result.issues]}"
+    )

@@ -178,3 +178,26 @@ def point_inside_runway(lat: float, lon: float, polygon, utm_zone=None) -> bool:
     """Check whether a lat/lon point falls inside a runway polygon (UTM)."""
     x, y = latlon_to_xy(lat, lon, utm_zone)
     return polygon.covers(Point(x, y))
+
+
+def build_all_runway_polygons(airport: Optional[AirportContext]) -> List[Tuple]:
+    """Pre-compute (polygon, utm_zone) for every runway at *airport*.
+
+    Returns an empty list when airport is None or has no runway data, so the
+    caller can unconditionally iterate over the result.
+    """
+    if airport is None or not airport.runways:
+        return []
+    return [build_runway_polygon(rwy) for rwy in airport.runways]
+
+
+def point_on_any_runway(lat: float, lon: float, runway_polygons: List[Tuple]) -> bool:
+    """Return True if the point falls inside any of the pre-computed runway polygons.
+
+    *runway_polygons* is a list of (polygon, utm_zone) as returned by
+    :func:`build_all_runway_polygons`.
+    """
+    for polygon, utm_zone in runway_polygons:
+        if point_inside_runway(lat, lon, polygon, utm_zone):
+            return True
+    return False

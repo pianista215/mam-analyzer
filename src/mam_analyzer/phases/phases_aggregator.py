@@ -125,6 +125,7 @@ class PhasesAggregator:
                 start,
                 end,
                 self.taxi_analyzer,
+                context=context,
                 phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
             )
             result.append(final_taxi)
@@ -137,6 +138,7 @@ class PhasesAggregator:
                     start,
                     backtrack_start + timedelta(microseconds=-1),
                     self.taxi_analyzer,
+                    context=context,
                     phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
                 )
                 result.append(final_taxi)
@@ -146,7 +148,7 @@ class PhasesAggregator:
                 "backtrack",
                 backtrack_start,
                 end,
-                None
+                None,
             )
             result.append(backtrack)
 
@@ -184,6 +186,7 @@ class PhasesAggregator:
                 start,
                 end,
                 self.taxi_analyzer,
+                context=context,
                 phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
             )
             result.append(final_taxi)
@@ -204,6 +207,7 @@ class PhasesAggregator:
                     backtrack_end + timedelta(microseconds=1),
                     end,
                     self.taxi_analyzer,
+                    context=context,
                     phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
                 )
                 result.append(final_taxi)
