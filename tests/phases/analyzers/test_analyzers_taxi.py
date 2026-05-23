@@ -217,7 +217,8 @@ def test_pre_takeoff_overspeed_mixed_only_outside_reported(analyzer):
 
 
 def test_pre_takeoff_entire_taxi_under_100m_all_exempt(analyzer):
-    """Taxi shorter than 100 m → every event is in the exempt zone."""
+    """Taxi shorter than 100 m → the aircraft never left the runway vicinity,
+    so every event is in the exempt zone."""
     base = datetime(2025, 7, 6, 12, 0, 0)
     # 4 events × ~30 m = ~90 m total; all should be exempt
     events = _make_taxi_events(base, 4, _STEP_30M, {0: 35, 1: 40, 2: 38, 3: 45})
