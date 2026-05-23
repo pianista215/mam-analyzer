@@ -3,10 +3,12 @@ from shapely.geometry import Point
 
 from mam_analyzer.models.flight_context import AirportContext, Runway, RunwayEnd
 from mam_analyzer.utils.runway import (
+    build_all_runway_polygons,
     build_runway_polygon,
     build_runway_safe_zone,
     match_runway_end,
     point_inside_runway,
+    point_on_any_runway,
 )
 from mam_analyzer.utils.units import latlon_to_xy
 
@@ -198,3 +200,77 @@ class TestPointInsideRunway:
 
         assert point_inside_runway(rwy.ends[0].latitude, rwy.ends[0].longitude, poly, utm_zone) is True
         assert point_inside_runway(rwy.ends[1].latitude, rwy.ends[1].longitude, poly, utm_zone) is True
+
+
+# === build_all_runway_polygons ===
+
+class TestBuildAllRunwayPolygons:
+    def test_none_airport_returns_empty_list(self):
+        assert build_all_runway_polygons(None) == []
+
+    def test_airport_without_runways_returns_empty_list(self):
+        airport = AirportContext(icao="TEST", runways=[])
+        assert build_all_runway_polygons(airport) == []
+
+    def test_single_runway_returns_one_polygon(self):
+        airport = AirportContext(icao="TEST", runways=[_make_runway()])
+        result = build_all_runway_polygons(airport)
+        assert len(result) == 1
+        polygon, utm_zone = result[0]
+        assert polygon is not None
+        assert utm_zone is not None
+
+    def test_two_runways_return_two_polygons(self):
+        rwy1 = _make_runway()
+        rwy2 = _make_runway(
+            lat1=39.5600, lon1=2.7500,
+            lat2=39.5450, lon2=2.7400,
+            heading1=244, heading2=64,
+            designator1="24R", designator2="06L",
+        )
+        airport = AirportContext(icao="TEST", runways=[rwy1, rwy2])
+        result = build_all_runway_polygons(airport)
+        assert len(result) == 2
+
+
+# === point_on_any_runway ===
+
+class TestPointOnAnyRunway:
+    def _airport_with_two_runways(self):
+        rwy1 = _make_runway(
+            lat1=39.5517, lon1=2.7388,
+            lat2=39.5365, lon2=2.7279,
+            designator1="24L", designator2="06R",
+        )
+        # Second runway parallel and offset to the north
+        rwy2 = _make_runway(
+            lat1=39.5600, lon1=2.7500,
+            lat2=39.5450, lon2=2.7400,
+            designator1="24R", designator2="06L",
+        )
+        return AirportContext(icao="TEST", runways=[rwy1, rwy2])
+
+    def test_point_on_first_runway_returns_true(self):
+        airport = self._airport_with_two_runways()
+        polygons = build_all_runway_polygons(airport)
+        rwy1 = airport.runways[0]
+        mid_lat = (rwy1.ends[0].latitude + rwy1.ends[1].latitude) / 2
+        mid_lon = (rwy1.ends[0].longitude + rwy1.ends[1].longitude) / 2
+        assert point_on_any_runway(mid_lat, mid_lon, polygons) is True
+
+    def test_point_on_second_runway_returns_true(self):
+        airport = self._airport_with_two_runways()
+        polygons = build_all_runway_polygons(airport)
+        rwy2 = airport.runways[1]
+        mid_lat = (rwy2.ends[0].latitude + rwy2.ends[1].latitude) / 2
+        mid_lon = (rwy2.ends[0].longitude + rwy2.ends[1].longitude) / 2
+        assert point_on_any_runway(mid_lat, mid_lon, polygons) is True
+
+    def test_point_off_all_runways_returns_false(self):
+        airport = self._airport_with_two_runways()
+        polygons = build_all_runway_polygons(airport)
+        # Far away point
+        assert point_on_any_runway(40.0, 3.0, polygons) is False
+
+    def test_empty_polygon_list_returns_false(self):
+        assert point_on_any_runway(39.55, 2.73, []) is False

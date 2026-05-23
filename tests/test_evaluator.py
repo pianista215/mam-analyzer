@@ -160,7 +160,6 @@ DATA_DIR = Path("data")
                 ("distance_nm", "4")
             ],
             [
-                'TaxiOverspeed',
                 'AirborneEngineStopped',
                 'AirborneAllEnginesStopped',
                 'LandingAllEnginesStopped'

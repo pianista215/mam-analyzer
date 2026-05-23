@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0] - 2026-05-23
+
+- Taxi overspeed check now exempts the last ~100 m before runway entry (pre-takeoff taxi) and the first ~100 m after runway exit (post-landing taxi), to avoid false positives when the aircraft is entering or leaving the runway
+- Exemption is computed from GPS coordinates using cumulative haversine distance; falls back to no exemption if location data is unavailable
+- Taxi overspeed check now also exempts any event whose position falls inside a runway polygon of the relevant airport (departure for pre-takeoff, landing/destination for post-landing), suppressing false positives when taxiing across or along a runway (including parallel runways) or when the backtrack detector misfires
+- Added `build_all_runway_polygons` and `point_on_any_runway` utilities to `utils/runway.py`
+
 ## [1.6.1] - 2026-04-27
 
 - Fixed crash when a touch-and-go approach window is less than 30 seconds (caused by consecutive touch-and-goes with no time between them): the approach phase is now silently skipped in that case

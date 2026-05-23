@@ -11,7 +11,12 @@ from mam_analyzer.phases.analyzers.cruise import CruiseAnalyzer
 from mam_analyzer.phases.analyzers.final_landing import FinalLandingAnalyzer
 from mam_analyzer.phases.analyzers.result import AnalysisResult
 from mam_analyzer.phases.analyzers.takeoff import TakeoffAnalyzer
-from mam_analyzer.phases.analyzers.taxi import TaxiAnalyzer
+from mam_analyzer.phases.analyzers.taxi import (
+    TaxiAnalyzer,
+    PARAM_TAXI_POSITION,
+    TAXI_PRE_TAKEOFF,
+    TAXI_POST_LANDING,
+)
 from mam_analyzer.phases.analyzers.touch_go import TouchAndGoAnalyzer
 from mam_analyzer.phases.detectors.backtrack import BacktrackDetector
 from mam_analyzer.phases.detectors.cruise import CruiseDetector
@@ -115,31 +120,35 @@ class PhasesAggregator:
 
         if backtrack_detected is None:
             final_taxi = self.__generate_phase(
-                events, 
-                "taxi", 
-                start, 
-                end, 
-                self.taxi_analyzer
+                events,
+                "taxi",
+                start,
+                end,
+                self.taxi_analyzer,
+                context=context,
+                phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
             )
             result.append(final_taxi)
         else:
             backtrack_start, backtrack_end = backtrack_detected
             if backtrack_start != start:
                 final_taxi = self.__generate_phase(
-                    events, 
-                    "taxi", 
-                    start, 
-                    backtrack_start + timedelta(microseconds=-1), 
-                    self.taxi_analyzer
+                    events,
+                    "taxi",
+                    start,
+                    backtrack_start + timedelta(microseconds=-1),
+                    self.taxi_analyzer,
+                    context=context,
+                    phase_params={PARAM_TAXI_POSITION: TAXI_PRE_TAKEOFF},
                 )
                 result.append(final_taxi)
 
             backtrack = self.__generate_phase(
-                events, 
-                "backtrack", 
-                backtrack_start, 
-                end, 
-                None
+                events,
+                "backtrack",
+                backtrack_start,
+                end,
+                None,
             )
             result.append(backtrack)
 
@@ -172,34 +181,38 @@ class PhasesAggregator:
 
         if backtrack_detected is None:
             final_taxi = self.__generate_phase(
-                events, 
-                "taxi", 
-                start, 
-                end, 
-                self.taxi_analyzer
+                events,
+                "taxi",
+                start,
+                end,
+                self.taxi_analyzer,
+                context=context,
+                phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
             )
             result.append(final_taxi)
         else:
             backtrack_start, backtrack_end = backtrack_detected
             backtrack = self.__generate_phase(
-                events, 
-                "backtrack", 
-                backtrack_start, 
-                backtrack_end, 
-                None
+                events,
+                "backtrack",
+                backtrack_start,
+                backtrack_end,
+                None,
             )
             result.append(backtrack)
             if backtrack_end != end:
                 final_taxi = self.__generate_phase(
-                    events, 
-                    "taxi", 
-                    backtrack_end + timedelta(microseconds=1), 
-                    end, 
-                    self.taxi_analyzer
+                    events,
+                    "taxi",
+                    backtrack_end + timedelta(microseconds=1),
+                    end,
+                    self.taxi_analyzer,
+                    context=context,
+                    phase_params={PARAM_TAXI_POSITION: TAXI_POST_LANDING},
                 )
                 result.append(final_taxi)
 
-        return result        
+        return result
 
 
         
