@@ -303,6 +303,15 @@ def extract_segmented_coordinates(events: List[FlightEvent], phases: List[Flight
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate flight visualizations.")
+    parser.add_argument(
+        "--skip-context",
+        action="store_true",
+        help="Run without airport/runway context (as if runway geometry were unknown).",
+    )
+    args = parser.parse_args()
+
     data_dir = Path("data")
     output_dir = Path("/tmp")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -315,7 +324,7 @@ def main():
         raw_events = raw_json["Events"]
         events = [FlightEvent.from_json(e) for e in raw_events]
 
-        ctx = get_flight_context(json_file.name)
+        ctx = None if args.skip_context else get_flight_context(json_file.name)
         aggregator = PhasesAggregator()
         phases = aggregator.identify_phases(events, context=ctx)
 
