@@ -91,10 +91,13 @@ def test_backtrack_from_takeoff_without_context(
 
     result = detector.detect_from_takeoff(taxi, takeoff, context=None)
 
-    assert result is not None, f"Backtrack not detected in {filename}"
-    start, end = result
-    assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
-    assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    if expected_start != "None" and expected_end != "None":
+        assert result is not None, f"Backtrack not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
+        assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    else:
+        assert result is None, f"Backtrack should not have been detected in {filename}"
 
 
 # =============================================================================
@@ -102,8 +105,6 @@ def test_backtrack_from_takeoff_without_context(
 #
 # When real departure/landing ICAOs are filled in, the detector uses the actual
 # runway polygon and expected values may differ from the no-context case.
-# For now, departure/landing are "XXXX" (no runway data); update expected values
-# when real ICAOs are set.
 # =============================================================================
 
 @pytest.mark.parametrize(
@@ -136,38 +137,38 @@ def test_backtrack_from_takeoff_without_context(
         ),
         (
             "backtrack_7.json", "LEPP", "LEVX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-03-19T22:09:36.851354", "2026-03-19T22:11:28.853752",
+            "2026-03-19T22:06:28.851052", "2026-03-19T22:09:36.851353",
         ),
         (
             "backtrack_8.json", "CYZF", "CYHY",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-04-20T22:55:01.058004", "2026-04-20T22:55:41.057312",
+            "None", "None",
         ),
         (
             "backtrack_9.json", "HKJK", "FZAA",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-04-29T17:40:54.011015", "2026-04-29T17:43:20.012574",
+            "None", "None",
         ),
         (
             "backtrack_10.json", "CYDL", "PAWG",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-20T00:49:28.220448", "2026-05-20T00:53:10.217650",
+            "None", "None",
         ),
         (
             "backtrack_11.json", "LEGE", "LEBB",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-21T23:19:42.714492", "2026-05-21T23:20:32.711203",
+            "None", "None",
         ),
         (
             "backtrack_12.json", "CYQH", "CYDL",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-22T12:33:22.011199", "2026-05-22T12:35:36.001005",
+            "None", "None",
         ),
         (
             "backtrack_13.json", "CYDL", "PAWG",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-24T22:22:58.743970", "2026-05-24T22:23:44.763895",
+            "None", "None",
         ),
     ],
 )
@@ -183,10 +184,13 @@ def test_backtrack_from_takeoff_with_runways(
 
     result = detector.detect_from_takeoff(taxi, takeoff, ctx)
 
-    assert result is not None, f"Backtrack not detected in {filename}"
-    start, end = result
-    assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
-    assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    if expected_start != "None" and expected_end != "None":
+        assert result is not None, f"Backtrack not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
+        assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    else:
+        assert result is None, f"Backtrack should not have been detected in {filename}"
 
 
 # =============================================================================
@@ -221,10 +225,13 @@ def test_backtrack_from_landing_without_context(
 
     result = detector.detect_from_landing(taxi, landing, context=None)
 
-    assert result is not None, f"Backtrack not detected in {filename}"
-    start, end = result
-    assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
-    assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    if expected_start != "None" and expected_end != "None":
+        assert result is not None, f"Backtrack not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
+        assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    else:
+        assert result is None, f"Backtrack should not have been detected in {filename}"
 
 
 # =============================================================================
@@ -248,38 +255,38 @@ def test_backtrack_from_landing_without_context(
         ),
         (
             "backtrack_7.json", "LEPP", "LEVX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-03-19T23:15:30.854274", "2026-03-19T23:16:14.850904",
+            "2026-03-1923:16:14.850905", "XXXXXXXXXXX",
         ),
         (
             "backtrack_8.json", "CYZF", "CYHY",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-04-20T23:56:24.995867", "2026-04-20T23:56:42.983436",
+            "2026-04-20T23:56:42.983437", "XXXXXXXXXXX",
         ),
         (
             "backtrack_9.json", "HKJK", "FZAA",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-04-29T20:42:12.008134", "2026-04-29T20:44:14.014454",
+            "2026-04-29T20:44:14.014455", "XXXXXXXXXXX",
         ),
         (
             "backtrack_10.json", "CYDL", "PAWG",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-20T01:55:14.205334", "2026-05-20T01:55:38.210097",
+            "2026-05-20T01:55:38.210098", "XXXXXXXXXXX",
         ),
         (
             "backtrack_11.json", "LEGE", "LEBB",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-22T00:31:30.698606", "2026-05-22T00:31:44.710527",
+            "2026-05-22T00:31:44.710528", "XXXXXXXXXXX",
         ),
         (
             "backtrack_12.json", "CYQH", "CYDL",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-22T13:15:56.021633", "2026-05-22T13:17:30.007264",
+            "2026-05-22T13:17:30.007265", "XXXXXXXXXXX",
         ),
         (
             "backtrack_13.json", "CYDL", "PAWG",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
-            "XXXXXXXXXXX", "XXXXXXXXXXX",
+            "2026-05-24T23:38:11.097724", "2026-05-24T23:38:31.097996",
+            "2026-05-24T23:38:31.097997", "XXXXXXXXXXX",
         ),
     ],
 )
@@ -295,7 +302,10 @@ def test_backtrack_from_landing_with_runways(
 
     result = detector.detect_from_landing(taxi, landing_phase, ctx)
 
-    assert result is not None, f"Backtrack not detected in {filename}"
-    start, end = result
-    assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
-    assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    if expected_start != "None" and expected_end != "None":
+        assert result is not None, f"Backtrack not detected in {filename}"
+        start, end = result
+        assert start == parse_timestamp(expected_start), f"Wrong backtrack start in {filename}: got {start}"
+        assert end == parse_timestamp(expected_end), f"Wrong backtrack end in {filename}: got {end}"
+    else:
+        assert result is None, f"Backtrack should not have been detected in {filename}"
