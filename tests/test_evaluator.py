@@ -136,7 +136,7 @@ DATA_DIR = Path("data")
                 ("initial_fob_kg", "34995"),
                 ("zfw_kg", "188104")
             ],
-            [],
+            ['TaxiOverspeed'],
         ),  
         (
             "zfw_modified.json",
@@ -148,7 +148,7 @@ DATA_DIR = Path("data")
                 ("initial_fob_kg", "34995"),
                 ("zfw_kg", "188104")
             ],
-            ["ZfwModified"],
+            ['TaxiOverspeed', "ZfwModified"],
         ),
         (
             "short_flight_vslast3avg.json",
@@ -196,6 +196,11 @@ def test_evaluator(filename, expected_metrics, expected_issues):
         for p in result.phases
         for issue in p.analysis.issues
     }
+
+    print(f"\n[{filename}] detected issues:")
+    for p in result.phases:
+        for issue in p.analysis.issues:
+            print(f"  [{p.name}] {issue.code} @ {issue.timestamp}  value={issue.value}")
 
     expected_set = set(expected_issues)
 

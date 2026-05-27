@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0] - 2026-05-27
+
+### Backtrack detector rewrite
+
+- **Segment-based corridor matching**: the detector now tests line segments between consecutive GPS points against the runway safe zone instead of individual GPS points. This fixes cases where sparse GPS sampling caused all points to fall just outside the runway polygon even though the aircraft was clearly on the runway
+- **Direction filtering**: only segments whose movement vector is within 30° of the backtrack direction (opposite to the takeoff/landing run vector) are counted as backtrack candidates. This eliminates false positives from perpendicular runway crossings
+- **Last-significant-segment logic**: instead of stopping at the first exit from the safe zone, the detector collects all qualifying runs, filters them by a minimum length threshold, and returns the *last* qualifying run. This makes detection robust against brief GPS excursions outside the corridor and prevents early runway crossings from masking the real backtrack
+- **`takeoff_vector` / `landing_vector` now actively used**: both vectors were previously computed but unused; they now drive the backtrack direction check
+- **`_vector_magnitude` helper**: extracted the repeated `sqrt(x² + y²)` pattern into a reusable private method used across `extend_line`, `angle_between_vectors` and `_find_last_qualifying_segment`
+- **New integration tests** (`tests/phases/detectors/test_phases_backtrack.py`): isolated detector tests for `detect_from_takeoff` and `detect_from_landing` covering positive and negative cases for backtrack files 1–13, with and without runway context, independent of other detectors
+- **New airport runway data** added to `tests/runway_data.py`: LEVX, CYZF, CYHY, CYDL, PAWG, LEGE, CYQH
+
 ## [1.7.0] - 2026-05-23
 
 - Taxi overspeed check now exempts the last ~100 m before runway entry (pre-takeoff taxi) and the first ~100 m after runway exit (post-landing taxi), to avoid false positives when the aircraft is entering or leaving the runway
