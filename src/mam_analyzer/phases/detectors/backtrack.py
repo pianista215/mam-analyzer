@@ -2,7 +2,7 @@ from datetime import datetime
 from math import sqrt, acos
 from shapely.geometry import LineString, MultiLineString, Point
 from shapely.ops import unary_union
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from mam_analyzer.models.flight_context import FlightContext
 from mam_analyzer.models.flight_events import FlightEvent
@@ -16,35 +16,94 @@ from mam_analyzer.utils.units import latlon_to_xy
 
 class BacktrackDetector():
 
-    BACKTRACK_THRESHOLD_METERS = 150      # min length required inside corridor to consider backtrack
-    BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS = 60  # lower threshold when using real runway polygon
-    WIDTH_CORRIDOR = 30           # width (meters) of allowed takeoff/landing corridor
-    TURN_ZONE_RADIUS = 100                # tolerance near runway threshold
-    VECTOR_ANGLE_TOLERANCE_DEGREES = 3   # max angle deviation allowed
+    BACKTRACK_THRESHOLD_METERS = 150             # min segment length (no runway polygon)
+    BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS = 60  # min segment length (with runway polygon)
+    WIDTH_CORRIDOR = 30                          # half-width (m) of estimated corridor
+    TURN_ZONE_RADIUS = 100                       # tolerance circle at runway ends
+    BACKTRACK_DIRECTION_TOLERANCE_DEGREES = 30   # max angle from backtrack direction
     EXTEND_LINE_METERS = 2000
+
+    def _vector_magnitude(self, v: Tuple[float, float]) -> float:
+        """Return the magnitude (length) of a 2D vector."""
+        return sqrt(v[0] ** 2 + v[1] ** 2)
 
     def extend_line(self, p1, p2, length):
         """Extend a line in both directions by 'length' meters."""
         (x1, y1), (x2, y2) = p1, p2
         dx = x2 - x1
         dy = y2 - y1
-        L = sqrt(dx*dx + dy*dy)
+        L = self._vector_magnitude((dx, dy))
         if L == 0:
-            return LineString([p1, p2])  # avoid zero division
-        ux, uy = dx / L, dy / L  # unit vector
+            return LineString([p1, p2])
+        ux, uy = dx / L, dy / L
         p1_ext = (x1 - ux * length, y1 - uy * length)
         p2_ext = (x2 + ux * length, y2 + uy * length)
         return LineString([p1_ext, p2_ext])
 
     def angle_between_vectors(self, v1, v2):
         """Compute angle (in degrees) between two 2D vectors."""
-        dot = v1[0]*v2[0] + v1[1]*v2[1]
-        mag1 = sqrt(v1[0]**2 + v1[1]**2)
-        mag2 = sqrt(v2[0]**2 + v2[1]**2)
+        dot = v1[0] * v2[0] + v1[1] * v2[1]
+        mag1 = self._vector_magnitude(v1)
+        mag2 = self._vector_magnitude(v2)
         if mag1 == 0 or mag2 == 0:
             return 0
-        cos_theta = max(min(dot / (mag1 * mag2), 1), -1)  # numerical safety
+        cos_theta = max(min(dot / (mag1 * mag2), 1), -1)
         return acos(cos_theta) * 180.0 / 3.14159265
+
+    def _find_last_qualifying_segment(
+        self,
+        taxi_events_xy: List[Tuple],
+        safe_zone,
+        backtrack_direction: Tuple[float, float],
+        threshold: float,
+    ) -> Optional[Tuple[FlightEvent, FlightEvent]]:
+        """Find the last consecutive run of taxi movements that are:
+        - intersecting the safe zone (runway corridor or turn zone), and
+        - moving within BACKTRACK_DIRECTION_TOLERANCE_DEGREES of backtrack_direction.
+
+        Works with line segments between consecutive GPS points rather than
+        individual points: GPS sampling can be sparse enough that points land
+        just outside the runway polygon while the interpolated path is clearly
+        on the runway.
+
+        Only runs whose accumulated length >= threshold qualify.
+        Returns (start_event, end_event) of the last qualifying run, or None.
+
+        Taking the *last* qualifying segment avoids mistaking an earlier brief
+        runway crossing for the actual backtrack.
+        """
+        runs = []           # list of (start_event, end_event, accumulated_length)
+        current_run = []    # (xy, ev) pairs in the current run
+        current_length = 0.0
+
+        for i in range(len(taxi_events_xy) - 1):
+            xy_curr, ev_curr = taxi_events_xy[i]
+            xy_next, ev_next = taxi_events_xy[i + 1]
+
+            mv = (xy_next[0] - xy_curr[0], xy_next[1] - xy_curr[1])
+            in_zone = LineString([xy_curr, xy_next]).intersects(safe_zone)
+            angle = self.angle_between_vectors(mv, backtrack_direction)
+
+            if in_zone and angle <= self.BACKTRACK_DIRECTION_TOLERANCE_DEGREES:
+                if not current_run:
+                    current_run.append((xy_curr, ev_curr))
+                current_run.append((xy_next, ev_next))
+                current_length += self._vector_magnitude(mv)
+            else:
+                if current_run:
+                    runs.append((current_run[0][1], current_run[-1][1], current_length))
+                    current_run = []
+                    current_length = 0.0
+
+        if current_run:
+            runs.append((current_run[0][1], current_run[-1][1], current_length))
+
+        qualifying = [(start_ev, end_ev) for start_ev, end_ev, length in runs if length >= threshold]
+
+        if not qualifying:
+            return None
+
+        return qualifying[-1]
 
     def detect_from_takeoff(
         self,
@@ -98,11 +157,12 @@ class BacktrackDetector():
             turn_zone = Point(run_start_xy).buffer(self.TURN_ZONE_RADIUS)
             safe_zone = unary_union([takeoff_corridor, turn_zone])
 
-        # Reference vector (true takeoff direction)
+        # Takeoff direction and its opposite (= backtrack direction)
         takeoff_vector = (
             run_end_xy[0] - run_start_xy[0],
-            run_end_xy[1] - run_start_xy[1]
+            run_end_xy[1] - run_start_xy[1],
         )
+        backtrack_direction = (-takeoff_vector[0], -takeoff_vector[1])
 
         # 3. Build taxi segments line geometry
         taxi_coords = []
@@ -117,24 +177,21 @@ class BacktrackDetector():
             [LineString([taxi_coords[i], taxi_coords[i + 1]]) for i in range(len(taxi_coords) - 1)]
         )
 
-        # 4. Check how much taxi is on top of the runway
+        # 4. Quick filter: enough total overlap with corridor to be worth analysing
         threshold = self.BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS if runway_match is not None else self.BACKTRACK_THRESHOLD_METERS
         if taxi_lines.intersection(takeoff_corridor).length < threshold:
-            return None  # no backtrack
+            return None
 
-        # 5. Get the first event that is inside the backtrack
-        backtrack_start_event = None
-        for i in range(len(taxi_events_xy)):
-            xy, ev = taxi_events_xy[i]
-            point = Point(xy)
-            if safe_zone.covers(point):
-                backtrack_start_event = ev
-                break
+        # 5. Find the last qualifying segment moving in the backtrack direction
+        segment = self._find_last_qualifying_segment(
+            taxi_events_xy, safe_zone, backtrack_direction, threshold
+        )
 
-        if backtrack_start_event:
-            return backtrack_start_event.timestamp, taxi.end
+        if segment is None:
+            return None
 
-        return None
+        backtrack_start_event, _ = segment
+        return backtrack_start_event.timestamp, taxi.end
 
     def detect_from_landing(
         self,
@@ -188,11 +245,12 @@ class BacktrackDetector():
             turn_zone = Point(landing_end_xy).buffer(self.TURN_ZONE_RADIUS)
             safe_zone = unary_union([landing_corridor, turn_zone])
 
-        # Reference vector (true landing direction)
+        # Landing direction and its opposite (= backtrack direction)
         landing_vector = (
             landing_end_xy[0] - landing_start_xy[0],
-            landing_end_xy[1] - landing_start_xy[1]
+            landing_end_xy[1] - landing_start_xy[1],
         )
+        backtrack_direction = (-landing_vector[0], -landing_vector[1])
 
         # 3. Build taxi segments line geometry
         taxi_coords = []
@@ -207,26 +265,18 @@ class BacktrackDetector():
             [LineString([taxi_coords[i], taxi_coords[i + 1]]) for i in range(len(taxi_coords) - 1)]
         )
 
-        # 4. Check how much taxi is on top of the runway
+        # 4. Quick filter: enough total overlap with corridor to be worth analysing
         threshold = self.BACKTRACK_THRESHOLD_WITH_RUNWAY_METERS if runway_match is not None else self.BACKTRACK_THRESHOLD_METERS
         if taxi_lines.intersection(landing_corridor).length < threshold:
-            return None  # no backtrack
+            return None
 
-        # 5. Get the last event that is inside the backtrack
-        last_xy, backtrack_end_event = taxi_events_xy[0]
+        # 5. Find the last qualifying segment moving in the backtrack direction
+        segment = self._find_last_qualifying_segment(
+            taxi_events_xy, safe_zone, backtrack_direction, threshold
+        )
 
-        for i in range(len(taxi_events_xy)):
-            xy, ev = taxi_events_xy[i]
-            point = Point(xy)
+        if segment is None:
+            return None
 
-            if safe_zone.covers(point):
-                # Still within safe region (runway corridor or turning circle)
-                last_xy = xy
-                backtrack_end_event = ev
-            else:
-                break
-
-        if backtrack_end_event:
-            return taxi.start, backtrack_end_event.timestamp
-
-        return None
+        _, backtrack_end_event = segment
+        return taxi.start, backtrack_end_event.timestamp
