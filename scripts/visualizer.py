@@ -32,6 +32,13 @@ FLIGHT_AIRPORTS = {
     "backtrack_4.json": ("ENDU", "ENKR"),
     "backtrack_5.json": ("ESNX", "ENRA"),
     "backtrack_6.json": ("EFVA", "EETN"),
+    "backtrack_7.json": ("LEPP", "LEVX"),
+    "backtrack_8.json": ("CYZF", "CYHY"),
+    "backtrack_9.json": ("HKJK", "FZAA"),
+    "backtrack_10.json": ("CYDL", "PAWG"),
+    "backtrack_11.json": ("LEGE", "LEBB"),
+    "backtrack_12.json": ("CYQH", "CYDL"),
+    "backtrack_13.json": ("CYDL", "PAWG"),
     "zfw.json": ("OOMS", "LTFM"),
     "zfw_modified.json": ("OOMS", "LTFM"),
     "short_flight_vslast3avg.json": ("LEBL", "LEBL"),
@@ -296,6 +303,15 @@ def extract_segmented_coordinates(events: List[FlightEvent], phases: List[Flight
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate flight visualizations.")
+    parser.add_argument(
+        "--skip-context",
+        action="store_true",
+        help="Run without airport/runway context (as if runway geometry were unknown).",
+    )
+    args = parser.parse_args()
+
     data_dir = Path("data")
     output_dir = Path("/tmp")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -308,7 +324,7 @@ def main():
         raw_events = raw_json["Events"]
         events = [FlightEvent.from_json(e) for e in raw_events]
 
-        ctx = get_flight_context(json_file.name)
+        ctx = None if args.skip_context else get_flight_context(json_file.name)
         aggregator = PhasesAggregator()
         phases = aggregator.identify_phases(events, context=ctx)
 
