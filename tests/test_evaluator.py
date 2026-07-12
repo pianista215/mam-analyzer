@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 
 from mam_analyzer.evaluator import FlightEvaluator
+from mam_analyzer.models.flight_context import FlightContext, AirportContext
 from mam_analyzer.parser import load_flight_data
 from mam_analyzer.phases.analyzers.issues import Issues
 from mam_analyzer.utils.parsing import parse_timestamp
@@ -284,4 +285,44 @@ def test_refueling_detection(filename, expected_refuel_events):
             f"{filename}: incorrect refueling value.\n"
             f"Expected: {expected['value']}\n"
             f"Detected: {detected['value']}"
+        )
+
+@pytest.mark.parametrize(
+    "filename, oew_kg, expected_payload_kg, expect_issue, expected_value",
+    [
+        ("zfw.json", 144380, 43724, False, None),
+        ("zfw.json", 144380, 20000, True, 43724),
+        ("short_flight_vslast3avg.json", 762, 152, False, None),
+        ("short_flight_vslast3avg.json", 762, 30, True, 152),
+    ],
+)
+def test_payload_check(filename, oew_kg, expected_payload_kg, expect_issue, expected_value):
+    file_path = DATA_DIR / filename
+    events = load_flight_data(file_path)
+    evaluator = FlightEvaluator()
+
+    context = FlightContext(
+        departure=AirportContext(icao="XXXX"),
+        destination=AirportContext(icao="YYYY"),
+        oew_kg=oew_kg,
+        expected_payload_kg=expected_payload_kg,
+    )
+
+    result = evaluator.evaluate(events, context=context)
+
+    takeoff_phase = next(p for p in result.phases if p.name == "takeoff")
+    payload_issues = [
+        issue for issue in takeoff_phase.analysis.issues
+        if issue.code == Issues.ISSUE_TAKEOFF_WITH_BAD_PAYLOAD
+    ]
+
+    if expect_issue:
+        assert len(payload_issues) == 1, (
+            f"{filename}: expected a TakeoffWithBadPayload issue, got {payload_issues}"
+        )
+        assert payload_issues[0].value == expected_value
+        assert payload_issues[0].timestamp == takeoff_phase.start
+    else:
+        assert len(payload_issues) == 0, (
+            f"{filename}: unexpected TakeoffWithBadPayload issue: {payload_issues}"
         )

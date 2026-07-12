@@ -20,7 +20,7 @@ class FlightEvaluator:
     def __init__(self):
         self.aggregator = PhasesAggregator()
 
-    def calculate_global_metrics(self, phases: List[FlightPhase])-> Dict[str, Any]:
+    def calculate_global_metrics(self, phases: List[FlightPhase], context: Optional[FlightContext] = None)-> Dict[str, Any]:
         metrics: dict[str, Any] = {}
 
         if not phases:
@@ -41,7 +41,8 @@ class FlightEvaluator:
         zfw_kg = self.calculate_zfw(phases[0])
         if zfw_kg is not None:
             metrics["zfw_kg"] = zfw_kg
-            self.check_zfw_changed(phases, zfw_kg)        
+            self.check_zfw_changed(phases, zfw_kg)
+            self.check_payload(phases, context, zfw_kg)
 
         fuel_refueled = self.check_refueling(phases)
 
@@ -56,7 +57,7 @@ class FlightEvaluator:
 
     def evaluate(self, events: List[FlightEvent], context: Optional[FlightContext] = None) -> FlightReport:
         phases: List[FlightPhase] = self.aggregator.identify_phases(events, context)
-        global_metrics = self.calculate_global_metrics(phases)
+        global_metrics = self.calculate_global_metrics(phases, context)
         return FlightReport(phases=phases, global_metrics=global_metrics)
 
     def calculate_airborne_time(self, phases: List[FlightPhase]) -> int:
@@ -238,7 +239,28 @@ class FlightEvaluator:
                             timestamp=event.timestamp,
                             value=get_zfw_as_int(event)                            
                         )
-                    )      
+                    )
+
+    def check_payload(self, phases: List[FlightPhase], context: Optional[FlightContext], zfw_kg: int) -> None:
+        if context is None or context.oew_kg is None or context.expected_payload_kg is None:
+            return
+
+        computed_oew = zfw_kg - context.expected_payload_kg
+        variation = abs(computed_oew - context.oew_kg) / context.oew_kg
+
+        if variation > 0.15:
+            takeoff_phase = next((p for p in phases if p.name == "takeoff"), None)
+            if takeoff_phase is None:
+                return
+
+            estimated_payload = zfw_kg - context.oew_kg
+            takeoff_phase.analysis.issues.append(
+                AnalysisIssue(
+                    code=Issues.ISSUE_TAKEOFF_WITH_BAD_PAYLOAD,
+                    timestamp=takeoff_phase.start,
+                    value=round(estimated_payload)
+                )
+            )
 
     def check_engine_stopped_in_flight(self, phases: List[FlightPhase]):
         single_failure_detected = False
