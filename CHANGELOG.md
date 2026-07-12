@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] - 2026-07-12
+
+- **Payload check**: new `TakeoffWithBadPayload` issue detects when the declared aircraft OEW doesn't match the ZFW detected for the flight given the expected payload. `FlightContext` now accepts optional `oew_kg` and `expected_payload_kg`; a computed OEW (`ZFW - expected_payload_kg`) is compared against the declared `oew_kg`, and a deviation greater than 15% raises the issue on the `takeoff` phase (timestamp at takeoff start, value is the estimated payload `ZFW - oew_kg`)
+
 ## [1.8.0] - 2026-05-27
 
 ### Backtrack detector rewrite

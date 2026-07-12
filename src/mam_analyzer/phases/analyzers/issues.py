@@ -15,3 +15,4 @@ class Issues:
     ISSUE_LANDING_OUT_OF_AIRPORT = "LandingOutOfAirport"
     ISSUE_LANDING_AIRPORT_ALTERNATIVE = "LandingAirportAlternative"
     ISSUE_LANDING_AIRPORT_NOT_PLANNED = "LandingAirportNotPlanned"
+    ISSUE_TAKEOFF_WITH_BAD_PAYLOAD = "TakeoffWithBadPayload"

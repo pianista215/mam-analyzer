@@ -62,6 +62,8 @@ class FlightContext:
     alternative1: Optional[AirportContext] = None
     alternative2: Optional[AirportContext] = None
     landing: Optional[AirportContext] = None
+    oew_kg: Optional[float] = None
+    expected_payload_kg: Optional[float] = None
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "FlightContext":
@@ -75,4 +77,6 @@ class FlightContext:
             alternative1=AirportContext.from_dict(alt1_data) if alt1_data else None,
             alternative2=AirportContext.from_dict(alt2_data) if alt2_data else None,
             landing=AirportContext.from_dict(landing_data) if landing_data else None,
+            oew_kg=data.get("oew_kg"),
+            expected_payload_kg=data.get("expected_payload_kg"),
         )

@@ -110,3 +110,29 @@ def test_from_dict_only_alt1():
     assert ctx.alternative1.icao == "LEZG"
     assert ctx.alternative2 is None
     assert ctx.landing.icao == "LEZG"
+
+
+def test_from_dict_with_payload_data():
+    data = {
+        "departure": {"icao": "LEMD"},
+        "destination": {"icao": "LEBL"},
+        "oew_kg": 144380,
+        "expected_payload_kg": 43724,
+    }
+
+    ctx = FlightContext.from_dict(data)
+
+    assert ctx.oew_kg == 144380
+    assert ctx.expected_payload_kg == 43724
+
+
+def test_from_dict_without_payload_data():
+    data = {
+        "departure": {"icao": "LEMD"},
+        "destination": {"icao": "LEBL"},
+    }
+
+    ctx = FlightContext.from_dict(data)
+
+    assert ctx.oew_kg is None
+    assert ctx.expected_payload_kg is None
