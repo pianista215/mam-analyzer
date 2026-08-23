@@ -166,6 +166,30 @@ DATA_DIR = Path("data")
                 'LandingAllEnginesStopped'
             ],
         ),
+        (
+            "LEPA_LEBB_zfw_changed_on_taxi_pretakeoff.json",
+            [
+                ("block_time_minutes", "82"),
+                ("airborne_time_minutes", "68"),
+                ("initial_fob_kg", "5497"),
+                ("zfw_kg", "53458"),
+                ("fuel_consumed_kg", "3281"),
+                ("distance_nm", "403"),
+            ],
+            ['AppHighVsAvgBelow500AGL'],
+        ),
+        (
+            "GCLA_GCGM_zfw_changing_taxi_post_landing.json",
+            [
+                ("block_time_minutes", "62"),
+                ("airborne_time_minutes", "47"),
+                ("initial_fob_kg", "620"),
+                ("zfw_kg", "10024"),
+                ("fuel_consumed_kg", "183"),
+                ("distance_nm", "115"),
+            ],
+            [],
+        ),
     ],
 )
 def test_evaluator(filename, expected_metrics, expected_issues):

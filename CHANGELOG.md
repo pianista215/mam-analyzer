@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.0] - 2026-08-23
+
+- **ZFW calculation**: the ZFW metric now uses the last value reported anywhere before the `takeoff` phase begins, instead of the value right before engine start. Some aircraft simulate passenger boarding while already taxiing, which changes ZFW after engines are already on — the previous logic missed that change
+- **`ZfwModified` check narrowed to airborne phases**: `check_zfw_changed` now only compares ZFW between the `takeoff` and `final_landing` phases (inclusive). Changes during startup/taxi/backtrack/shutdown (boarding, simulated deboarding on return to gate, etc.) are expected and no longer raise the issue
+
 ## [1.9.0] - 2026-07-12
 
 - **Payload check**: new `TakeoffWithBadPayload` issue detects when the declared aircraft OEW doesn't match the ZFW detected for the flight given the expected payload. `FlightContext` now accepts optional `oew_kg` and `expected_payload_kg`; a computed OEW (`ZFW - expected_payload_kg`) is compared against the declared `oew_kg`, and a deviation greater than 15% raises the issue on the `takeoff` phase (timestamp at takeoff start, value is the estimated payload `ZFW - oew_kg`)
