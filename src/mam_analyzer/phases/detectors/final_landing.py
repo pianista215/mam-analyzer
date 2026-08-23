@@ -60,8 +60,8 @@ class FinalLandingDetector(Detector):
             touch_heading = landing_event.heading
             landing_start = landing_event.timestamp
 
-        # Step 3: Detect possible double bounces look in previous 10 seconds was another touch
-        delta = landing_start + timedelta(seconds=-10)
+        # Step 3: Detect possible double bounces look in previous 20 seconds was another touch
+        delta = landing_start + timedelta(seconds=-20)
 
         found_bounce = find_first_index_backward_starting_from_idx(
             events,
