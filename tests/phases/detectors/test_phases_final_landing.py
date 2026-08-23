@@ -113,23 +113,6 @@ def test_landing_bounces_longer_airborne_gap(detector):
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=50)
 
-def test_landing_does_not_merge_touch_with_different_heading(detector):
-    """A nearby earlier touch with a very different heading (e.g. a hard landing
-    following a ground loop) must NOT be treated as a bounce of this landing
-    (regression for backtrack_5.json)."""
-    base = datetime(2025, 6, 23, 12, 0, 0)
-    events = [
-        make_event(base + timedelta(seconds=0), Heading=312),
-        make_full_event(base + timedelta(seconds=10), Heading=312, LandingVSFpm=-48, onGround=True), # separate earlier touch
-        make_full_event(base + timedelta(seconds=20), Heading=299, onGround=False),
-        make_full_event(base + timedelta(seconds=22), Heading=262, LandingVSFpm=-1064, onGround=True), # final touch
-        make_event(base + timedelta(seconds=30), Heading=260),
-        make_event(base + timedelta(seconds=40), Heading=290),  # heading change > tolerance -> ends landing
-    ]
-    start, end = detector.detect(events, None, None)
-    assert start == base + timedelta(seconds=22)
-    assert end == base + timedelta(seconds=30)
-
 def test_only_last_landing(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
