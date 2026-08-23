@@ -97,6 +97,39 @@ def test_landing_bounces(detector):
     assert start == base + timedelta(seconds=10)
     assert end == base + timedelta(seconds=40)
 
+def test_landing_bounces_longer_airborne_gap(detector):
+    """A real bounce can spend several seconds airborne before settling, pushing the
+    total gap between touchdowns past 10s (regression for LEAS_LEVX_bounce_not_detected.json)."""
+    base = datetime(2025, 6, 23, 12, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), Heading=196),
+        make_full_event(base + timedelta(seconds=10), Heading=196, LandingVSFpm=-179, onGround=True), # bounce -> final_landing
+        make_full_event(base + timedelta(seconds=12), Heading=196, onGround=False),
+        make_full_event(base + timedelta(seconds=26), Heading=196, LandingVSFpm=-129, onGround=True), # final touch, 16s after the bounce
+        make_event(base + timedelta(seconds=40), Heading=194),
+        make_event(base + timedelta(seconds=50), Heading=196),
+    ]
+    start, end = detector.detect(events, None, None)
+    assert start == base + timedelta(seconds=10)
+    assert end == base + timedelta(seconds=50)
+
+def test_landing_does_not_merge_touch_with_different_heading(detector):
+    """A nearby earlier touch with a very different heading (e.g. a hard landing
+    following a ground loop) must NOT be treated as a bounce of this landing
+    (regression for backtrack_5.json)."""
+    base = datetime(2025, 6, 23, 12, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), Heading=312),
+        make_full_event(base + timedelta(seconds=10), Heading=312, LandingVSFpm=-48, onGround=True), # separate earlier touch
+        make_full_event(base + timedelta(seconds=20), Heading=299, onGround=False),
+        make_full_event(base + timedelta(seconds=22), Heading=262, LandingVSFpm=-1064, onGround=True), # final touch
+        make_event(base + timedelta(seconds=30), Heading=260),
+        make_event(base + timedelta(seconds=40), Heading=290),  # heading change > tolerance -> ends landing
+    ]
+    start, end = detector.detect(events, None, None)
+    assert start == base + timedelta(seconds=22)
+    assert end == base + timedelta(seconds=30)
+
 def test_only_last_landing(detector):
     base = datetime(2025, 6, 23, 12, 0, 0)
     events = [
@@ -134,6 +167,7 @@ def test_final_landing_remains_on_ground(detector):
     ("UHSH-UHMM-B350.json", "2025-05-17T19:41:01.243375", "2025-05-17T19:42:55.2530305"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-23T00:15:48.5520445", "2025-06-23T00:16:16.5747404"),
     ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T23:44:13.3164862", "2025-07-04T23:44:13.3164862"),
+    ("LEAS_LEVX_bounce_not_detected.json", "2026-07-29T00:38:47.5841231", "2026-07-29T00:39:57.5818797"),
 ])
 def test_landing_detects_from_real_files(filename, expected_start, expected_end, detector):
     path = os.path.join("data", filename)

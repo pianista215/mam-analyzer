@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2026-08-23
+
+- **`FinalLandingDetector` bounce detection widened and made heading-aware**: the lookback window used to merge an earlier touchdown into the final landing (bounces) was hard-coded to 10 seconds, measured between the two touchdown timestamps. Real bounces can spend several seconds airborne before settling, pushing the total gap past 10s and causing the earlier touchdown to be missed — the landing was then reported as starting at the final touchdown instead of the first one. The window is now 20s, matching `TouchAndGoDetector`'s own bounce threshold. To avoid merging unrelated touchdowns (e.g. a hard landing following a ground loop, where heading swings wildly between contacts), the earlier touchdown is only treated as a bounce of the same landing if its heading is close to the final touchdown's heading
+
 ## [1.10.0] - 2026-08-23
 
 - **ZFW calculation**: the ZFW metric now uses the last value reported anywhere before the `takeoff` phase begins, instead of the value right before engine start. Some aircraft simulate passenger boarding while already taxiing, which changes ZFW after engines are already on — the previous logic missed that change

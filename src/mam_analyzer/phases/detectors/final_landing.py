@@ -60,8 +60,11 @@ class FinalLandingDetector(Detector):
             touch_heading = landing_event.heading
             landing_start = landing_event.timestamp
 
-        # Step 3: Detect possible double bounces look in previous 10 seconds was another touch
-        delta = landing_start + timedelta(seconds=-10)
+        # Step 3: Detect possible double bounces look in previous 20 seconds was another touch
+        # with a similar heading. A real bounce keeps rolling in essentially the same direction;
+        # a second, unrelated touchdown after a heading change (e.g. a hard landing following a
+        # ground loop) must NOT be merged into this landing.
+        delta = landing_start + timedelta(seconds=-20)
 
         found_bounce = find_first_index_backward_starting_from_idx(
             events,
@@ -72,10 +75,16 @@ class FinalLandingDetector(Detector):
         )
 
         if found_bounce is not None:
-            print("Found bounce! Updating touch")
-            touch_idx, landing_event = found_bounce
-            touch_heading = landing_event.heading
-            landing_start = landing_event.timestamp
+            _, bounce_event = found_bounce
+            if (
+                touch_heading is not None
+                and bounce_event.heading is not None
+                and heading_within_range(touch_heading, bounce_event.heading)
+            ):
+                print("Found bounce! Updating touch")
+                touch_idx, landing_event = found_bounce
+                touch_heading = landing_event.heading
+                landing_start = landing_event.timestamp
 
 
         # Step 4: Look for the end of the landing (exit the runway)
