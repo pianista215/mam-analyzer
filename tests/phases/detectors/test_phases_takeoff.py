@@ -60,6 +60,53 @@ def test_takeoff_with_no_flaps_or_gear_change_fallback_to_1min(detector):
     assert start == base + timedelta(seconds=0)
     assert end == base + timedelta(seconds=70)
 
+def test_takeoff_ignores_hop_over_a_bump_while_taxiing(detector):
+    """A bump while taxiing reports onGround=False for a moment: not a takeoff."""
+    base = datetime(2025, 6, 17, 13, 0, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=200, Flaps=50, Gear="Down"),
+        # Hop over a bump at taxi speed, back on ground 2 seconds later
+        make_event(base + timedelta(seconds=10), onGround=False, Heading=200, Flaps=50, Gear="Down", IASKnots=14),
+        make_event(base + timedelta(seconds=12), onGround=True, Heading=200, LandingVSFpm=-173),
+        make_event(base + timedelta(seconds=60), onGround=True, Heading=95),  # lined up, start
+        # The real takeoff, 90 seconds after the bump
+        make_event(base + timedelta(seconds=100), onGround=False, Heading=95, Flaps=50, Gear="Down", IASKnots=87),
+        make_event(base + timedelta(seconds=110), Gear="Up"),
+        make_event(base + timedelta(seconds=120), Flaps=0),  # end
+    ]
+    start, end = detector.detect(events, None, None)
+    assert start == base + timedelta(seconds=60)
+    assert end == base + timedelta(seconds=120)
+
+
+def test_takeoff_keeps_first_liftoff_when_takeoff_bounces(detector):
+    """A real bounced takeoff gets airborne again right away: keep the first liftoff."""
+    base = datetime(2025, 6, 17, 13, 30, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=90),  # start
+        make_event(base + timedelta(seconds=10), onGround=False, Heading=90, Flaps=5, Gear="Down", IASKnots=130),
+        make_event(base + timedelta(seconds=14), onGround=True, Heading=90, LandingVSFpm=-210),
+        make_event(base + timedelta(seconds=18), onGround=False, Heading=90, Flaps=5, Gear="Down", IASKnots=138),
+        make_event(base + timedelta(seconds=40), Flaps=0),  # end
+    ]
+    start, end = detector.detect(events, None, None)
+    assert start == base + timedelta(seconds=0)
+    assert end == base + timedelta(seconds=40)
+
+
+def test_takeoff_only_hops_returns_none(detector):
+    """A flight that never gets properly airborne is not a takeoff."""
+    base = datetime(2025, 6, 17, 13, 45, 0)
+    events = [
+        make_event(base + timedelta(seconds=0), onGround=True, Heading=90),
+        make_event(base + timedelta(seconds=10), onGround=False, Heading=90, IASKnots=12),
+        make_event(base + timedelta(seconds=12), onGround=True, Heading=90),
+        make_event(base + timedelta(seconds=60), onGround=False, Heading=90, IASKnots=15),
+        make_event(base + timedelta(seconds=62), onGround=True, Heading=90),
+    ]
+    assert detector.detect(events, None, None) is None
+
+
 def test_takeoff_no_onGround_false_returns_none(detector):
     base = datetime(2025, 6, 17, 14, 0, 0)
     events = [
@@ -81,7 +128,9 @@ def test_takeoff_no_onGround_false_returns_none(detector):
     ("UHSH-UHMM-B350.json", "2025-05-17T17:55:53.265564", "2025-05-17T17:57:09.2445871"),
     ("PAOM-PANC-B350-fromtaxi.json", "2025-06-22T22:24:54.5635293", "2025-06-22T22:26:42.5590209"),
     ("LEBB-touchgoLEXJ-LEAS.json", "2025-07-04T22:47:29.3268135", "2025-07-04T22:48:17.3083458"),
-])    
+    # Hops over a bump while taxiing, 90s before the real takeoff run
+    ("bump-taxi-CYYF-CYXC.json", "2026-09-20T22:26:10.1069639", "2026-09-20T22:27:30.1144901"),
+])
 def test_detect_takeoff_phase_from_real_files(filename, expected_start, expected_end, detector):
     path = os.path.join("data", filename)
     with open(path, encoding="utf-8") as f:
