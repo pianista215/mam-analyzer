@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.1] - 2026-09-21
+
+- **`TakeoffDetector` no longer mistakes a bump while taxiing for the takeoff**: the detector took the first `onGround=False` event as the liftoff. Taxiing over uneven ground also reports `onGround=False` for a couple of seconds, so on those flights the takeoff phase was anchored to the hop instead of the real takeoff run. Since the aircraft settles back down almost immediately, the resulting phase window contained a `LandingVSFpm` event and no liftoff, and `TakeoffAnalyzer` aborted the whole report with `RuntimeError: Can't get meters and speed for takeoff phase`. A liftoff candidate now only counts when the aircraft either stays airborne for more than 20 seconds or gets airborne again within 20 seconds of touching back down — the latter keeps genuine bounced takeoffs anchored to the first liftoff, so `TakeoffBounces` is unaffected. The window matches `FinalLandingDetector`'s own bounce threshold
+- **`TakeoffAnalyzer` error message now reports the phase window**: the bare `Can't get meters and speed for takeoff phase` gave no way to tell which part of the flight was misdetected
+
 ## [1.10.0] - 2026-08-23
 
 - **ZFW calculation**: the ZFW metric now uses the last value reported anywhere before the `takeoff` phase begins, instead of the value right before engine start. Some aircraft simulate passenger boarding while already taxiing, which changes ZFW after engines are already on — the previous logic missed that change

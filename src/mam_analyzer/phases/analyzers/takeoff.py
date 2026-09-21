@@ -87,7 +87,9 @@ class TakeoffAnalyzer(Analyzer):
                     break
             
         if meters_until_airborne is None or airborne_speed is None:
-            raise RuntimeError("Can't get meters and speed for takeoff phase")
+            raise RuntimeError(
+                f"Can't get meters and speed for takeoff phase between {start_time} and {end_time}"
+            )
 
         result = AnalysisResult()
 

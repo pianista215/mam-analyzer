@@ -3,13 +3,83 @@ from typing import List, Optional, Tuple, Dict, Any
 
 from mam_analyzer.models.flight_events import FlightEvent
 from mam_analyzer.phases.detectors.detector import Detector
-from mam_analyzer.utils.ground import is_on_air
+from mam_analyzer.utils.ground import is_on_air, is_on_ground
 from mam_analyzer.utils.location import event_has_location
 from mam_analyzer.utils.runway import build_runway_polygon, match_runway_for_takeoff, point_inside_runway
-from mam_analyzer.utils.search import find_first_index_forward,find_first_index_backward_starting_from_idx,find_first_index_forward_starting_from_idx
+from mam_analyzer.utils.search import find_first_index_backward_starting_from_idx,find_first_index_forward_starting_from_idx
 from mam_analyzer.utils.units import haversine, heading_within_range
 
 class TakeoffDetector(Detector):
+
+    # A liftoff that settles back on the runway is a bounced takeoff only if the
+    # aircraft gets airborne again within this window, counted from the touchdown
+    LIFTOFF_BOUNCE_WINDOW = timedelta(seconds=20)
+
+    def __find_liftoff(
+        self,
+        events: List[FlightEvent],
+        from_time: Optional[datetime],
+        to_time: Optional[datetime],
+    ) -> Optional[Tuple[int, FlightEvent]]:
+        """Find the event where the aircraft really leaves the ground.
+
+        Taxiing over a bump also reports onGround=False for a couple of seconds,
+        so a candidate only counts when the aircraft either stays airborne past
+        the bounce window or gets airborne again right after touching down.
+        """
+        search_idx = 0
+
+        while True:
+            found_airborne = find_first_index_forward_starting_from_idx(
+                events,
+                search_idx,
+                is_on_air,
+                from_time,
+                to_time
+            )
+
+            if found_airborne is None:
+                return None
+
+            airborne_idx, airborne_event = found_airborne
+
+            found_back_on_ground = find_first_index_forward_starting_from_idx(
+                events,
+                airborne_idx + 1,
+                is_on_ground,
+                from_time,
+                to_time
+            )
+
+            if found_back_on_ground is None:
+                # Never came back to the ground, this is the liftoff
+                return found_airborne
+
+            ground_idx, ground_event = found_back_on_ground
+
+            if ground_event.timestamp - airborne_event.timestamp > self.LIFTOFF_BOUNCE_WINDOW:
+                # Stayed airborne long enough, this is the liftoff
+                return found_airborne
+
+            bounce_deadline = ground_event.timestamp + self.LIFTOFF_BOUNCE_WINDOW
+            if to_time is not None and to_time < bounce_deadline:
+                bounce_deadline = to_time
+
+            found_airborne_again = find_first_index_forward_starting_from_idx(
+                events,
+                ground_idx + 1,
+                is_on_air,
+                from_time,
+                bounce_deadline
+            )
+
+            if found_airborne_again is not None:
+                # Bounced takeoff, the first liftoff is still the start
+                return found_airborne
+
+            # Just a hop over a bump, keep looking
+            search_idx = ground_idx + 1
+
     def detect(
         self,
         events: List[FlightEvent],
@@ -24,10 +94,9 @@ class TakeoffDetector(Detector):
         takeoff_end = None
         flaps_at_takeoff = None
 
-        # Step 1: First event on air (onGround=False)
-        found_airborne = find_first_index_forward(
+        # Step 1: First event where the aircraft really leaves the ground
+        found_airborne = self.__find_liftoff(
             events,
-            is_on_air,
             from_time,
             to_time
         )
